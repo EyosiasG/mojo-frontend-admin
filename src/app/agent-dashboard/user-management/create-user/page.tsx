@@ -63,7 +63,7 @@ const AddUserPage = () => {
     try {
         const accessToken = localStorage.getItem("access_token");
         console.log("Access Token:", accessToken); // Log the access token
-        const response = await fetch("https://mojoapi.siltet.com/api/users/store", {
+        const response = await fetch("https://mojoapi.grandafricamarket.com/api/users/store", {
             method: "POST",
             body: JSON.stringify(requestBody), // Use JSON.stringify for the request body
             headers: {
@@ -77,6 +77,7 @@ const AddUserPage = () => {
         }
 
         console.log("User added successfully.");
+        alert("User added successfully!"); // Alert box for successful addition
     } catch (err) {
         console.error("Failed to add user:", err.message);
         setError("Failed to add user. Please check your input and try again.");

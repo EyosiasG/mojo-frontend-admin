@@ -39,7 +39,7 @@ const CurrencyManagementPage = () => {
     const fetchCurrencies = async () => {
       setLoading(true);
       try {
-        const response = await fetchWithAuth("https://mojoapi.siltet.com/api/currencies", {
+        const response = await fetchWithAuth("https://mojoapi.grandafricamarket.com/api/currencies", {
           headers: {
             "Content-Type": "application/json",
           },
@@ -79,7 +79,7 @@ const CurrencyManagementPage = () => {
 
     try {
       const response = await fetch(
-        `https://mojoapi.siltet.com/api/currencies/${currencyId}`,
+        `https://mojoapi.grandafricamarket.com/api/currencies/${currencyId}`,
         {
           method: "DELETE",
           headers: {

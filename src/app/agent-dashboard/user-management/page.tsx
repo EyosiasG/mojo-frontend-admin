@@ -37,22 +37,23 @@ export default function UserManagementPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    async function fetchUsers() {
-      try {
-        console.log('Attempting to fetch users...');
-        const response = await fetchWithAuth(
-          "https://mojoapi.siltet.com/api/users"
-        ).catch(error => {
-          console.error('Network error:', error);
-          throw new Error('Network connection failed - please check your internet connection');
-        });
+  // Function to fetch users
+  const fetchUsers = async () => {
+    try {
+      console.log('Attempting to fetch users...');
+      const response = await fetchWithAuth(
+        "https://mojoapi.grandafricamarket.com/api/users"
+      ).catch(error => {
+        console.error('Network error:', error);
+        throw new Error('Network connection failed - please check your internet connection');
+      });
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || `Server error: ${response.status} ${response.statusText}`);
-        }
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Server error: ${response.status} ${response.statusText}`);
+      }
 
         const data = await response.json();
         if (!data.users) {
@@ -63,16 +64,19 @@ export default function UserManagementPage() {
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
         setError(errorMessage);
-        console.error('Detailed error information:', {
-          error: err,
-          timestamp: new Date().toISOString(),
-          endpoint: "https://mojoapi.siltet.com/api/users"
-        });
-      } finally {
-        setLoading(false);
-      }
+
+      console.error('Detailed error information:', {
+        error: err,
+        timestamp: new Date().toISOString(),
+        endpoint: "https://mojoapi.grandafricamarket.com/api/users"
+      });
+    } finally {
+      setLoading(false);
     }
-    fetchUsers();
+  };
+
+  useEffect(() => {
+    fetchUsers(); // Call the fetchUsers function here
   }, []);
 
   // Function to delete a user
@@ -83,7 +87,7 @@ export default function UserManagementPage() {
     if (isConfirmed) {
       try {
         const response = await fetchWithAuth(
-          `https://mojoapi.siltet.com/api/users/${userId}`,
+          `https://mojoapi.grandafricamarket.com/api/users/${userId}`,
           {
             method: "DELETE",
           }
@@ -103,9 +107,35 @@ export default function UserManagementPage() {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  // Function to handle search
+  const handleSearch = async () => {
+    if (!searchQuery) {
+      await fetchUsers(); // Fetch users if searchQuery is empty
+      return; // Exit early if searchQuery is empty
+    }
+    try {
+      const response = await fetchWithAuth(
+        `https://mojoapi.grandafricamarket.com/api/users/${searchQuery}`
+      );
 
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      if (!data.user) {
+        throw new Error('User not found');
+      }
+      setUsers([data.user]);
+    } catch (err) {
+      setError(err.message);
+      setUsers([]);
+      alert("Failed to find user");
+    }
+  };
+
+  if (loading) return <div>Loading...</div>;
+ 
   return (
     <>
       <div className="border-b bg-white">
@@ -124,9 +154,26 @@ export default function UserManagementPage() {
         <div className="mb-6 flex items-center justify-between gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-            <Input className="pl-10" placeholder="Search" />
+            <Input
+              className="pl-10"
+              placeholder="Search"
+              value={searchQuery}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSearchQuery(value);
+                if (value.trim() === "") {
+                  fetchUsers(); // Call fetchUsers directly if input is empty
+                } else {
+                  handleSearch(); // Call handleSearch for non-empty input
+                }
+              }}
+            />
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="outline" className="gap-2" onClick={handleSearch}>
+              <Search className="h-4 w-4" />
+              Search
+            </Button>
             <Button variant="outline" size="icon">
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -138,6 +185,7 @@ export default function UserManagementPage() {
               <Download className="h-4 w-4" />
               Export
             </Button>
+          
             <Link href="user-management/create-user">
               <Button className="gap-2 bg-primary hover:bg-primary/90">
                 <PlusCircle className="h-4 w-4" />
@@ -227,6 +275,15 @@ export default function UserManagementPage() {
               ))}
             </TableBody>
           </Table>
+          {users.length > 0 ? (
+            <div className="flex items-center justify-between px-4 py-4">
+              <div className="text-sm text-gray-500">
+                Showing 1 to 10 of {users.length} results
+              </div>
+            </div>
+          ) : (
+            <div className="text-red-500 text-center py-4">No Users found!</div>
+          )}
         </div>
       </div>
     </>

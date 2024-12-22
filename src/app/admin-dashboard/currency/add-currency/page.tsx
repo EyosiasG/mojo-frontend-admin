@@ -38,7 +38,7 @@ export default function AddCurrencyForm() {
       setError(null);
     
       try {
-        const data = await fetchWithAuth("https://mojoapi.siltet.com/api/currencies", {
+        const data = await fetchWithAuth("https://mojoapi.grandafricamarket.com/api/currencies", {
           method: "POST",
           body: JSON.stringify(formData),
         });

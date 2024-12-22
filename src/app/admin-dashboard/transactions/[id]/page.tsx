@@ -45,7 +45,7 @@ export default function TransactionHistory() {
           throw new Error("Authentication token not found. Please log in.");
         }
 
-        const response = await fetch(`https://mojoapi.siltet.com/api/transactions/${id}`, {
+        const response = await fetch(`https://mojoapi.grandafricamarket.com/api/transactions/${id}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

@@ -33,7 +33,7 @@ export default function EditCurrencyForm() {
     const fetchCurrency = async () => {
       try {
         const response = await fetchWithAuth(
-          `https://mojoapi.siltet.com/api/currencies/${currencyId}`,
+          `https://mojoapi.grandafricamarket.com/api/currencies/${currencyId}`,
           {
             method: "GET",
           }
@@ -68,7 +68,7 @@ export default function EditCurrencyForm() {
       // if (!token) throw new Error("Unauthorized user");
 
       const response = await fetchWithAuth(
-        `https://mojoapi.siltet.com/api/currencies/${currencyId}`,
+        `https://mojoapi.grandafricamarket.com/api/currencies/${currencyId}`,
         {
           method: "POST",
           

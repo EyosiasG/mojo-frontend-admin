@@ -20,7 +20,7 @@ export default function Page() {
     const fetchUserData = async () => {
       try {
         const response = await fetchWithAuth(
-          `https://mojoapi.siltet.com/api/users/${userId}`
+          `https://mojoapi.grandafricamarket.com/api/users/${userId}`
         );
         if (!response.ok) throw new Error(`Error: ${response.statusText}`);
         const data = await response.json();

@@ -39,7 +39,7 @@ export default function SettingsPage() {
     // Fetch user settings data from the API
     const fetchUserSettings = async () => {
       try {
-        const res = await fetchWithAuth(`https://mojoapi.siltet.com/api/settings/${userId}`);
+        const res = await fetchWithAuth(`https://mojoapi.grandafricamarket.com/api/settings/${userId}`);
         const data = await res.json();
         setUser(data);
       } catch (error) {
@@ -65,7 +65,7 @@ export default function SettingsPage() {
     setLoading(true);
 
     try {
-      const res = await fetchWithAuth(`https://mojoapi.siltet.com/api/settings/${userId}`, {
+      const res = await fetchWithAuth(`https://mojoapi.grandafricamarket.com/api/settings/${userId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

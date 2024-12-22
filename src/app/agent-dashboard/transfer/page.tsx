@@ -34,12 +34,13 @@ export default function TransferPage() {
   const [transactions, setTransactions] = useState([]); // Initialize as an empty array
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
+  const [searchTerm, setSearchTerm] = useState(""); // Add this line at the top of your component
+  
   // Fetch transaction data from API
   const fetchTransactions = async () => {
     setLoading(true);
     try {
-      const response = await fetch("https://mojoapi.siltet.com/api/transfers", {
+      const response = await fetch("https://mojoapi.grandafricamarket.com/api/transfers", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -97,6 +98,43 @@ export default function TransferPage() {
     });
   };
 
+  const handleSearch = async () => {
+    if (searchTerm) {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`https://mojoapi.grandafricamarket.com/api/transactions/search/${searchTerm}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error("Failed to fetch transaction");
+        }
+        const data = await response.json();
+        
+        // Check if the status is success before setting transactions
+        if (data.status === "success" && Array.isArray(data.data)) {
+          setTransactions(data.data); // Set transactions only if status is success
+        } else {
+          setTransactions([]);
+        }
+        console.log("Transactions: ", data.data);
+      } catch (err) {
+        setError(err.message);
+        setTransactions([]);
+        console.log("Transactions: ", transactions);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      // Refetch all transactions when searchTerm is empty
+      fetchTransactions(); // Call the existing fetch function
+    }
+  };
+
   return (
     <>
       <div className="border-b bg-white">
@@ -123,9 +161,24 @@ export default function TransferPage() {
         <div className="mb-6 flex items-center justify-between gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-            <Input className="pl-10" placeholder="Search" />
+            <Input 
+              className="pl-10" 
+              placeholder="Search" 
+              value={searchTerm} // New state for search term
+              onChange={(e) => {
+                setSearchTerm(e.target.value); // Update search term on input change
+                if (e.target.value === "") {
+                  fetchTransactions(); // Refetch all transactions when searchTerm is empty
+                }
+              }} 
+            />
           </div>
+          
           <div className="flex items-center gap-2">
+            <Button variant="outline" className="gap-2" onClick={handleSearch}> // New search button handler
+              <Search className="h-4 w-4" />
+              Search
+            </Button>
             <Button variant="outline" size="icon">
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -180,6 +233,12 @@ export default function TransferPage() {
                 </TableHead>
                 <TableHead>
                   <div className="flex items-center gap-2">
+                    ETB Amount
+                    <ChevronDown className="h-4 w-4" />
+                  </div>
+                </TableHead>
+                <TableHead>
+                  <div className="flex items-center gap-2">
                     Date
                     <ChevronDown className="h-4 w-4" />
                   </div>
@@ -205,12 +264,13 @@ export default function TransferPage() {
                     <TableCell>{transaction.sender_name}</TableCell>
                     <TableCell>{transaction.receiver_name}</TableCell>
                     <TableCell>{transaction.amount}</TableCell>
+                    <TableCell>{transaction.etb_amount}</TableCell>
                     <TableCell>{formatDate(transaction.created_at)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <div
                           className={`h-2 w-2 rounded-full ${
-                            transaction.status === "successful"
+                            transaction.status === "success"
                               ? "bg-green-500"
                               : transaction.status === "failed"
                               ? "bg-red-500"
@@ -219,7 +279,7 @@ export default function TransferPage() {
                         />
                         <span
                           className={`capitalize ${
-                            transaction.status === "successful"
+                            transaction.status === "success"
                               ? "text-green-500"
                               : transaction.status === "failed"
                               ? "text-red-500"
@@ -247,7 +307,7 @@ export default function TransferPage() {
                             <Link
                               href={`transfer/view-transaction/${transaction.id}`}
                             >
-                              view
+                              View
                             </Link>
                           </DropdownMenuItem>
                           {/* <DropdownMenuItem>Delete</DropdownMenuItem> */}
@@ -265,11 +325,15 @@ export default function TransferPage() {
               )}
             </TableBody>
           </Table>
-          <div className="flex items-center justify-between px-4 py-4">
-            <div className="text-sm text-gray-500">
-              Showing 1 to 10 of {transactions.length} results
+          {transactions.length > 0 ? (
+            <div className="flex items-center justify-between px-4 py-4">
+              <div className="text-sm text-gray-500">
+                Showing 1 to 10 of {transactions.length} results
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="text-red-500 text-center py-4">No transactions found!</div>
+          )}
         </div>
       </div>
     </>

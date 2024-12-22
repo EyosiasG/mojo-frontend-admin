@@ -49,7 +49,7 @@ export default function AddCurrencyForm() {
       setIsPending(true); // Start the pending state
 
       // Send the data to the API
-      const response = await fetch("https://mojoapi.siltet.com/api/rates", {
+      const response = await fetch("https://mojoapi.grandafricamarket.com/api/rates", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

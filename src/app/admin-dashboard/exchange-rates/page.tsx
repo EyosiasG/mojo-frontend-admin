@@ -69,7 +69,7 @@ export default function Page() {
 
     try {
       const response = await fetchWithAuth(
-        `https://mojoapi.siltet.com/api/rates/${id}`,
+        `https://mojoapi.grandafricamarket.com/api/rates/${id}`,
         {
           method: "DELETE",
         }

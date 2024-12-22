@@ -47,7 +47,7 @@ export default function EditCurrencyForm() {
     const fetchData = async () => {
       try {
         const response = await fetchWithAuth(
-          `https://mojoapi.siltet.com/api/rates/${rateId}`
+          `https://mojoapi.grandafricamarket.com/api/rates/${rateId}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch exchange rate data");
@@ -97,7 +97,7 @@ export default function EditCurrencyForm() {
 
       // Include the token in the request headers
       const response = await fetchWithAuth(
-        `https://mojoapi.siltet.com/api/rates/${rateId}`,
+        `https://mojoapi.grandafricamarket.com/api/rates/${rateId}`,
         {
           method: "POST",
           headers: {

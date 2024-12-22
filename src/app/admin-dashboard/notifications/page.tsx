@@ -30,7 +30,7 @@ export default function Page() {
         }
 
         // Make the API request with Authorization header
-        const response = await axios.get('https://mojoapi.siltet.com/api/notifications', {
+        const response = await axios.get('https://mojoapi.grandafricamarket.com/api/notifications', {
           headers: {
             Authorization: `Bearer ${token}`, // Include token in Authorization header
           },
@@ -60,7 +60,7 @@ export default function Page() {
       }
 
       await axios.post(
-        `https://mojoapi.siltet.com/api/notifications/${notificationId}/read`,
+        `https://mojoapi.grandafricamarket.com/api/notifications/${notificationId}/read`,
         {},
         {
           headers: {

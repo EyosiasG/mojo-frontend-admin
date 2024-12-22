@@ -29,7 +29,7 @@ export default function ViewCurrency() {
         
         // console.log("Fetching currency data...");
         const response = await fetchWithAuth(
-          `https://mojoapi.siltet.com/api/currencies/${currencyId}`,
+          `https://mojoapi.grandafricamarket.com/api/currencies/${currencyId}`,
           { method: "GET" }
         );
   

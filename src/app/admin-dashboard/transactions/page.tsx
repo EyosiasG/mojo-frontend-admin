@@ -83,7 +83,7 @@ export default function TransferPage() {
 
     try {
       const response = await fetchWithAuth(
-        `https://mojoapi.siltet.com/api/transactions/${id}`,
+        `https://mojoapi.grandafricamarket.com/api/transactions/${id}`,
         {
           method: "DELETE",
         }

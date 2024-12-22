@@ -19,7 +19,7 @@ export default function LoginPage() {
     setError(null); // Reset previous errors
 
     try {
-      const response = await fetch("https://mojoapi.siltet.com/api/login", {
+      const response = await fetch("https://mojoapi.grandafricamarket.com/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

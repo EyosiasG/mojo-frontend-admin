@@ -43,7 +43,7 @@ const Page = () => {
 
     const fetchBanks = async () => {
       try {
-        const response = await fetchWithAuth("https://mojoapi.siltet.com/api/transfers/create");
+        const response = await fetchWithAuth("https://mojoapi.grandafricamarket.com/api/transfers/create");
         if (!response.ok) {
           throw new Error("Failed to fetch banks");
         }
@@ -61,7 +61,7 @@ const Page = () => {
     const fetchUsers = async () => {
       try {
         const response = await fetchWithAuth(
-          "https://mojoapi.siltet.com/api/users"
+          "https://mojoapi.grandafricamarket.com/api/users"
         );
         if (!response.ok) {
           throw new Error("Failed to fetch users");
@@ -110,7 +110,7 @@ const Page = () => {
         return;
       }
     
-      const response = await fetch("https://mojoapi.siltet.com/api/transfers", {
+      const response = await fetch("https://mojoapi.grandafricamarket.com/api/transfers", {
         method: "POST",
         body: JSON.stringify(requestData),
         headers: {

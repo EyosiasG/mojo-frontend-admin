@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "https://mojoapi.siltet.com/:path*", // Proxy API requests
+        destination: "https://mojoapi.grandafricamarket.com/:path*", // Proxy API requests
       },
     ];
   },

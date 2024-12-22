@@ -74,7 +74,7 @@ export default function SettingsPage() {
     const userId = 1;
     try {
       const response = await fetch(
-        "https://mojoapi.siltet.com/api/users/${userId}",
+        "https://mojoapi.grandafricamarket.com/api/users/${userId}",
         {
           method: "PUT",
           headers: {
@@ -113,7 +113,7 @@ export default function SettingsPage() {
 
     try {
       const response = await fetch(
-        "https://mojoapi.siltet.com/api/users/${userId}",
+        "https://mojoapi.grandafricamarket.com/api/users/${userId}",
         {
           method: "PUT",
           headers: {

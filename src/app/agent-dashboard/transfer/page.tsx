@@ -39,28 +39,41 @@ export default function TransferPage() {
   const fetchTransactions = async () => {
     setLoading(true);
     try {
-      const response = await fetchWithAuth(
-        "https://mojoapi.grandafricamarket.com/api/transfers"
-      );
+      const response = await fetch("https://mojoapi.siltet.com/api/transfers", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
       if (!response.ok) {
-        throw new Error("Failed to fetch data");
+        const errorBody = await response.text();
+        console.error("Error Response:", errorBody);
+        const parsedError = JSON.parse(errorBody);
+        
+        // Enhanced error handling
+        const errorMessage = parsedError.message || "Failed to fetch data";
+        const detailedError = parsedError.error ? JSON.parse(parsedError.error) : null;
+        const detailedMessage = detailedError ? detailedError.message : "";
+
+        setError(`${errorMessage} ${detailedMessage}`.trim() || "Failed to fetch data");
+        return;
       }
       const data = await response.json();
-      console.log("Fetched Response:", data); // Log the full response
+      console.log("Fetched Response:", data);
 
-      // Check if the response is in the expected format
+      // Handle successful response
       if (data.status === "success" && Array.isArray(data.data)) {
-        setTransactions(data.data); // Set transactions from the 'data' array
+        setTransactions(data.data); // Store the array of transactions
       } else {
         setError("No transactions found");
       }
     } catch (err) {
-      setError(err.message); // Handle error if fetch fails
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchTransactions(); // Fetch transactions when the component mounts
   }, []);

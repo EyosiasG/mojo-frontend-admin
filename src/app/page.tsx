@@ -37,6 +37,7 @@ export default function LoginPage() {
         localStorage.setItem("access_token", data.access_token);
         localStorage.setItem("user", JSON.stringify(data.user));
 
+        console.log("Access Token:", localStorage.getItem("access_token"));
         // Log the token to the console (for debugging)
         // console.log("Access Token:", data.access_token);
 

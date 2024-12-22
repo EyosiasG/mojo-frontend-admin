@@ -18,7 +18,7 @@ export default function LoginPage() {
 
     try {
       const response = await fetch(
-        "https://mojoapi.grandafricamarket.com/api/login",
+        "https://mojoapi.siltet.com/api/login",
         {
           method: "POST",
           headers: {

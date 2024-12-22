@@ -28,8 +28,9 @@ const Page = () => {
   const [customers, setCustomers] = useState<string[]>([]);
   const [filteredCustomers, setFilteredCustomers] = useState<string[]>([]);
   const [users, setUsers] = useState<string[]>([]);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const exchangeRate = 122.5; // 1 USD = 122.5 ETB for this example
+  const exchangeRate = 122.85; // 1 USD = 122.5 ETB for this example
 
   const calculateETB = (usd: string): number => {
     const numAmount = parseFloat(usd) || 0;
@@ -49,6 +50,7 @@ const Page = () => {
         const data = await response.json();
         if (isMounted) {
           setBanks(data.banks);
+          console.log("Fetched Banks:", data.banks);
         }
       } catch (error) {
         console.error("Error:", error);
@@ -86,6 +88,8 @@ const Page = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validate account number
+   
     const requestData = {
       currency_id: 1,
       amount: amount,
@@ -99,7 +103,8 @@ const Page = () => {
     console.log("Request Data:", requestData);
 
     try {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem("access_token");
+      console.log("Auth Token:", token);
       if (!token) {
         alert("No authentication token found.");
         return;
@@ -107,11 +112,11 @@ const Page = () => {
     
       const response = await fetch("https://mojoapi.siltet.com/api/transfers", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(requestData),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+        },
       });
     
       if (!response.ok) {
@@ -123,6 +128,7 @@ const Page = () => {
     
       const data = await response.json();
       console.log("Transfer successful", data);
+      setSuccessMessage("Transaction successfully added!");
     } catch (error) {
       console.error("Error:", error);
       alert("An error occurred while making the request.");
@@ -163,8 +169,20 @@ const Page = () => {
     "Charlie Davis",
   ];
 
+  const closePopup = () => {
+    setSuccessMessage(null);
+  };
+
   return (
     <div className="min-h-screen bg-white">
+      {successMessage && (
+        <div className="fixed top-0 left-0 right-0 z-50 flex justify-center">
+          <div className="bg-green-500 text-white p-4 rounded shadow-md">
+            {successMessage}
+            <button onClick={closePopup} className="ml-4 text-black">Close</button>
+          </div>
+        </div>
+      )}
       <div className="max-w-5xl mx-30 p-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">

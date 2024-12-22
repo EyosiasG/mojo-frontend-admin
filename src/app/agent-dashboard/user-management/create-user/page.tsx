@@ -8,7 +8,6 @@ import { ArrowLeft, Upload } from "lucide-react";
 import Image from "next/image";
 import NotificationProfile from "@/components/NotificationProfile";
 import BackLink from "@/components/BackLink";
-import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
 
 const AddUserPage = () => {
   const [userData, setUserData] = useState({
@@ -33,169 +32,54 @@ const AddUserPage = () => {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setUserData((prevState) => ({
-        ...prevState,
-        idImage: file,
-      }));
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64String = reader.result.split(",")[1]; // Extract base64 data
+        setUserData((prevState) => ({
+          ...prevState,
+          idImage: base64String, // Store base64 string
+        }));
+      };
+      reader.readAsDataURL(file);
       setImagePreview(URL.createObjectURL(file));
     }
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   // const userToken = localStorage.getItem("userToken"); // Log the token to check
-  //   // console.log("User token:", userToken); // Check if the token is available
-
-  //   const requestData = {
-  //     first_name: userData.firstName,
-  //     last_name: userData.lastName,
-  //     email: userData.email,
-  //     phone: userData.phone,
-  //     idImage: userData.idImage ? userData.idImage.name : null,
-  //   };
-
-  //   try {
-  //     const response = await fetchWithAuth(`https://mojoapi.siltet.com/api/users/`, {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(requestData),
-  //     });
-
-  //     if (!response.ok) throw new Error(`Error: ${response.statusText}`);
-
-  //     const data = await response.json();
-  //     console.log("User added:", data);
-  //   } catch (err) {
-  //     console.error("Failed to add user data:", err);
-  //     setError("Failed to add user");
-  //   }
-  // };
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   // Initialize FormData for multipart/form-data requests
-  //   const formBody = new FormData();
-
-  //   // Add text data
-  //   formBody.append("first_name", userData.firstName);
-  //   formBody.append("last_name", userData.lastName);
-  //   formBody.append("email", userData.email);
-  //   formBody.append("phone", userData.phone);
-  //   formBody.append("password", "12345678");
-
-  //   // Add the image file if provided
-  //   if (userData.idImage) {
-  //     formBody.append("id_image", userData.idImage); // Add file directly
-  //   }
-
-  //   try {
-  //     console.log("Submitting user data...");
-  //     const response = await fetchWithAuth(
-  //       `https://mojoapi.grandafricamarket.com/api/users/store`,
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           // Accept: "application/json", // Optional, matches Postman behavior
-  //           "Content-Type": "multipart/form-data", // Optional, matches Postman behavior
-  //         },
-  //         body: formBody,
-  //       }
-  //     );
-
-  //     if (!response.ok) {
-  //       const errorDetails = await response.text(); // Log backend error message
-  //       console.error(`Error ${response.status}:`, errorDetails);
-  //       throw new Error(`Error ${response.statusText}`);
-  //     }
-
-  //     const data = await response.json();
-  //     console.log("User added:", data);
-  //   } catch (err) {
-  //     console.error("Failed to add user data:", err);
-  //     setError("Failed to add user");
-  //   }
-  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Initialize form data for URL-encoded requests
-    const formBody = new URLSearchParams();
-    // const formBody = new FormData();
+    // Create a JSON object for the request body using userData
+    const requestBody = {
+        first_name: userData.firstName, // Use actual first name
+        last_name: userData.lastName,     // Use actual last name
+        email: userData.email,             // Use actual email
+        phone: userData.phone,             // Use actual phone number
+        password: "12345678",              // Dummy password
+        id_image: userData.idImage,        // Include the base64 image string
+    };
 
-    // Add text data
-    formBody.append("first_name", userData.firstName);
-    formBody.append("last_name", userData.lastName);
-    formBody.append("email", userData.email);
-    formBody.append("phone", userData.phone);
-    formBody.append("password", "12345678");
+    console.log("Request Body:", JSON.stringify(requestBody)); // Log the request data
 
-    // File handling for x-www-form-urlencoded
-    if (userData.idImage) {
-      try {
-        const base64Image = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            if (reader.result) {
-              const base64Content = (reader.result as string).split(",")[1]; // Extract base64 content
-              resolve(base64Content);
-            } else {
-              reject(new Error("Failed to read image as Base64."));
-            }
-          };
-          reader.onerror = () => reject(new Error("Failed to process image."));
-          reader.readAsDataURL(userData.idImage); // Read file as base64
+    try {
+        const accessToken = localStorage.getItem("access_token");
+        console.log("Access Token:", accessToken); // Log the access token
+        const response = await fetch("https://mojoapi.siltet.com/api/users/store", {
+            method: "POST",
+            body: JSON.stringify(requestBody), // Use JSON.stringify for the request body
+            headers: {
+                "Content-Type": "application/json", // Change content type to application/json
+                "Authorization": `Bearer ${accessToken}`,
+            },
         });
 
-        // Add Base64 image to the form body
-        formBody.append("id_image", base64Image);
+        if (!response.ok) {
+            throw new Error("Network response was not ok");
+        }
 
-        // Submit the form with the image
-        const response = await fetchWithAuth(
-          `https://mojoapi.grandafricamarket.com/api/users/store`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-              // "Content-Type": "multipart/form-data",
-            },
-            body: formBody.toString(),
-          }
-        );
-
-        if (!response.ok) throw new Error(`Error: ${response.statusText}`);
-
-        const data = await response.json();
-        console.log("User added with picture:", data);
-      } catch (err) {
-        console.error("Failed to add user data with image:", err);
-        setError("Failed to add user with image");
-      }
-    } else {
-      // No file: Submit without the image
-      try {
-        const response = await fetchWithAuth(
-          `https://mojoapi.grandafricamarket.com/api/users/store`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: formBody.toString(),
-          }
-        );
-
-        if (!response.ok) throw new Error(`Error: ${response.statusText}`);
-
-        const data = await response.json();
-        console.log("User added:", data);
-      } catch (err) {
-        console.error("Failed to add user data:", err);
-        setError("Failed to add user");
-      }
+        console.log("User added successfully.");
+    } catch (err) {
+        console.error("Failed to add user:", err.message);
+        setError("Failed to add user. Please check your input and try again.");
     }
   };
 
@@ -240,10 +124,7 @@ const AddUserPage = () => {
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label
-                    htmlFor="firstName"
-                    className="block text-sm font-medium mb-2"
-                  >
+                  <label htmlFor="firstName" className="block text-sm font-medium mb-2">
                     First Name
                   </label>
                   <Input
@@ -254,10 +135,7 @@ const AddUserPage = () => {
                   />
                 </div>
                 <div>
-                  <label
-                    htmlFor="lastName"
-                    className="block text-sm font-medium mb-2"
-                  >
+                  <label htmlFor="lastName" className="block text-sm font-medium mb-2">
                     Last Name
                   </label>
                   <Input
@@ -268,10 +146,7 @@ const AddUserPage = () => {
                   />
                 </div>
                 <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium mb-2"
-                  >
+                  <label htmlFor="email" className="block text-sm font-medium mb-2">
                     Email
                   </label>
                   <Input
@@ -283,10 +158,7 @@ const AddUserPage = () => {
                   />
                 </div>
                 <div>
-                  <label
-                    htmlFor="phone"
-                    className="block text-sm font-medium mb-2"
-                  >
+                  <label htmlFor="phone" className="block text-sm font-medium mb-2">
                     Phone No.
                   </label>
                   <Input
@@ -300,9 +172,7 @@ const AddUserPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Upload ID
-                </label>
+                <label className="block text-sm font-medium mb-2">Upload ID</label>
                 <div className="border-2 border-dashed rounded-lg p-8 text-center relative">
                   <div className="mb-4">
                     <Image

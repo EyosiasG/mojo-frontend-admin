@@ -8,8 +8,9 @@ import { ArrowLeft, Upload } from "lucide-react";
 import Image from "next/image";
 import NotificationProfile from "@/components/NotificationProfile";
 import BackLink from "@/components/BackLink";
-
+import { useRouter } from 'next/navigation';
 const AddUserPage = () => {
+  const router = useRouter();
   const [userData, setUserData] = useState({
     firstName: "",
     lastName: "",
@@ -78,6 +79,7 @@ const AddUserPage = () => {
 
         console.log("User added successfully.");
         alert("User added successfully!"); // Alert box for successful addition
+        router.push("/agent-dashboard/user-management"); // Redirect to user management page
     } catch (err) {
         console.error("Failed to add user:", err.message);
         setError("Failed to add user. Please check your input and try again.");

@@ -55,15 +55,18 @@ export default function UserManagementPage() {
         throw new Error(errorData.message || `Server error: ${response.status} ${response.statusText}`);
       }
 
-        const data = await response.json();
-        if (!data.users) {
-          console.warn('No users data in response:', data);
-          throw new Error('Invalid response format from server');
-        }
-        setUsers(data.users);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
-        setError(errorMessage);
+      const data = await response.json();
+      if (!data.users) {
+        console.warn('No users data in response:', data);
+        throw new Error('Invalid response format from server');
+      }
+
+      // Sort users by registration date (created_at) in ascending order
+      const sortedUsers = data.users.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      setUsers(sortedUsers); // Set the sorted users
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+      setError(errorMessage);
 
       console.error('Detailed error information:', {
         error: err,

@@ -16,7 +16,7 @@ import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
 async function fetchTotalTransactions() {
   try {
     const response = await fetchWithAuth("https://mojoapi.grandafricamarket.com/api/transactions");
-    
+
     // Check if the response is OK
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -37,19 +37,19 @@ async function fetchTotalTransactions() {
     // Initialize total amount and monthly totals
     let totalAmount = 0;
     const monthlyTotals: { [key: string]: number } = {};
-    
+
     data.data.forEach(transaction => {
       const transactionDate = new Date(transaction.created_at);
       if (transactionDate >= sixMonthsAgo && transactionDate <= currentDate) {
         const monthKey = transactionDate.toLocaleString('default', { month: 'long', year: 'numeric' });
         const amount = Number(transaction.amount);
-        
+
         // Update total amount
         totalAmount += amount;
 
         // Update monthly totals
         monthlyTotals[monthKey] = (monthlyTotals[monthKey] || 0) + amount;
-        
+
       }
     });
 
@@ -103,17 +103,19 @@ export default function DashboardPage() {
       </div>
 
       <div className="p-6">
-        <div className="grid gap-6">
-          
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
           {/* Charts Section */}
-          <div className="px-32">
+          <div className="col-span-1">
             <BarGraph />
-          
+          </div>
+          <div className="col-span-1">
+            <ProjectedBarGraph />
           </div>
 
           {/* Calendar and Stats Section */}
           <div className="grid gap-6 lg:grid-cols-2">
-          <div className="flex gap-6 justify-center">
+            <div className="flex gap-6 justify-center">
               <Card className="p-6 flex-1 justify-center flex ">
                 <Calendar mode="single" selected={new Date()} className="" />
               </Card>

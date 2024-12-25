@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import BackLink from "@/components/BackLink";
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Interface for Rate Data
 interface Rate {
@@ -39,9 +41,11 @@ export default function ViewRate() {
           setRate(data.data); // Assuming the data is in a "data" object
         } else {
           setError("Rate not found.");
+          toast.error("Rate not found");
         }
       } catch (err: any) {
         setError(err.message || "Failed to fetch exchange rate");
+        toast.error(err.message || "Failed to fetch exchange rate");
       } finally {
         setLoading(false);
       }
@@ -56,46 +60,42 @@ export default function ViewRate() {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
+      <ToastContainer />
       <div className="mb-8">
-        <BackLink href="/exchange-rates">
+        <BackLink href="/exchange-rates" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="w-4 h-4" />
-          <span>View Rate · {rate?.id}</span>
+          <span className="font-medium">Back to Exchange Rates</span>
         </BackLink>
       </div>
 
       <div className="space-y-8">
-        <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
-            View Rate Information
+        <section className="bg-white rounded-lg shadow-sm border p-6">
+          <h2 className="text-xl font-semibold mb-6">
+            Rate Details
           </h2>
 
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-muted-foreground">
                 Rate ID
               </h3>
-              <p className="text-base">{rate?.id}</p>
+              <p className="text-base font-medium">{rate?.id}</p>
             </div>
 
-            {/* <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                Currency Name
-              </h3>
-              <p className="text-base">{rate?.name}</p>
-            </div> */}
-
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-1">
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-muted-foreground">
                 Exchange Rate
               </h3>
-              <p className="text-base">{rate?.rate} {rate?.sign}</p>
+              <p className="text-2xl font-semibold text-primary">
+                {rate?.rate} {rate?.sign}
+              </p>
             </div>
 
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-1">
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-muted-foreground">
                 Effective Date
               </h3>
-              <p className="text-base">
+              <p className="text-base font-medium">
                 {new Intl.DateTimeFormat("en-US", {
                   month: "long",
                   day: "numeric",
@@ -104,13 +104,17 @@ export default function ViewRate() {
               </p>
             </div>
 
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-1">
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-muted-foreground">
                 Status
               </h3>
-              <p className={`text-base ${rate?.status === "active" ? "text-green-600" : "text-yellow-600"}`}>
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                ${rate?.status === "active" 
+                  ? "bg-green-100 text-green-800" 
+                  : "bg-yellow-100 text-yellow-800"
+                }`}>
                 {rate?.status === "active" ? "Active" : "Inactive"}
-              </p>
+              </span>
             </div>
           </div>
         </section>

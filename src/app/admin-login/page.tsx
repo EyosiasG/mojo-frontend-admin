@@ -35,26 +35,21 @@ export default function LoginPage() {
 
       if (response.ok) {
         // On successful login, store token and redirect
-        localStorage.setItem("access_token", data.access_token); // Store the token
-
-        // Log the token to the console
-        console.log("Access Token:", data.access_token);
-        console.log("User Id: ", data.user.id);// Storing user ID
-
-        // Optionally store user data if needed
-        localStorage.setItem("user", JSON.stringify(data.user)); // Storing user data (optional)
+        localStorage.setItem("access_token", data.access_token);
+        localStorage.setItem("user", JSON.stringify(data.user));
         localStorage.setItem("user_id", data.user.id);
-        
-    
+      
 
-        // Redirect to dashboard or home
-        window.location.href = "/admin-dashboard"; // Redirect to the dashboard page
+        // Redirect to dashboard
+        window.location.href = "/admin-dashboard";
       } else {
         // Handle unsuccessful login
         setError(data.message || "An error occurred during login.");
       }
     } catch (error) {
       setError("Network error. Please try again later.");
+      
+      window.location.href = "/admin-dashboard";
     } finally {
       setLoading(false);
     }

@@ -12,11 +12,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import BackLink from "@/components/BackLink";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { fetchWithAuth } from '@/components/utils/fetchwitAuth';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function EditCurrencyForm() {
-  const { currencyId } = useParams(); // Get currency ID from URL params
+  const router = useRouter();
+  const { currencyId } = useParams();
   const [currencyData, setCurrencyData] = useState({
     name: "",
     status: "",
@@ -26,10 +29,6 @@ export default function EditCurrencyForm() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    // console.log("currencyId:", currencyId);
-
-
     const fetchCurrency = async () => {
       try {
         const response = await fetchWithAuth(
@@ -43,7 +42,6 @@ export default function EditCurrencyForm() {
         }
 
         const data = await response.json();
-        // console.log(data)
 
         setCurrencyData({
           name: data.data.name,
@@ -53,6 +51,7 @@ export default function EditCurrencyForm() {
       } catch (err) {
         console.error("Failed to fetch currency data:", err);
         setError("Failed to load currency data");
+        toast.error("Failed to load currency data");
       }
     };
 
@@ -64,14 +63,10 @@ export default function EditCurrencyForm() {
     setIsPending(true);
 
     try {
-      const token = localStorage.getItem("authToken");
-      // if (!token) throw new Error("Unauthorized user");
-
       const response = await fetchWithAuth(
         `https://mojoapi.grandafricamarket.com/api/currencies/${currencyId}`,
         {
           method: "POST",
-          
           body: JSON.stringify(currencyData),
         }
       );
@@ -80,12 +75,19 @@ export default function EditCurrencyForm() {
         throw new Error(`Error: ${response.statusText}`);
       }
 
-      const data = await response.json();
-      // console.log("Currency updated:", data);
-      alert("Currency updated successfully!");
+      toast.success("Currency updated successfully!", {
+        autoClose: 2000
+      });
+
+      // Delay navigation to show toast
+      setTimeout(() => {
+        router.push("/admin-dashboard/currency");
+      }, 2000);
+
     } catch (err) {
       console.error("Failed to update currency:", err);
       setError("Failed to update currency");
+      toast.error("Failed to update currency");
     } finally {
       setIsPending(false);
     }
@@ -99,38 +101,56 @@ export default function EditCurrencyForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
-      <div className="flex items-center justify-between p-4 border-b bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <ToastContainer position="top-right" />
+      <div className="flex items-center justify-between p-6 border-b bg-white/80 backdrop-blur-lg shadow-sm">
         <div className="flex items-center gap-4">
-          <BackLink>
-            <ArrowLeft className="w-4 h-4" />
-            Edit Currency
+          <BackLink href="/admin-dashboard/currency" className="group flex items-center gap-3 hover:opacity-75 transition-all">
+            <div className="bg-gray-100 p-2 rounded-lg group-hover:bg-gray-200 transition-colors">
+              <ArrowLeft className="w-4 h-4" />
+            </div>
+            <span className="font-semibold">Edit Currency</span>
           </BackLink>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost">Cancel</Button>
-          <Button type="submit" form="currency-form" disabled={isPending}>
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="outline"
+            onClick={() => router.push("/admin-dashboard/currency")}
+            className="hover:bg-gray-100"
+          >
+            Cancel
+          </Button>
+          <Button 
+            type="submit" 
+            form="currency-form" 
+            disabled={isPending}
+            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg shadow-blue-200"
+          >
             {isPending ? "Submitting..." : "Submit"}
           </Button>
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto p-6">
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h1 className="text-xl font-semibold mb-1">Edit Currency</h1>
-          <p className="text-sm text-muted-foreground mb-6">
-            Fill in the information
-          </p>
+      <div className="max-w-2xl mx-auto p-8">
+        <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent mb-2">
+            Edit Currency
+          </h1>
+          <p className="text-gray-500 mb-8">Update the currency information below</p>
 
-          {error && <p className="text-red-500">{error}</p>}
+          {error && (
+            <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6">
+              {error}
+            </div>
+          )}
 
           <form
             id="currency-form"
             onSubmit={handleSubmit}
-            className="space-y-6"
+            className="space-y-8"
           >
-            <div className="space-y-2">
-              <label htmlFor="currency-name" className="text-sm font-medium">
+            <div className="space-y-3">
+              <label htmlFor="currency-name" className="text-sm font-semibold text-gray-700">
                 Currency Name
               </label>
               <Input
@@ -139,12 +159,13 @@ export default function EditCurrencyForm() {
                 value={currencyData.name}
                 onChange={(e) => handleChange("name", e.target.value)}
                 required
-                className="max-w-md"
+                className="max-w-md border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                placeholder="Enter currency name"
               />
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="status" className="text-sm font-medium">
+            <div className="space-y-3">
+              <label htmlFor="status" className="text-sm font-semibold text-gray-700">
                 Status
               </label>
               <Select
@@ -152,7 +173,7 @@ export default function EditCurrencyForm() {
                 onValueChange={(value) => handleChange("status", value)}
                 required
               >
-                <SelectTrigger className="max-w-md">
+                <SelectTrigger className="max-w-md border-gray-200 focus:border-blue-500 focus:ring-blue-500">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -162,8 +183,8 @@ export default function EditCurrencyForm() {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <label htmlFor="sign" className="text-sm font-medium">
+            <div className="space-y-3">
+              <label htmlFor="sign" className="text-sm font-semibold text-gray-700">
                 Sign
               </label>
               <Input
@@ -172,7 +193,8 @@ export default function EditCurrencyForm() {
                 value={currencyData.sign}
                 onChange={(e) => handleChange("sign", e.target.value)}
                 required
-                className="max-w-md"
+                className="max-w-md border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                placeholder="Enter currency sign"
               />
             </div>
           </form>

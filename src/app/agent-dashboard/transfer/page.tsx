@@ -175,7 +175,7 @@ export default function TransferPage() {
           </div>
           
           <div className="flex items-center gap-2">
-            <Button variant="outline" className="gap-2" onClick={handleSearch}> // New search button handler
+            <Button variant="outline" className="gap-2" onClick={handleSearch}> 
               <Search className="h-4 w-4" />
               Search
             </Button>

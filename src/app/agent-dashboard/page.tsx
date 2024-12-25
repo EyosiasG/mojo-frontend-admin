@@ -70,6 +70,7 @@ async function fetchTotalTransactions() {
 export default function DashboardPage() {
   const [totalTransactions, setTotalTransactions] = useState(0);
   const [monthlyData, setMonthlyData] = useState<{ month: string; total: number }[]>([]);
+  const [date, setDate] = useState<Date | null>(null);
 
   useEffect(() => {
     const getTotal = async () => {
@@ -79,6 +80,14 @@ export default function DashboardPage() {
     };
     getTotal();
   }, []);
+
+  const today = new Date(); // Replace with the desired date
+  const formattedDate = today.toLocaleDateString('en-US', {
+    weekday: 'long', // Full name of the day
+    year: 'numeric',
+    month: 'long', // Full name of the month
+    day: 'numeric',
+  });
 
   return (
     <>
@@ -103,35 +112,33 @@ export default function DashboardPage() {
       </div>
 
       <div className="p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          {formattedDate.toString()}
+        </div>
+        <div className="p-6">
+          <div className="grid gap-6">
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-1 gap-4 px-36">
+              <BarGraph />
 
-          {/* Charts Section */}
-          <div className="col-span-1">
-            <BarGraph />
-          </div>
-          <div className="col-span-1">
-            <ProjectedBarGraph />
-          </div>
-
-          {/* Calendar and Stats Section */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="flex gap-6 justify-center">
-              <Card className="p-6 flex-1 justify-center flex ">
-                <Calendar mode="single" selected={new Date()} className="" />
-              </Card>
             </div>
 
-            <Card className="p-6 ">
-              <div className="flex items-center justify-center h-full">
-                <div className="text-center">
-                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
-                    <Banknote className="h-6 w-6 text-primary" />
+            {/* Calendar and Stats Section */}
+            <div className="grid gap-6 lg:grid-cols-2">
+              <ProjectedBarGraph />
+
+              <Card className="p-6 ">
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center">
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
+                      <Banknote className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="text-2xl font-bold">{totalTransactions.toFixed(2)}</div>
+                    <div className="text-sm text-gray-500">Total Transaction</div>
                   </div>
-                  <div className="text-2xl font-bold">${totalTransactions.toFixed(2)}</div>
-                  <div className="text-sm text-gray-500">Total Transaction</div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            </div>
           </div>
         </div>
       </div>

@@ -1,117 +1,67 @@
+import React, { useEffect, useState } from "react";
 import { Card } from "../ui/card";
+import { fetchWithAuth } from "../utils/fetchwitAuth";
 
-interface MonthData {
-  month: string;
-  projected: number;
-  actual: number;
-}
+const ProjectedBarGraph = () => {
+  const [monthlyData, setMonthlyData] = useState<number[]>(Array(12).fill(0));
 
-// Function to get the last 6 months
-const getLastSixMonths = () => {
-  const months = [];
-  const date = new Date();
-  for (let i = 0; i < 6; i++) {
-    const month = new Date(date.getFullYear(), date.getMonth() - i, 1);
-    months.push(month.toLocaleString('default', { month: 'long' }));
-  }
-  return months.reverse();
-};
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const response = await fetchWithAuth("https://mojoapi.grandafricamarket.com/api/users");
+      const result = await response.json();
+      console.log("API Response:", result);
+      const users = result.users;
+      console.log("Users: ", users);
 
-// Assuming you have a users array from your API response
-const users = [
-  // ... your user data here ...
-];
+      const monthlyTotals = Array(12).fill(0);
+      users.forEach(user => {
+        if (user.created_at) {
+          const month = new Date(user.created_at).getMonth();
+          console.log("Month: ", month);
+          monthlyTotals[month] += 1;
+        }
+      });
 
-const lastSixMonths = getLastSixMonths();
-const data: MonthData[] = lastSixMonths.map((month) => {
-  const projected = 0; // Set your projected value if needed
-  const monthIndex = new Date(month).getMonth(); // Get the month index
-  const year = new Date(month).getFullYear(); // Get the year
+      console.log("Monthly Totals:", monthlyTotals);
+      setMonthlyData(monthlyTotals);
+    };
 
-  const actualUsers = users.filter(user => {
-    const userDate = new Date(user.created_at);
-    const userMonth = userDate.getUTCMonth(); // Use UTC month
-    const userYear = userDate.getUTCFullYear(); // Use UTC year
-
-    // Log the comparison for debugging
-    console.log(`Comparing: User Month: ${userMonth}, User Year: ${userYear} with Month: ${monthIndex}, Year: ${year}`);
-
-    return userMonth === monthIndex && userYear === year;
-  });
-
-  // Log the users for the current month
-  console.log(`Users for ${month}:`, actualUsers);
-
-  const actual = actualUsers.length;
-
-  return { month, projected, actual };
-});
-
-export default function NewUsersChart() {
-  const maxValue = Math.max(
-    ...data.map((d) => Math.max(d.projected, d.actual))
-  );
-  const gridLines = Array.from({ length: 6 }, (_, i) =>
-    Math.round((maxValue / 5) * i)
-  );
+    fetchUsers();
+  }, []);
 
   return (
-    <Card className="w-full p-6 bg-white rounded-lg shadow-sm">
-      <h2 className="text-lg font-semibold mb-4">New Users</h2>
-      <div className="relative h-[300px]">
-        {/* Grid lines */}
-        <div className="absolute inset-0 flex flex-col justify-between">
-          {gridLines.reverse().map((value, i) => (
-            <div key={i} className="flex items-center w-full">
-              <span className="text-xs text-gray-500 w-8">{value}</span>
-              <div className="flex-1 border-b border-gray-100" />
-            </div>
-          ))}
-        </div>
-
-        {/* Bars */}
-        <div className="absolute inset-0 pt-6 flex items-end justify-around">
-          {data.map((item, index) => (
-            <div key={index} className="h-full flex flex-col items-center w-16">
-              <div className="relative w-full h-full flex flex-col justify-end">
-                {/* Projected bar */}
-                <div
-                  className="w-full bg-blue-200 bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,#ffffff20_10px,#ffffff20_20px)] top-0"
-                  style={{
-                    height: `${(item.projected / maxValue) * 50}%`,
-                    maxHeight: "240px",
-                  }}
-                  role="graphics-symbol"
-                  aria-label={`Projected users for ${item.month}: ${item.projected}`}
-                />
-                {/* Actual bar */}
-                <div
-                  className="w-full bg-primary mt-1 mb-0"
-                  style={{
-                    height: `${(item.actual / maxValue) * 50}%`,
-                    maxHeight: "240px",
-                  }}
-                  role="graphics-symbol"
-                  aria-label={`Actual users for ${item.month}: ${item.actual}`}
-                />
-              </div>
-              <span className="mt-2 text-sm text-gray-500">{item.month}</span>
-            </div>
-          ))}
-        </div>
+    <Card className="p-4">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold">Users</h2>
       </div>
-
-      {/* Legend */}
-      <div className="flex justify-center gap-6 mt-6">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-blue-200 bg-[repeating-linear-gradient(45deg,transparent,transparent_2px,#ffffff40_2px,#ffffff40_4px)]" />
-          <span className="text-sm text-gray-600">Projected Users</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-primary" />
-          <span className="text-sm text-gray-600">Actual Users</span>
-        </div>
+      <div className="h-[300px] flex items-end gap-2">
+        {/* Placeholder for bar chart */}
+        {monthlyData.map((amount, i) => (
+          <div
+            key={i}
+            className="bg-primary/90 w-full rounded-t"
+            style={{
+              height: `${(amount / Math.max(...monthlyData)) * 100}%`,
+            }}
+          />
+        ))}
+      </div>
+      <div className="flex justify-between mt-2 text-sm text-gray-500">
+        <span>Jan</span>
+        <span>Feb</span>
+        <span>Mar</span>
+        <span>Apr</span>
+        <span>May</span>
+        <span>Jun</span>
+        <span>Jul</span>
+        <span>Aug</span>
+        <span>Sep</span>
+        <span>Oct</span>
+        <span>Nov</span>
+        <span>Dec</span>
       </div>
     </Card>
   );
-}
+};
+
+export default ProjectedBarGraph;

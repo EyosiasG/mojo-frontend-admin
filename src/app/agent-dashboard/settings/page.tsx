@@ -63,6 +63,8 @@ export default function SettingsPage() {
     };
     getUserData();
   }, []);
+
+  
   // Handle form input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -281,6 +283,7 @@ export default function SettingsPage() {
                   id="imageUpload"
                 />
                 <label htmlFor="imageUpload">
+                  <img src={userData.profile_photo_url} alt="Displayed" style={{ maxWidth: '100%', height: 'auto' }} />
                   <Button
                     size="icon"
                     variant="secondary"

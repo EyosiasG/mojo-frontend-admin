@@ -303,6 +303,7 @@ export default function SettingsPage() {
                       accept="image/*"
                     />
                   </Button>
+                  {/*/check*/}
             </div>
             <form onSubmit={handleProfileSubmit}>
               <div className="grid gap-4 md:grid-cols-2">
@@ -339,23 +340,13 @@ export default function SettingsPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+                <Label htmlFor="username">Phone Number</Label>
                 <Input
-                  id="username"
-                  name="username"
-                  value={formData.username}
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
                   onChange={handleChange}
-                  placeholder="Enter your username"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="timezone">Timezone</Label>
-                <Input
-                  id="timezone"
-                  name="timezone"
-                  value={formData.timezone}
-                  onChange={handleChange}
-                  placeholder="Select your timezone"
+                  placeholder="Enter your phone number"
                 />
               </div>
               <Button type="submit" disabled={isLoading}>

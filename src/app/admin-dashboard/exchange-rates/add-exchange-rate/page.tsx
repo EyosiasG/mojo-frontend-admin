@@ -17,155 +17,201 @@ import {
 } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format } from "date-fns";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import BackLink from "@/components/BackLink";
+import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-export default function AddCurrencyForm() {
+interface Currency {
+  id: string;
+  name: string;
+  sign: string;
+}
+
+export default function AddExchangeRate() {
+  const router = useRouter();
   const [date, setDate] = useState<Date>();
   const [isPending, setIsPending] = useState(false);
-  const [currency, setCurrency] = useState<string>("");
-  const [exchangeRate, setExchangeRate] = useState<string>("");
+  const [currency_id, setCurrency_id] = useState<string>("");
+  const [rate, setRate] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [currencies, setCurrencies] = useState<Currency[]>([]);
+
+  useEffect(() => {
+    const fetchCurrencies = async () => {
+      try {
+        const response = await fetchWithAuth(
+          "https://mojoapi.grandafricamarket.com/api/currencies"
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch currencies");
+        }
+        const data = await response.json();
+        setCurrencies(data.data || []);
+      } catch (err) {
+        console.error("Error fetching currencies:", err);
+        toast.error("Failed to load currencies");
+      }
+    };
+
+    fetchCurrencies();
+  }, []);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    // Retrieve the authentication token from localStorage
     const token = localStorage.getItem("access_token");
     if (!token) {
-      console.error("Authentication token not found.");
-      setErrorMessage("Authentication token not found.");
+      toast.error("Authentication token not found");
       return;
     }
 
-    // Prepare the form data to send
+    if (!date) {
+      toast.error("Please select an effective date");
+      return;
+    }
+
     const formData = {
-      currency: currency,
-      exchangeRate: exchangeRate,
-      effectiveDate: date ? format(date, "yyyy-MM-dd") : null, // Format the date if it is selected
+      currency_id,
+      rate,
+      effective_date: format(date, "yyyy-MM-dd"),
     };
 
     try {
-      setIsPending(true); // Start the pending state
+      setIsPending(true);
 
-      // Send the data to the API
-      const response = await fetch("https://mojoapi.grandafricamarket.com/api/rates", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetchWithAuth(
+        "https://mojoapi.grandafricamarket.com/api/rates",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       if (response.ok) {
-        const data = await response.json();
-        // Handle success: Reset form
-        setCurrency("");
-        setExchangeRate("");
-        setDate(undefined);
-        setErrorMessage(null); // Clear any previous error messages
+        toast.success("Exchange rate added successfully");
+        router.push("/admin-dashboard/exchange-rates");
       } else {
         if (response.status === 403) {
-          setErrorMessage("You do not have permission to perform this action.");
+          toast.error("You do not have permission to perform this action");
         } else {
           const errorData = await response.json();
-          setErrorMessage(errorData.message || "Unknown error");
+          toast.error(errorData.message || "Failed to add exchange rate");
         }
       }
     } catch (error) {
       console.error("Network error:", error);
-      setErrorMessage("Network error. Please try again.");
+      toast.error("Network error. Please try again");
     } finally {
-      setIsPending(false); // Reset the pending state
+      setIsPending(false);
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
-      <div className="flex items-center justify-between p-4 border-b bg-white">
+    <div className="min-h-screen bg-gray-50">
+      <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white/80 backdrop-blur-sm">
         <div className="flex items-center gap-4">
-          <BackLink>
+          <BackLink href="/admin-dashboard/exchange-rates" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="w-4 h-4" />
-            Add New Currency
+            <span className="font-medium">Back to Exchange Rates</span>
           </BackLink>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost">Cancel</Button>
+          <Button 
+            variant="outline"
+            onClick={() => router.push("/admin-dashboard/exchange-rates")}
+          >
+            Cancel
+          </Button>
           <Button
             type="submit"
-            form="currency-form"
-            className="bg-blue-600 hover:bg-blue-700"
+            form="exchange-rate-form"
+            className="bg-primary hover:bg-primary/90"
             disabled={isPending}
           >
-            {isPending ? "Submitting..." : "Submit"}
+            {isPending ? (
+              <>
+                <span className="animate-spin mr-2">⌛</span>
+                Submitting...
+              </>
+            ) : (
+              "Add Exchange Rate"
+            )}
           </Button>
         </div>
       </div>
 
       <div className="max-w-2xl mx-auto p-6">
-        <div className="bg-white rounded-lg p-6">
-          <h1 className="text-xl font-semibold mb-1">Add New Currency</h1>
-          <p className="text-sm text-muted-foreground mb-6">
-            Fill in the information
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <h1 className="text-2xl font-semibold mb-2">Add New Exchange Rate</h1>
+          <p className="text-sm text-muted-foreground mb-8">
+            Set up a new exchange rate for a currency
           </p>
 
           {errorMessage && (
-            <div className="text-red-600 text-sm mb-4">{errorMessage}</div>
+            <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6">
+              {errorMessage}
+            </div>
           )}
 
           <form
-            id="currency-form"
+            id="exchange-rate-form"
             onSubmit={handleSubmit}
-            className="space-y-6"
+            className="space-y-8"
           >
-            <div className="space-y-2">
+            <div className="space-y-3">
               <label
-                htmlFor="currency"
-                className="text-sm text-muted-foreground"
+                htmlFor="currency_id"
+                className="text-sm font-medium text-foreground"
               >
                 Currency
               </label>
-              <Select
-                name="currency"
+              <select
+                name="currency_id"
                 required
-                value={currency}
-                onValueChange={(value) => setCurrency(value)}
+                value={currency_id}
+                onChange={(e) => setCurrency_id(e.target.value)}
+                className="block w-full h-12 border rounded p-2"
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select currency" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="usd">USD - US Dollar</SelectItem>
-                  <SelectItem value="eur">EUR - Euro</SelectItem>
-                  <SelectItem value="gbp">GBP - British Pound</SelectItem>
-                  <SelectItem value="jpy">JPY - Japanese Yen</SelectItem>
-                </SelectContent>
-              </Select>
+                <option value="">Select a currency</option>
+                {currencies.map((curr) => (
+                  <option key={curr.id} value={curr.id}>
+                    {curr.name} ({curr.sign})
+                  </option>
+                ))}
+              </select>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               <label
-                htmlFor="exchange-rate"
-                className="text-sm text-muted-foreground"
+                htmlFor="rate"
+                className="text-sm font-medium text-foreground"
               >
                 Exchange Rate
               </label>
               <Input
-                id="exchange-rate"
-                name="exchangeRate"
+                id="rate"
+                name="rate"
                 type="number"
                 step="0.0001"
                 required
-                value={exchangeRate}
-                onChange={(e) => setExchangeRate(e.target.value)}
+                value={rate}
+                onChange={(e) => setRate(e.target.value)}
+                className="h-12"
+                placeholder="Enter exchange rate"
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-3">
               <label
                 htmlFor="effective-date"
-                className="text-sm text-muted-foreground"
+                className="text-sm font-medium text-foreground"
               >
                 Effective Date
               </label>
@@ -174,11 +220,11 @@ export default function AddCurrencyForm() {
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full text-left font-normal",
+                      "w-full h-12 justify-start font-normal",
                       !date && "text-muted-foreground"
                     )}
                   >
-                    {date ? format(date, "yyyy-MM-dd") : "Select date"}
+                    {date ? format(date, "MMMM d, yyyy") : "Select effective date"}
                     <Calendar className="ml-auto h-4 w-4 opacity-50" />
                   </Button>
                 </PopoverTrigger>
@@ -186,10 +232,9 @@ export default function AddCurrencyForm() {
                   <CalendarComponent
                     mode="single"
                     selected={date}
-                    onSelect={(selectedDate) => {
-                      setDate(selectedDate);
-                    }}
+                    onSelect={setDate}
                     initialFocus
+                    disabled={(date) => date < new Date()}
                   />
                 </PopoverContent>
               </Popover>

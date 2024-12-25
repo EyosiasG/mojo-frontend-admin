@@ -7,12 +7,7 @@ import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
 import { useParams } from "next/navigation";
 
 export default function ViewCurrency() {
-  // Fetch currencyId dynamically from URL params
-  // const params = useParams();
   const { currencyId } = useParams();
-  // const currencyId = "1";  // Hardcoded value for testing
-
-  // console.log("Currency ID from route:", currencyId);
 
   const [currencyData, setCurrencyData] = useState({
     name: "",
@@ -22,21 +17,15 @@ export default function ViewCurrency() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch currency details
   useEffect(() => {
     const fetchCurrency = async () => {
       try {
-        
-        // console.log("Fetching currency data...");
         const response = await fetchWithAuth(
           `https://mojoapi.grandafricamarket.com/api/currencies/${currencyId}`,
           { method: "GET" }
         );
   
-        // console.log("Response status:", response.status);
-  
         const data = await response.json();
-        // console.log("Fetched data:", data);
   
         if (data.status === "success") {
           setCurrencyData({
@@ -51,70 +40,80 @@ export default function ViewCurrency() {
         console.error("Error fetching currency:", err);
         setError("Failed to fetch currency details.");
       } finally {
-        setLoading(false); // Ensure loading is set to false
+        setLoading(false);
       }
     };
   
     fetchCurrency();
   }, [currencyId]);
-  
-
-  // if (loading) {
-  //   return <p className="text-center">Loading...</p>;
-    
-  // }
 
   if (error) {
-    return <p className="text-center text-red-500">{error}</p>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-red-500 font-medium bg-red-50 px-6 py-4 rounded-lg shadow-sm">
+          {error}
+        </p>
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <header className="flex items-center justify-between border-b p-4">
-        <div className="flex items-center gap-4">
-          <BackLink href="/admin-dashboard/currency">
-            <ArrowLeft className="h-4 w-4" />
-            <h1 className="text-lg font-semibold">View Currency</h1>
-          </BackLink>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8">
+      <div className="max-w-6xl mx-auto">
+        <header className="backdrop-blur-lg bg-white/70 rounded-2xl shadow-lg p-6 mb-8">
+          <div className="flex items-center gap-4">
+            <BackLink href="/admin-dashboard/currency" className="group flex items-center gap-3 hover:opacity-75 transition-all">
+              <div className="bg-gray-100 p-2 rounded-lg group-hover:bg-gray-200 transition-colors">
+                <ArrowLeft className="h-5 w-5" />
+              </div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                View Currency
+              </h1>
+            </BackLink>
+          </div>
+        </header>
 
-      <div className="space-y-8">
-        <section className="space-y-4">
-          <h2 className="text-sm font-medium text-muted-foreground">
-            View Information
-          </h2>
+        <div className="backdrop-blur-lg bg-white/70 rounded-2xl shadow-lg p-8">
+          <section>
+            <h2 className="text-xl font-bold mb-8 pb-4 border-b border-gray-200 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+              Currency Information
+            </h2>
 
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                Currency Name
-              </h3>
-              <p className="text-base">{currencyData.name}</p>
-            </div>
+            <div className="grid gap-8 md:grid-cols-2">
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                <h3 className="text-sm font-semibold text-gray-500 mb-3">
+                  Currency Name
+                </h3>
+                <p className="text-2xl font-bold text-gray-900">{currencyData.name || "—"}</p>
+              </div>
 
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                Sign
-              </h3>
-              <p className="text-base">{currencyData.sign}</p>
-            </div>
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                <h3 className="text-sm font-semibold text-gray-500 mb-3">
+                  Sign
+                </h3>
+                <p className="text-2xl font-bold text-gray-900">{currencyData.sign || "—"}</p>
+              </div>
 
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                Status
-              </h3>
-              <div className="flex items-center gap-2">
-                <div
-                  className={`w-2 h-2 rounded-full ${
-                    currencyData.status === "Active" ? "bg-green-500" : "bg-red-500"
-                  }`}
-                ></div>
-                <span>{currencyData.status}</span>
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                <h3 className="text-sm font-semibold text-gray-500 mb-3">
+                  Status
+                </h3>
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-4 h-4 rounded-full ${
+                      currencyData.status === "Active"
+                        ? "bg-gradient-to-r from-green-400 to-green-500 shadow-lg shadow-green-200"
+                        : "bg-gradient-to-r from-red-400 to-red-500 shadow-lg shadow-red-200"
+                    }`}
+                  ></div>
+                  <span className="text-2xl font-bold text-gray-900">
+                    {currencyData.status || "—"}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
       </div>
     </div>
   );

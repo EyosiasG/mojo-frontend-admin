@@ -22,6 +22,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import NotificationProfile from "@/components/NotificationProfile";
 import { fetchWithAuth } from "../../../components/utils/fetchwitAuth";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+interface CurrencyEntry {
+  id: string;
+  name: string;
+  sign: string;
+  status: string;
+  created_at: string;
+}
 
 export default function Page() {
   const [rates, setRates] = useState<CurrencyEntry[]>([]);
@@ -33,7 +43,13 @@ export default function Page() {
     const fetchRates = async () => {
       try {
         const response = await fetchWithAuth(
-          "https://mojoapi.grandafricamarket.com/api/currencies/"
+          "https://mojoapi.grandafricamarket.com/api/rates",
+          {
+            headers: {
+              "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+              "Content-Type": "application/json"
+            }
+          }
         );
         const data = await response.json();
         console.log(data);
@@ -43,15 +59,21 @@ export default function Page() {
           throw new Error("Response is not in JSON format");
         }
 
-        // Proceed with parsing the response as JSON
+        // Handle case when no rates are found
+        if (data.status === "failed" && data.message === "No Exchange rate found!") {
+          setRates([]);
+          return;
+        }
 
         if (data.status === "success") {
           setRates(data.data);
         } else {
           setError("Failed to load exchange rates.");
+          toast.error("Failed to load exchange rates");
         }
       } catch (err) {
         setError("Failed to load exchange rates.");
+        toast.error("Failed to load exchange rates");
         console.error(err);
       } finally {
         setLoading(false);
@@ -68,19 +90,25 @@ export default function Page() {
     if (!isConfirmed) return;
 
     try {
-      const response = await fetchWithAuth(
+      const response = await fetch(
         `https://mojoapi.grandafricamarket.com/api/rates/${id}`,
         {
           method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+            "Content-Type": "application/json"
+          }
         }
       );
       if (response.ok) {
         setRates(rates.filter((rate) => rate.id !== id));
+        toast.success("Exchange rate deleted successfully");
       } else {
-        alert("Failed to delete the exchange rate");
+        toast.error("Failed to delete the exchange rate");
       }
     } catch (error) {
       console.error("Failed to delete:", error);
+      toast.error("Failed to delete exchange rate");
     }
   };
 
@@ -89,6 +117,7 @@ export default function Page() {
 
   return (
     <div className="p-6 mx-auto">
+      <ToastContainer position="top-right" autoClose={3000} />
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold text-primary">
           Currency Exchange Rates
@@ -139,66 +168,74 @@ export default function Page() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rates.map((rate) => (
-              <TableRow key={rate.id}>
-                <TableCell>
-                  <Checkbox />
-                </TableCell>
-                <TableCell>{rate.id}</TableCell>
-                <TableCell>{rate.name}</TableCell>
-                <TableCell>
-                  {new Intl.DateTimeFormat("en-US", {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  }).format(new Date(rate.created_at))}
-                </TableCell>
-
-                <TableCell>{rate.sign}</TableCell>
-                <TableCell>
-                  <span
-                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                      rate.status === "active"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {rate.status === "active" ? "Active" : "Inactive"}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
-                        <Link
-                          href={`./exchange-rates/view-exchange-rate/${rate.id}`}
-                        >
-                          View
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Link
-                          href={`./exchange-rates/edit-exchange-rate/${rate.id}`}
-                        >
-                          Edit
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-destructive"
-                        onClick={() => handleDelete(rate.id)}
-                      >
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+            {rates.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-4">
+                  No exchange rates found
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              rates.map((rate) => (
+                <TableRow key={rate.id}>
+                  <TableCell>
+                    <Checkbox />
+                  </TableCell>
+                  <TableCell>{rate.id}</TableCell>
+                  <TableCell>{rate.name}</TableCell>
+                  <TableCell>
+                    {new Intl.DateTimeFormat("en-US", {
+                      month: "long",
+                      day: "numeric",
+                      year: "numeric",
+                    }).format(new Date(rate.created_at))}
+                  </TableCell>
+
+                  <TableCell>{rate.sign}</TableCell>
+                  <TableCell>
+                    <span
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        rate.status === "active"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-yellow-100 text-yellow-700"
+                      }`}
+                    >
+                      {rate.status === "active" ? "Active" : "Inactive"}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem>
+                          <Link
+                            href={`./exchange-rates/view-exchange-rate/${rate.id}`}
+                          >
+                            View
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Link
+                            href={`./exchange-rates/edit-exchange-rate/${rate.id}`}
+                          >
+                            Edit
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => handleDelete(rate.id)}
+                        >
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>

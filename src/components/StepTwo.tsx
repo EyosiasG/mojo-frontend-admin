@@ -43,14 +43,19 @@ const Page = () => {
 
     const fetchBanks = async () => {
       try {
-        const response = await fetchWithAuth("https://mojoapi.grandafricamarket.com/api/transfers/create");
+        const response = await fetch("https://mojoapi.grandafricamarket.com/api/transfers/create");
         if (!response.ok) {
-          throw new Error("Failed to fetch banks");
+          const errorMessage = await response.text(); // Get the error message from the response
+          throw new Error(`Failed to fetch banks: ${response.status} ${errorMessage}`);
         }
         const data = await response.json();
         if (isMounted) {
-          setBanks(data.banks);
-          console.log("Fetched Banks:", data.banks);
+          if (Array.isArray(data.banks)) {
+            setBanks(data.banks);
+            console.log("Fetched Banks:", data.banks);
+          } else {
+            throw new Error("Invalid response format: 'banks' is not an array");
+          }
         }
       } catch (error) {
         console.error("Error:", error);

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import { Camera } from "lucide-react";
 import { Layout } from "@/components/AgentLayout";
+import { Upload } from "lucide-react";
 // import jwt_decode from "jwt-decode";
 
 export default function SettingsPage() {
@@ -37,7 +38,7 @@ export default function SettingsPage() {
           {
             method: "GET",
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
             },
           }
         );
@@ -48,7 +49,14 @@ export default function SettingsPage() {
 
         const data = await response.json();
         setUserData(data);
-        setFormData(data);
+        setFormData({
+          firstName: data.first_name || "",
+          lastName: data.last_name || "",
+          email: data.email || "",
+          username: "",
+          timezone: "",
+          profilePicture: data.profile_photo_url || "/img/profile.jpg",
+        });
       } catch (err: unknown) {
         setError(err.message);
       }
@@ -58,45 +66,58 @@ export default function SettingsPage() {
   // Handle form input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
+    setFormData((prevData) => ({ ...prevData, [name]: value || "" }));
   };
 
   // Handle password form input changes
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setPasswordData((prevData) => ({ ...prevData, [name]: value }));
+    setPasswordData((prevData) => ({ ...prevData, [name]: value || "" }));
   };
 
   // Handle form submission for updating user profile
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    const userId = 1;
+    const userId = userData.id;
+
+    // Prepare the data to send, including all required fields
+    const updatedData = {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email: formData.email,
+        phone: formData.phone || "", // Ensure phone is included, even if empty
+        //id_image: formData.profilePicture, // Assuming this is a base64 string
+        // Include password if you want to allow password updates
+        // password: passwordData.newPassword || undefined, // Uncomment if needed
+    };
+
     try {
-      const response = await fetch(
-        "https://mojoapi.grandafricamarket.com/api/users/${userId}",
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          },
-          body: JSON.stringify(formData),
+        const response = await fetch(
+            `https://mojoapi.grandafricamarket.com/api/users/${userId}`,
+            {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                },
+                body: JSON.stringify(updatedData),
+            }
+        );
+
+        if (!response.ok) {
+            const errorData = await response.json(); // Get error details
+            throw new Error(errorData.message || "Failed to update profile");
         }
-      );
 
-      if (!response.ok) {
-        throw new Error("Failed to update profile");
-      }
-
-      const data = await response.json();
-      setFormData(data);
-      setError(null);
-      alert("Profile updated successfully!");
+        const data = await response.json();
+        setFormData(data);
+        setError(null);
+        alert("Profile updated successfully!");
     } catch (err: unknown) {
-      setError(err.message);
+        setError(err.message);
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   };
 
@@ -111,16 +132,27 @@ export default function SettingsPage() {
       return;
     }
 
+    const updatedData = {
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+      email: formData.email,
+      phone: formData.phone || "", // Ensure phone is included, even if empty
+      //id_image: formData.profilePicture, // Assuming this is a base64 string
+      // Include password if you want to allow password updates
+      password: passwordData.newPassword || undefined, // Uncomment if needed
+    };
+
+    const userId = userData.id;
     try {
       const response = await fetch(
-        "https://mojoapi.grandafricamarket.com/api/users/${userId}",
+        `https://mojoapi.grandafricamarket.com/api/users/${userId}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
-          body: JSON.stringify(passwordData),
+          body: JSON.stringify(updatedData),
         }
       );
 
@@ -148,11 +180,11 @@ export default function SettingsPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/user/logout-sessions", {
+      const response = await fetch("https://mojoapi.grandafricamarket.com/api/user/logout-sessions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
         body: JSON.stringify({ password: logoutPassword }),
       });
@@ -185,7 +217,7 @@ export default function SettingsPage() {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
         });
 
@@ -201,6 +233,20 @@ export default function SettingsPage() {
       }
     }
   };
+
+  // Handle image change
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setFormData((prevData) => ({ ...prevData, profilePicture: event.target.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  
 
   return (
     <Layout>
@@ -227,15 +273,36 @@ export default function SettingsPage() {
                     className="rounded-lg object-cover"
                   />
                 )}
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full"
-                >
-                  <Camera className="h-4 w-4" />
-                </Button>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                  id="imageUpload"
+                />
+                <label htmlFor="imageUpload">
+                  <Button
+                    size="icon"
+                    variant="secondary"
+                    className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full"
+                  >
+                    <Camera className="h-4 w-4" />
+                  </Button>
+                </label>
               </div>
-              <Button variant="outline">Change avatar</Button>
+              <Button
+                    variant="outline"
+                    className="relative flex items-center gap-2"
+                  >
+                    <Upload className="h-4 w-4" />
+                    Change Image
+                    <input
+                      type="file"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      onChange={handleImageChange}
+                      accept="image/*"
+                    />
+                  </Button>
             </div>
             <form onSubmit={handleProfileSubmit}>
               <div className="grid gap-4 md:grid-cols-2">

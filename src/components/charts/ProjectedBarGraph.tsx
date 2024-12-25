@@ -6,13 +6,46 @@ interface MonthData {
   actual: number;
 }
 
-const data: MonthData[] = [
-  { month: "May", projected: 500, actual: 350 },
-  { month: "June", projected: 800, actual: 550 },
-  { month: "July", projected: 600, actual: 400 },
-  { month: "August", projected: 900, actual: 600 },
-  { month: "August", projected: 750, actual: 500 },
+// Function to get the last 6 months
+const getLastSixMonths = () => {
+  const months = [];
+  const date = new Date();
+  for (let i = 0; i < 6; i++) {
+    const month = new Date(date.getFullYear(), date.getMonth() - i, 1);
+    months.push(month.toLocaleString('default', { month: 'long' }));
+  }
+  return months.reverse();
+};
+
+// Assuming you have a users array from your API response
+const users = [
+  // ... your user data here ...
 ];
+
+const lastSixMonths = getLastSixMonths();
+const data: MonthData[] = lastSixMonths.map((month) => {
+  const projected = 0; // Set your projected value if needed
+  const monthIndex = new Date(month).getMonth(); // Get the month index
+  const year = new Date(month).getFullYear(); // Get the year
+
+  const actualUsers = users.filter(user => {
+    const userDate = new Date(user.created_at);
+    const userMonth = userDate.getUTCMonth(); // Use UTC month
+    const userYear = userDate.getUTCFullYear(); // Use UTC year
+
+    // Log the comparison for debugging
+    console.log(`Comparing: User Month: ${userMonth}, User Year: ${userYear} with Month: ${monthIndex}, Year: ${year}`);
+
+    return userMonth === monthIndex && userYear === year;
+  });
+
+  // Log the users for the current month
+  console.log(`Users for ${month}:`, actualUsers);
+
+  const actual = actualUsers.length;
+
+  return { month, projected, actual };
+});
 
 export default function NewUsersChart() {
   const maxValue = Math.max(
@@ -50,7 +83,6 @@ export default function NewUsersChart() {
                   }}
                   role="graphics-symbol"
                   aria-label={`Projected users for ${item.month}: ${item.projected}`}
-                  //   className="w-20 h-20"
                 />
                 {/* Actual bar */}
                 <div

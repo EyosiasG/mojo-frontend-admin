@@ -1,7 +1,28 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card } from "../ui/card";
+import { fetchWithAuth } from "../utils/fetchwitAuth";
 
 const BarGraph = () => {
+  const [monthlyData, setMonthlyData] = useState<number[]>(Array(12).fill(0));
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      const response = await fetchWithAuth("https://mojoapi.grandafricamarket.com/api/transactions");
+      const result = await response.json();
+      const transactions = result.data;
+
+      const monthlyTotals = Array(12).fill(0);
+      transactions.forEach(transaction => {
+        const month = new Date(transaction.created_at).getMonth();
+        monthlyTotals[month] += parseFloat(transaction.amount);
+      });
+
+      setMonthlyData(monthlyTotals);
+    };
+
+    fetchTransactions();
+  }, []);
+
   return (
     <Card className="p-4">
       <div className="flex items-center justify-between mb-4">
@@ -9,12 +30,12 @@ const BarGraph = () => {
       </div>
       <div className="h-[300px] flex items-end gap-2">
         {/* Placeholder for bar chart */}
-        {Array.from({ length: 12 }).map((_, i) => (
+        {monthlyData.map((amount, i) => (
           <div
             key={i}
             className="bg-primary/90 w-full rounded-t"
             style={{
-              height: `${Math.random() * 100}%`,
+              height: `${(amount / Math.max(...monthlyData)) * 100}%`,
             }}
           />
         ))}

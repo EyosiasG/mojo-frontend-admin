@@ -39,9 +39,13 @@ export default function LoginPage() {
 
         // Log the token to the console
         console.log("Access Token:", data.access_token);
+        console.log("User Id: ", data.user.id);// Storing user ID
 
         // Optionally store user data if needed
         localStorage.setItem("user", JSON.stringify(data.user)); // Storing user data (optional)
+        localStorage.setItem("user_id", data.user.id);
+        
+    
 
         // Redirect to dashboard or home
         window.location.href = "/admin-dashboard"; // Redirect to the dashboard page

@@ -1,6 +1,8 @@
 "use client"
 
 import { Banknote, Send } from "lucide-react";
+import { CircleCheck, CircleX, Clock2 } from "lucide-react";
+
 import { Card } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -15,7 +17,7 @@ import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
 // Function to fetch total transactions
 async function fetchTotalTransactions() {
   try {
-    const response = await fetchWithAuth("https://mojoapi.grandafricamarket.com/api/transactions");
+    const response = await fetchWithAuth("https://mojoapi.grandafricamarket.com/api/agent/dashboard");
 
     // Check if the response is OK
     if (!response.ok) {
@@ -24,58 +26,29 @@ async function fetchTotalTransactions() {
 
     const data = await response.json();
 
-    // Check if data is an array
-    if (!Array.isArray(data.data)) {
-      throw new Error("Expected an array of transactions");
-    }
+    // Extract total transactions and transactions by status
+    const totalTransactions = data.total_transactions;
+    const transactionsByStatus = data.transactionsByStatus;
 
-    // Get the current date and the date six months ago
-    const currentDate = new Date();
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(currentDate.getMonth() - 6);
-
-    // Initialize total amount and monthly totals
-    let totalAmount = 0;
-    const monthlyTotals: { [key: string]: number } = {};
-
-    data.data.forEach(transaction => {
-      const transactionDate = new Date(transaction.created_at);
-      if (transactionDate >= sixMonthsAgo && transactionDate <= currentDate) {
-        const monthKey = transactionDate.toLocaleString('default', { month: 'long', year: 'numeric' });
-        const amount = Number(transaction.amount);
-
-        // Update total amount
-        totalAmount += amount;
-
-        // Update monthly totals
-        monthlyTotals[monthKey] = (monthlyTotals[monthKey] || 0) + amount;
-
-      }
-    });
-
-    // Convert the aggregated data into an array for the bar graph
-    const aggregatedData = Object.entries(monthlyTotals).map(([month, total]) => ({
-      month,
-      total,
-    }));
-
-    return { totalAmount, monthlyData: aggregatedData }; // Return both total amount and monthly data
+    // Return the relevant data
+    return { totalTransactions, transactionsByStatus };
   } catch (error) {
-    console.error("Error fetching total transactions:", error.message);
-    console.error("Full error object:", error);
-    return { totalAmount: 0, monthlyData: [] }; // Return 0 and an empty array on error
+    console.error("Error fetching transactions:", error);
+    throw error;
   }
 }
 
 export default function DashboardPage() {
   const [totalTransactions, setTotalTransactions] = useState(0);
+  const [totalTransactionsByStatus, setTotalTransactionsByStatus] = useState({});
   const [monthlyData, setMonthlyData] = useState<{ month: string; total: number }[]>([]);
   const [date, setDate] = useState<Date | null>(null);
 
   useEffect(() => {
     const getTotal = async () => {
-      const { totalAmount, monthlyData } = await fetchTotalTransactions();
-      setTotalTransactions(totalAmount);
+      const { totalTransactions, transactionsByStatus } = await fetchTotalTransactions();
+      setTotalTransactions(totalTransactions);
+      setTotalTransactionsByStatus(transactionsByStatus);
       setMonthlyData(monthlyData);
     };
     getTotal();
@@ -88,6 +61,12 @@ export default function DashboardPage() {
     month: 'long', // Full name of the month
     day: 'numeric',
   });
+
+  const statusIcons = {
+    success: <CircleCheck color="#11ff00" />,
+    failed: <CircleX color="#ff0000" />,
+    pending: <Clock2 color="#ff932e" />,
+  };
 
   return (
     <>
@@ -134,7 +113,24 @@ export default function DashboardPage() {
                       <Banknote className="h-6 w-6 text-primary" />
                     </div>
                     <div className="text-2xl font-bold">{totalTransactions.toFixed(2)}</div>
-                    <div className="text-sm text-gray-500">Total Transaction</div>
+                    <div className="text-sm text-gray-500 mb-3">Total Transaction</div>
+                    <div className="flex space-x-4">
+                      {Object.entries(totalTransactionsByStatus).map(([status, count]) => (
+                        <div
+                          key={status}
+                          className="flex flex-col items-center space-y-2 p-4"
+                        >
+                          {/* Icon at the top */}
+                          <div className="text-2xl">
+                            {statusIcons[status] || <span>🔍</span>} {/* Default icon */}
+                          </div>
+                          {/* Status name */}
+                          <span className="capitalize text-gray-600">{status}</span>
+                          {/* Status count */}
+                          <span className="text-lg font-semibold">{count}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </Card>

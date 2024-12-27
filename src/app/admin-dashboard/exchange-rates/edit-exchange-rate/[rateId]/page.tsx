@@ -1,276 +1,48 @@
 "use client";
-import { cn } from "@/lib/utils";
-import { ArrowLeft, Calendar } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { format } from "date-fns";
-import { useState, useEffect } from "react";
-import BackLink from "@/components/BackLink";
-import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
-import { useParams, useRouter } from "next/navigation";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
-interface Currency {
-  id: string;
-  name: string;
-  sign: string;
-}
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
+import { toast, ToastContainer } from "react-toastify";
+import BackLink from "@/components/BackLink";
+import { ArrowLeft } from "lucide-react";
 
 export default function EditExchangeRate() {
-  const router = useRouter();
   const { rateId } = useParams();
-  const [date, setDate] = useState<Date>();
-  const [isPending, setIsPending] = useState(false);
-  const [currency_id, setCurrency_id] = useState<string>("");
-  const [rate, setRate] = useState<string>("");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [currencies, setCurrencies] = useState<Currency[]>([]);
+  const [rate, setRate] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchCurrencies = async () => {
+    const fetchRate = async () => {
       try {
-        const response = await fetchWithAuth(
-          "https://mojoapi.grandafricamarket.com/api/currencies"
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch currencies");
-        }
+        const response = await fetchWithAuth(`https://mojoapi.grandafricamarket.com/api/rates/${rateId}`);
+        if (!response.ok) throw new Error("Failed to fetch rate");
         const data = await response.json();
-        setCurrencies(data.data || []);
+        setRate(data.data);
       } catch (err) {
-        console.error("Error fetching currencies:", err);
-        toast.error("Failed to load currencies");
-      }
-    };
-
-    fetchCurrencies();
-  }, []);
-
-  // Fetch existing rate data
-  useEffect(() => {
-    const fetchRateData = async () => {
-      try {
-        const response = await fetchWithAuth(
-          `https://mojoapi.grandafricamarket.com/api/rates/${rateId}`
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch rate data");
-        }
-        const data = await response.json();
-        if (data.data) {
-          setCurrency_id(data.data.currency_id);
-          setRate(data.data.rate);
-          setDate(new Date(data.data.effective_date));
-        }
-      } catch (err) {
-        console.error("Error fetching rate data:", err);
-        toast.error("Failed to load rate data");
+        setError(err.message);
+        toast.error(err.message);
+      } finally {
+        setLoading(false);
       }
     };
 
     if (rateId) {
-      fetchRateData();
+      fetchRate();
     }
   }, [rateId]);
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      toast.error("Authentication token not found");
-      return;
-    }
-
-    if (!date) {
-      toast.error("Please select an effective date");
-      return;
-    }
-
-    const formData = {
-      currency_id,
-      rate,
-      effective_date: format(date, "yyyy-MM-dd"),
-    };
-
-    try {
-      setIsPending(true);
-
-      const response = await fetchWithAuth(
-        `https://mojoapi.grandafricamarket.com/api/rates/${rateId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(formData),
-        }
-      );
-
-      if (response.ok) {
-        toast.success("Exchange rate updated successfully");
-        router.push("/admin-dashboard/exchange-rates");
-      } else {
-        if (response.status === 403) {
-          toast.error("You do not have permission to perform this action");
-        } else {
-          const errorData = await response.json();
-          toast.error(errorData.message || "Failed to update exchange rate");
-        }
-      }
-    } catch (error) {
-      console.error("Network error:", error);
-      toast.error("Network error. Please try again");
-    } finally {
-      setIsPending(false);
-    }
-  }
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <ToastContainer position="top-right" autoClose={3000} />
-      <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white/80 backdrop-blur-sm">
-        <div className="flex items-center gap-4">
-          <BackLink to="/admin-dashboard/exchange-rates" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            <span className="font-medium">Back to Exchange Rates</span>
-          </BackLink>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="outline"
-            onClick={() => router.push("/admin-dashboard/exchange-rates")}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            form="exchange-rate-form"
-            className="bg-primary hover:bg-primary/90"
-            disabled={isPending}
-          >
-            {isPending ? (
-              <>
-                <span className="animate-spin mr-2">⌛</span>
-                Updating...
-              </>
-            ) : (
-              "Update Exchange Rate"
-            )}
-          </Button>
-        </div>
-      </div>
-
-      <div className="max-w-2xl mx-auto p-6">
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h1 className="text-2xl font-semibold mb-2">Edit Exchange Rate</h1>
-          <p className="text-sm text-muted-foreground mb-8">
-            Update the exchange rate information
-          </p>
-
-          {errorMessage && (
-            <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6">
-              {errorMessage}
-            </div>
-          )}
-
-          <form
-            id="exchange-rate-form"
-            onSubmit={handleSubmit}
-            className="space-y-8"
-          >
-            <div className="space-y-3">
-              <label
-                htmlFor="currency_id"
-                className="text-sm font-medium text-foreground"
-              >
-                Currency
-              </label>
-              <select
-                name="currency_id"
-                required
-                value={currency_id}
-                onChange={(e) => setCurrency_id(e.target.value)}
-                className="block w-full h-12 border rounded p-2"
-              >
-                <option value="">Select a currency</option>
-                {currencies.map((curr) => (
-                  <option key={curr.id} value={curr.id}>
-                    {curr.name} ({curr.sign})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-3">
-              <label
-                htmlFor="rate"
-                className="text-sm font-medium text-foreground"
-              >
-                Exchange Rate
-              </label>
-              <Input
-                id="rate"
-                name="rate"
-                type="number"
-                step="0.0001"
-                required
-                value={rate}
-                onChange={(e) => setRate(e.target.value)}
-                className="h-12"
-                placeholder="Enter exchange rate"
-              />
-            </div>
-
-            <div className="space-y-3">
-              <label
-                htmlFor="effective-date"
-                className="text-sm font-medium text-foreground"
-              >
-                Effective Date
-              </label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full h-12 justify-start font-normal",
-                      !date && "text-muted-foreground"
-                    )}
-                  >
-                    {date ? format(date, "MMMM d, yyyy") : "Select effective date"}
-                    <Calendar className="ml-auto h-4 w-4 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <CalendarComponent
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    initialFocus
-                    disabled={(date) => date < new Date()}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-          </form>
-        </div>
-      </div>
+    <div>
+      <ToastContainer />
+      <BackLink href="/admin-dashboard/exchange-rates">
+        <ArrowLeft /> Back to Exchange Rates
+      </BackLink>
+      <h1>Edit Exchange Rate for {rate?.currency_id}</h1>
     </div>
   );
 }

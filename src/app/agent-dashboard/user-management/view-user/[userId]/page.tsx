@@ -10,15 +10,13 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
 import { PDFDocument, rgb } from 'pdf-lib'; // Import PDF generation library
-import { useRouter } from 'next/router'; 
+
 
 export default function Page() {
   const { userId } = useParams();
   const [userData, setUserData] = useState(null);
   const [error, setError] = useState(null);
-  const router = useRouter(); // Initialize useRouter
-  const { transactionId } = router.query;
-
+  
   // Fetch user data
   useEffect(() => {
     const fetchUserData = async () => {
@@ -181,7 +179,6 @@ export default function Page() {
 
       {/* Main Content */}
       <main className="p-4 max-w-4xl mx-auto">
-        <div>Transaction ID: {transactionId}</div>
         <div className="mb-6">
           <BackLink>
             <ArrowLeft className="h-4 w-4" />

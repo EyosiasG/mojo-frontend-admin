@@ -322,9 +322,7 @@ const page = () => {
                     <p className="text-sm text-muted-foreground">Account No.</p>
                     <p className="font-medium">58027502760</p>
                   </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2">
                     <p className="text-sm text-muted-foreground">12/2/2024</p>
                     <Button variant="ghost" size="icon" onClick={() => handleView()}>
                       <Eye className="h-4 w-4" />
@@ -332,7 +330,10 @@ const page = () => {
                     <Button variant="ghost" size="icon" onClick={() => handleDownload()}>
                       <Download className="h-4 w-4" />
                     </Button>
-                  </div>          
+              </div> 
+                </div>
+              </div>
+         
             </div>
           </CardContent>
         </Card>

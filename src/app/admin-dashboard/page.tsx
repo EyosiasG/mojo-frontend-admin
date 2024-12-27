@@ -15,8 +15,10 @@ import PieChart from "@/components/charts/PieChart";
 import ProjectedBarGraph from "@/components/charts/ProjectedBarGraph";
 import NotificationProfile from "@/components/NotificationProfile";
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth"; // Custom fetch function for authenticated requests
+import { useRouter } from "next/navigation"; // Import useRouter
 
 export default function Page() {
+  const router = useRouter(); // Initialize router
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,6 +27,10 @@ export default function Page() {
 
   // Fetch dashboard data
   useEffect(() => {
+    // if (!localStorage.getItem("admin")) { // Corrected to use getItem
+    //   router.push("/admin-login"); // Reroute to login page
+    //   return; // Exit the effect
+    // }
     async function fetchDashboardData() {
       try {
         const response = await fetchWithAuth(

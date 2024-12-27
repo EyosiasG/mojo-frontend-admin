@@ -245,7 +245,10 @@ export default function TransferPage() {
     }
   };
 
+
+
   return (
+
     <>
       <div className="border-b bg-white">
         <div className="flex h-16 items-center justify-between px-6">
@@ -288,17 +291,6 @@ export default function TransferPage() {
             <Button variant="outline" className="gap-2" onClick={handleSearch}> 
               <Search className="h-4 w-4" />
               Search
-            </Button>
-            <Button variant="outline" size="icon">
-              <Trash2 className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <Filter className="h-4 w-4" />
-              Filters
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <Download className="h-4 w-4" />
-              Export
             </Button>
             <Link href="transfer/step-one" className="flex">
               <Button className="gap-2 rounded-full bg-primary hover:bg-primary/90">

@@ -13,7 +13,6 @@ import NotificationProfile from "@/components/NotificationProfile";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
-import { useRouter } from 'next/router';
 
 // Function to fetch total transactions
 async function fetchTotalTransactions() {
@@ -40,12 +39,7 @@ async function fetchTotalTransactions() {
 }
 
 export default function DashboardPage() {
-  const router = useRouter();
-  const transactionId = router.query.transactionId;
 
-  if (!transactionId) {
-    return <div>Loading...</div>;
-  }
 
   const [totalTransactions, setTotalTransactions] = useState(0);
   const [totalTransactionsByStatus, setTotalTransactionsByStatus] = useState({});

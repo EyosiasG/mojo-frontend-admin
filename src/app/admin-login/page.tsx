@@ -3,73 +3,82 @@ import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { ToastContainer } from "react-toastify";
+
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const router = useRouter(); // Next.js Router for redirection
 
   // Handle form submission
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); 
     setLoading(true);
-    setError(""); // Reset error state
+    setError(null); // Reset previous errors
 
     try {
-      const response = await fetch(
-        "https://mojoapi.grandafricamarket.com/api/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email,
-            password,
-          }),
-        }
-      );
+      const response = await fetch("https://mojoapi.grandafricamarket.com/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email, // Assuming you are using email for username
+          password: password,
+        }),
+      });
 
       const data = await response.json();
 
       if (response.ok) {
-        // On successful login, store token and redirect
+        // Store the token and user data in localStorage
         localStorage.setItem("access_token", data.access_token);
         localStorage.setItem("user", JSON.stringify(data.user));
-        localStorage.setItem("user_id", data.user.id);
-      
+        localStorage.setItem("admin", "pass");
 
-        // Redirect to dashboard
-        window.location.href = "/admin-dashboard";
+        console.log("Access Token:", localStorage.getItem("access_token"));
+        // Log the token to the console (for debugging)
+        // console.log("Access Token:", data.access_token);
+
+        // Redirect to the agent dashboard
+        router.push("/admin-dashboard");
       } else {
-        // Handle unsuccessful login
-        setError(data.message || "An error occurred during login.");
+        // Handle errors (e.g., invalid credentials or other server errors)
+        if (data.message) {
+          // If the response has a message (like 'Invalid credentials')
+          setError(data.message);
+        } else {
+          // Handle generic errors
+          setError("An error occurred during login. Please try again.");
+        }
       }
     } catch (error) {
+      // Catch network or other unexpected errors
       setError("Network error. Please try again later.");
-      
-      window.location.href = "/admin-dashboard";
     } finally {
       setLoading(false);
+    }
+
+    if (error) {
+      alert(error);
     }
   };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gray-100">
+      <ToastContainer />
       <div className="w-full grid lg:grid-cols-2 min-h-screen p-5 gap-5">
         {/* Left side - Animation Container */}
         <div
           className={`relative hidden lg:flex items-center justify-center bg-[url('/img/login-side-picture.png')] rounded-3xl w-full h-full`}
         >
-          {/* <Image
-            src="/img/login-side-picture.png"
-            width={500}
-            height={500}
-            alt="Side Image"
-            className="bg-rose-500 cover"
-          /> */}
+          {/* Optionally, add an image */}
         </div>
+
         {/* Right side - Login Form */}
         <div className="bg-white w-full rounded-3xl flex justify-center items-center">
           <div className="w-full max-w-md mx-auto flex flex-col justify-center space-y-6">
@@ -83,27 +92,28 @@ export default function LoginPage() {
               />
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-6 px-4">
               <h1 className="text-2xl font-semibold text-center">
                 Login To Your Account
               </h1>
 
-              {error && (
+              {/* Display error message */}
+              {/* {error && (
                 <div className="text-red-500 text-center mb-4">{error}</div>
-              )}
+              )} */}
 
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
                   <label
-                    htmlFor="email"
+                    htmlFor="username"
                     className="text-sm font-medium text-gray-700"
                   >
-                    Email
+                    Username
                   </label>
                   <Input
-                    id="email"
+                    id="username"
                     type="email"
-                    placeholder="jhondoe@example.com"
+                    placeholder="Enter your username"
                     className="w-full"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -120,7 +130,7 @@ export default function LoginPage() {
                   <Input
                     id="password"
                     type="password"
-                    placeholder="password"
+                    placeholder="Enter your password"
                     className="w-full"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}

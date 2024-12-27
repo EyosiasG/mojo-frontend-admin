@@ -150,7 +150,10 @@ export function Layout({ children }: LayoutProps) {
                   Settings
                 </Link>
               </Button>
-              <Link href="/">
+              <Link href="/admin-login" onClick={() => {
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('admin');
+              }}>
                 <Button variant="ghost" className="w-full justify-start gap-3">
                   <LogOut className="h-4 w-4" />
                   Logout

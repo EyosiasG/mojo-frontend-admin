@@ -28,7 +28,7 @@ export default function LoginPage() {
         },
         body: JSON.stringify({
           email: username, // Assuming you are using email for username
-          password,
+          password: password,
         }),
       });
 
@@ -38,6 +38,7 @@ export default function LoginPage() {
         // Store the token and user data in localStorage
         localStorage.setItem("access_token", data.access_token);
         localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem("agent", "pass");
 
         console.log("Access Token:", localStorage.getItem("access_token"));
         // Log the token to the console (for debugging)

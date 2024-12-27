@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { ToastContainer } from "react-toastify";
+
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -59,10 +61,15 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+
+    if (error) {
+      alert(error);
+    }
   };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gray-100">
+      <ToastContainer />
       <div className="w-full grid lg:grid-cols-2 min-h-screen p-5 gap-5">
         {/* Left side - Animation Container */}
         <div
@@ -84,15 +91,15 @@ export default function LoginPage() {
               />
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-6 px-4">
               <h1 className="text-2xl font-semibold text-center">
                 Login To Your Account
               </h1>
 
               {/* Display error message */}
-              {error && (
+              {/* {error && (
                 <div className="text-red-500 text-center mb-4">{error}</div>
-              )}
+              )} */}
 
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
@@ -105,7 +112,7 @@ export default function LoginPage() {
                   <Input
                     id="username"
                     type="email"
-                    placeholder="username"
+                    placeholder="Enter your username"
                     className="w-full"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
@@ -122,7 +129,7 @@ export default function LoginPage() {
                   <Input
                     id="password"
                     type="password"
-                    placeholder="password"
+                    placeholder="Enter your password"
                     className="w-full"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}

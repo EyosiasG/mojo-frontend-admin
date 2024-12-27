@@ -112,33 +112,30 @@ export default function UserManagementPage() {
 
   // Function to handle search
   const handleSearch = async () => {
-    if (!searchQuery) {
-      await fetchUsers(); // Fetch users if searchQuery is empty
-      return; // Exit early if searchQuery is empty
-    }
+    console.log("Search Query: ", searchQuery);
     try {
       const response = await fetchWithAuth(
-        `https://mojoapi.grandafricamarket.com/api/users/${searchQuery}`
+        `https://mojoapi.grandafricamarket.com/api/users/search/${searchQuery}`
       );
-
+  
       if (!response.ok) {
         throw new Error(`Error: ${response.statusText}`);
       }
-
+  
       const data = await response.json();
-      if (!data.user) {
+      console.log("Search Users: ", data.data);
+      if (!data.data || data.data.length === 0) {
         throw new Error('User not found');
       }
-      setUsers([data.user]);
+      setUsers(data.data); // Set users state with the array directly
     } catch (err) {
       setError(err.message);
-      setUsers([]);
       alert("Failed to find user");
     }
   };
-
+  
   if (loading) return <div>Loading...</div>;
- 
+
   return (
     <>
       <div className="border-b bg-white">
@@ -162,13 +159,9 @@ export default function UserManagementPage() {
               placeholder="Search"
               value={searchQuery}
               onChange={(e) => {
-                const value = e.target.value;
+                const value = e.target.value.trim();
                 setSearchQuery(value);
-                if (value.trim() === "") {
-                  fetchUsers(); // Call fetchUsers directly if input is empty
-                } else {
-                  handleSearch(); // Call handleSearch for non-empty input
-                }
+               // Always call handleSearch when input changes
               }}
             />
           </div>
@@ -188,7 +181,7 @@ export default function UserManagementPage() {
               <Download className="h-4 w-4" />
               Export
             </Button>
-          
+
             <Link href="user-management/create-user">
               <Button className="gap-2 bg-primary hover:bg-primary/90">
                 <PlusCircle className="h-4 w-4" />

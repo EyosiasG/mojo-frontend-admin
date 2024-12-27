@@ -85,10 +85,14 @@ const CurrencyManagementPage = () => {
 
   useEffect(() => {
     fetchCurrencies();
-  }, [searchQuery]); // Fetch when searchQuery changes
+  }, []); // Remove searchQuery dependency since we'll use button click
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
+  };
+
+  const handleSearchClick = () => {
+    fetchCurrencies();
   };
 
   const handleDelete = async (currencyId: string) => {
@@ -129,8 +133,29 @@ const CurrencyManagementPage = () => {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-lg font-medium text-gray-600">Loading currencies...</p>
+      </div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="bg-red-50 p-6 rounded-lg">
+        <p className="text-red-600 font-medium">{error}</p>
+        <Button 
+          variant="outline" 
+          className="mt-4"
+          onClick={() => fetchCurrencies()}
+        >
+          Try Again
+        </Button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="p-6 space-y-6">
@@ -145,14 +170,19 @@ const CurrencyManagementPage = () => {
 
       <div className="relative">
         <div className="mb-6 flex items-center justify-between gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-            <Input 
-              className="pl-10" 
-              placeholder="Search by currency ID" 
-              value={searchQuery}
-              onChange={handleSearch}
-            />
+          <div className="relative flex-1 flex gap-2">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+              <Input 
+                className="pl-10" 
+                placeholder="Search by currency ID" 
+                value={searchQuery}
+                onChange={handleSearch}
+              />
+            </div>
+            <Button onClick={handleSearchClick}>
+              Search
+            </Button>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="icon">

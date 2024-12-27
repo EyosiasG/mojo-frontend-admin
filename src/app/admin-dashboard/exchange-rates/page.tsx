@@ -37,51 +37,69 @@ export default function Page() {
   const [rates, setRates] = useState<CurrencyEntry[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchId, setSearchId] = useState<string>("");
 
-  // Fetching rates data from the API
-  useEffect(() => {
-    const fetchRates = async () => {
-      try {
-        const response = await fetchWithAuth(
-          "https://mojoapi.grandafricamarket.com/api/rates",
-          {
-            headers: {
-              "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
-              "Content-Type": "application/json"
-            }
+  const fetchRates = async (searchTerm = "") => {
+    try {
+      let url = "https://mojoapi.grandafricamarket.com/api/rates";
+      
+      // If searchTerm is provided, fetch specific rate
+      if (searchTerm.trim()) {
+        url = `https://mojoapi.grandafricamarket.com/api/rates/${searchTerm}`;
+      }
+
+      const response = await fetchWithAuth(
+        url,
+        {
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+            "Content-Type": "application/json"
           }
-        );
-        const data = await response.json();
-        console.log(data);
-        // Check if the response is JSON
-        const contentType = response.headers.get("Content-Type");
-        if (!contentType || !contentType.includes("application/json")) {
-          throw new Error("Response is not in JSON format");
         }
+      );
+      const data = await response.json();
+      console.log(data);
+      
+      // Check if the response is JSON
+      const contentType = response.headers.get("Content-Type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Response is not in JSON format");
+      }
 
-        // Handle case when no rates are found
-        if (data.status === "failed" && data.message === "No Exchange rate found!") {
-          setRates([]);
-          return;
-        }
+      // Handle case when no rates are found
+      if (data.status === "failed" && data.message === "No Exchange rate found!") {
+        setRates([]);
+        return;
+      }
 
-        if (data.status === "success") {
-          setRates(data.data);
+      if (data.status === "success") {
+        // If searching by ID, wrap single result in array
+        if (searchTerm.trim() && data.data) {
+          setRates([data.data]);
         } else {
-          setError("Failed to load exchange rates.");
-          toast.error("Failed to load exchange rates");
+          setRates(data.data);
         }
-      } catch (err) {
+      } else {
         setError("Failed to load exchange rates.");
         toast.error("Failed to load exchange rates");
-        console.error(err);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (err) {
+      setError("Failed to load exchange rates.");
+      toast.error("Failed to load exchange rates");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // Initial fetch on component mount
+  useEffect(() => {
     fetchRates();
   }, []);
+
+  const handleSearch = () => {
+    fetchRates(searchId);
+  };
 
   const handleDelete = async (id: string) => {
     const isConfirmed = window.confirm(
@@ -112,8 +130,29 @@ export default function Page() {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-lg font-medium text-gray-600">Loading exchange rates...</p>
+      </div>
+    </div>
+  );
+  
+  if (error) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="bg-red-50 p-6 rounded-lg">
+        <p className="text-red-600 font-medium">{error}</p>
+        <Button 
+          variant="outline" 
+          className="mt-4"
+          onClick={() => fetchRates()}
+        >
+          Try Again
+        </Button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="p-6 mx-auto">
@@ -132,11 +171,25 @@ export default function Page() {
       </div>
 
       <div className="flex items-center justify-between gap-4 mb-6">
-        <div className="relative flex-1 max-w-sm">
+        <div className="relative flex-1 ">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search" className="pl-9" />
+          <Input 
+            placeholder="Search by Rate ID" 
+            className="pl-9 " 
+            value={searchId}
+            onChange={(e) => {
+              setSearchId(e.target.value);
+              if (e.target.value === "") {
+                fetchRates();
+              }
+            }}
+          />
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" className="gap-2" onClick={handleSearch}>
+            <Search className="h-4 w-4" />
+            Search
+          </Button>
           <Button variant="outline" size="icon">
             <Trash className="h-4 w-4" />
           </Button>

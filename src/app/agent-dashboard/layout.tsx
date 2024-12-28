@@ -20,9 +20,9 @@ export default function DashboardLayout({
   const router = useRouter();
 
   useEffect(() => {
-    console.log(localStorage.getItem("admin"));
-    if (!localStorage.getItem("admin")) { // Check local storage
-      router.push("/admin-login"); // Reroute to login page
+    console.log(localStorage.getItem("agent"));
+    if (!localStorage.getItem("agent")) { // Check local storage
+      router.push("/"); // Reroute to login page
     }
   }, [router]); 
   return (

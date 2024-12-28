@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { DM_Sans } from "next/font/google";
 import { Montserrat } from "next/font/google";
+import "react-toastify/dist/ReactToastify.css";
+
 // const geistSans = localFont({
 //   src: "./fonts/GeistVF.woff",
 //   variable: "--font-geist-sans",

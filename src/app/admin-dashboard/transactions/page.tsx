@@ -51,7 +51,7 @@ export default function TransferPage() {
       }
 
       const response = await fetch(
-        "https://mojoapi.grandafricamarket.com/api/transactions",
+        "https://mojoapi.crosslinkglobaltravel.com/api/transactions",
         {
           method: "GET",
           headers: {
@@ -85,7 +85,7 @@ export default function TransferPage() {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`https://mojoapi.grandafricamarket.com/api/transactions/search/${searchTerm}`, {
+        const response = await fetch(`https://mojoapi.crosslinkglobaltravel.com/api/transactions/search/${searchTerm}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -123,7 +123,7 @@ export default function TransferPage() {
 
     try {
       const response = await fetchWithAuth(
-        `https://mojoapi.grandafricamarket.com/api/transactions/${id}`,
+        `https://mojoapi.crosslinkglobaltravel.com/api/transactions/${id}`,
         {
           method: "DELETE",
         }

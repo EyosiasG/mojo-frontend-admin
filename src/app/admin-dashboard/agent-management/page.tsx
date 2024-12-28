@@ -40,7 +40,7 @@ export default function UserManagementPage() {
     async function fetchUsers() {
       try {
         const response = await fetchWithAuth(
-          "https://mojoapi.grandafricamarket.com/api/users"
+          "https://mojoapi.crosslinkglobaltravel.com/api/users"
         );
         if (!response.ok) {
           throw new Error(`Error: ${response.statusText}`);

@@ -32,7 +32,7 @@ export default function EditCurrencyForm() {
     const fetchCurrency = async () => {
       try {
         const response = await fetchWithAuth(
-          `https://mojoapi.grandafricamarket.com/api/currencies/${currencyId}`,
+          `https://mojoapi.crosslinkglobaltravel.com/api/currencies/${currencyId}`,
           {
             method: "GET",
           }
@@ -64,7 +64,7 @@ export default function EditCurrencyForm() {
 
     try {
       const response = await fetchWithAuth(
-        `https://mojoapi.grandafricamarket.com/api/currencies/${currencyId}`,
+        `https://mojoapi.crosslinkglobaltravel.com/api/currencies/${currencyId}`,
         {
           method: "POST",
           body: JSON.stringify(currencyData),

@@ -43,7 +43,7 @@ export default function AddExchangeRate() {
     const fetchCurrencies = async () => {
       try {
         const response = await fetchWithAuth(
-          "https://mojoapi.grandafricamarket.com/api/currencies"
+          "https://mojoapi.crosslinkglobaltravel.com/api/currencies"
         );
         if (!response.ok) {
           throw new Error("Failed to fetch currencies");
@@ -83,7 +83,7 @@ export default function AddExchangeRate() {
       setIsPending(true);
 
       const response = await fetchWithAuth(
-        "https://mojoapi.grandafricamarket.com/api/rates",
+        "https://mojoapi.crosslinkglobaltravel.com/api/rates",
         {
           method: "POST",
           headers: {

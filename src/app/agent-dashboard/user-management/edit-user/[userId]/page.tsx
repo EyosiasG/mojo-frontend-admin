@@ -28,7 +28,7 @@ const EditUserPage = () => {
     const fetchUserData = async () => {
       if (!userId) return;
       try {
-        const response = await fetchWithAuth(`https://mojoapi.grandafricamarket.com/api/users/${userId}`);
+        const response = await fetchWithAuth(`https://mojoapi.crosslinkglobaltravel.com/api/users/${userId}`);
         if (!response.ok) throw new Error(`Error: ${response.statusText}`);
         const data = await response.json();
         setUserData({
@@ -62,7 +62,7 @@ const EditUserPage = () => {
     }
 
     try {
-      const response = await fetchWithAuth(`https://mojoapi.grandafricamarket.com/api/users/${userId}`, {
+      const response = await fetchWithAuth(`https://mojoapi.crosslinkglobaltravel.com/api/users/${userId}`, {
         method: "POST",
         body: formData,
       });

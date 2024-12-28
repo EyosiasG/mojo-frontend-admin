@@ -43,7 +43,7 @@ const Page = () => {
 
     const fetchBanks = async () => {
       try {
-        const response = await fetch("https://mojoapi.grandafricamarket.com/api/transfers/create");
+        const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/transfers/create");
         if (!response.ok) {
           const errorMessage = await response.text(); // Get the error message from the response
           throw new Error(`Failed to fetch banks: ${response.status} ${errorMessage}`);
@@ -66,7 +66,7 @@ const Page = () => {
     const fetchUsers = async () => {
       try {
         const response = await fetchWithAuth(
-          "https://mojoapi.grandafricamarket.com/api/users"
+          "https://mojoapi.crosslinkglobaltravel.com/api/users"
         );
         if (!response.ok) {
           throw new Error("Failed to fetch users");
@@ -115,7 +115,7 @@ const Page = () => {
         return;
       }
     
-      const response = await fetch("https://mojoapi.grandafricamarket.com/api/transfers", {
+      const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/transfers", {
         method: "POST",
         body: JSON.stringify(requestData),
         headers: {

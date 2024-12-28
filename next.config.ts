@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "export",
+  images: {
+    domains: ['ui-avatars.com', 'mojoapi.grandafricamarket.com', 'mojoapi.crosslinkglobaltravel.com'], // Add the domain here
+  },
   eslint: {
     ignoreDuringBuilds: true, // Disable ESLint during builds
   },
@@ -13,10 +15,12 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/api/:path*",
-        destination: "https://mojoapi.grandafricamarket.com/:path*", // Proxy API requests
+        destination: "https://mojoapi.crosslinkglobaltravel.com/:path*", // Proxy API requests
       },
     ];
   },
 };
 
+
 export default nextConfig;
+

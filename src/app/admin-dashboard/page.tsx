@@ -34,7 +34,7 @@ export default function Page() {
     async function fetchDashboardData() {
       try {
         const response = await fetchWithAuth(
-          "https://mojoapi.grandafricamarket.com/api/dashboard"
+          "https://mojoapi.crosslinkglobaltravel.com/api/dashboard"
         ); // Adjust the URL for your backend API
         if (!response.ok) {
           throw new Error(`Error: ${response.statusText}`);

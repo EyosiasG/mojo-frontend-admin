@@ -41,11 +41,11 @@ export default function Page() {
 
   const fetchRates = async (searchTerm = "") => {
     try {
-      let url = "https://mojoapi.grandafricamarket.com/api/rates";
+      let url = "https://mojoapi.crosslinkglobaltravel.com/api/rates";
       
       // If searchTerm is provided, fetch specific rate
       if (searchTerm.trim()) {
-        url = `https://mojoapi.grandafricamarket.com/api/rates/${searchTerm}`;
+        url = `https://mojoapi.crosslinkglobaltravel.com/api/rates/${searchTerm}`;
       }
 
       const response = await fetchWithAuth(
@@ -109,7 +109,7 @@ export default function Page() {
 
     try {
       const response = await fetch(
-        `https://mojoapi.grandafricamarket.com/api/rates/${id}`,
+        `https://mojoapi.crosslinkglobaltravel.com/api/rates/${id}`,
         {
           method: "DELETE",
           headers: {

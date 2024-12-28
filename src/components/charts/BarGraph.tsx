@@ -7,7 +7,7 @@ const BarGraph = () => {
 
   useEffect(() => {
     const fetchTransactions = async () => {
-      const response = await fetchWithAuth("https://mojoapi.grandafricamarket.com/api/transactions");
+      const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/transactions");
       const result = await response.json();
       const transactions = result.data;
 

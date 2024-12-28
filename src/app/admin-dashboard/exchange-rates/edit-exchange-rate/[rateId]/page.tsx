@@ -16,7 +16,7 @@ export default function EditExchangeRate() {
   useEffect(() => {
     const fetchRate = async () => {
       try {
-        const response = await fetchWithAuth(`https://mojoapi.grandafricamarket.com/api/rates/${rateId}`);
+        const response = await fetchWithAuth(`https://mojoapi.crosslinkglobaltravel.com/api/rates/${rateId}`);
         if (!response.ok) throw new Error("Failed to fetch rate");
         const data = await response.json();
         setRate(data.data);

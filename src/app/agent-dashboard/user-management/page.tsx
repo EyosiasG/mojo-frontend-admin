@@ -44,7 +44,7 @@ export default function UserManagementPage() {
     try {
       console.log('Attempting to fetch users...');
       const response = await fetchWithAuth(
-        "https://mojoapi.grandafricamarket.com/api/users"
+        "https://mojoapi.crosslinkglobaltravel.com/api/users"
       ).catch(error => {
         console.error('Network error:', error);
         throw new Error('Network connection failed - please check your internet connection');
@@ -71,7 +71,7 @@ export default function UserManagementPage() {
       console.error('Detailed error information:', {
         error: err,
         timestamp: new Date().toISOString(),
-        endpoint: "https://mojoapi.grandafricamarket.com/api/users"
+        endpoint: "https://mojoapi.crosslinkglobaltravel.com/api/users"
       });
     } finally {
       setLoading(false);
@@ -90,7 +90,7 @@ export default function UserManagementPage() {
     if (isConfirmed) {
       try {
         const response = await fetchWithAuth(
-          `https://mojoapi.grandafricamarket.com/api/users/${userId}`,
+          `https://mojoapi.crosslinkglobaltravel.com/api/users/${userId}`,
           {
             method: "DELETE",
           }
@@ -102,6 +102,7 @@ export default function UserManagementPage() {
 
         // Remove the deleted user from the list
         setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+        await fetchUsers(); // Regenerate the user list after deletion
         alert("User deleted successfully");
       } catch (err) {
         setError(err.message);
@@ -115,7 +116,7 @@ export default function UserManagementPage() {
     console.log("Search Query: ", searchQuery);
     try {
       const response = await fetchWithAuth(
-        `https://mojoapi.grandafricamarket.com/api/users/search/${searchQuery}`
+        `https://mojoapi.crosslinkglobaltravel.com/api/users/search/${searchQuery}`
       );
   
       if (!response.ok) {
@@ -170,17 +171,6 @@ export default function UserManagementPage() {
               <Search className="h-4 w-4" />
               Search
             </Button>
-            <Button variant="outline" size="icon">
-              <Trash2 className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <Filter className="h-4 w-4" />
-              Filters
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <Download className="h-4 w-4" />
-              Export
-            </Button>
 
             <Link href="user-management/create-user">
               <Button className="gap-2 bg-primary hover:bg-primary/90">
@@ -205,7 +195,7 @@ export default function UserManagementPage() {
                   </div>
                 </TableHead>
                 <TableHead>First Name</TableHead>
-                <TableHead>Last Name</TableHead>
+                <TableHead>Last  Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Created At</TableHead>

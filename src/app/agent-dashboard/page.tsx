@@ -17,7 +17,7 @@ import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
 // Function to fetch total transactions
 async function fetchTotalTransactions() {
   try {
-    const response = await fetchWithAuth("https://mojoapi.grandafricamarket.com/api/agent/dashboard");
+    const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/agent/dashboard");
 
     // Check if the response is OK
     if (!response.ok) {

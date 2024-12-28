@@ -9,6 +9,9 @@ import Image from "next/image";
 import NotificationProfile from "@/components/NotificationProfile";
 import BackLink from "@/components/BackLink";
 import { useRouter } from 'next/navigation';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 const AddUserPage = () => {
   const router = useRouter();
   const [userData, setUserData] = useState({
@@ -59,12 +62,12 @@ const AddUserPage = () => {
         id_image: userData.idImage,        // Include the base64 image string
     };
 
-    console.log("Request Body:", JSON.stringify(requestBody)); // Log the request data
+    console.log("Request Body:", requestBody); // Log the request data
 
     try {
         const accessToken = localStorage.getItem("access_token");
         console.log("Access Token:", accessToken); // Log the access token
-        const response = await fetch("https://mojoapi.grandafricamarket.com/api/users/store", {
+        const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/users/store", {
             method: "POST",
             body: JSON.stringify(requestBody), // Use JSON.stringify for the request body
             headers: {
@@ -78,16 +81,30 @@ const AddUserPage = () => {
         }
 
         console.log("User added successfully.");
-        alert("User added successfully!"); // Alert box for successful addition
-        router.push("/agent-dashboard/user-management"); // Redirect to user management page
+        toast.success("User added successfully!");
+        setTimeout(() => {
+            router.push("/agent-dashboard/user-management");
+        }, 2000);
     } catch (err) {
         console.error("Failed to add user:", err.message);
-        setError("Failed to add user. Please check your input and try again.");
+        toast.error("Failed to add user. Please check your input and try again.");
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
+     <ToastContainer
+        position="top-right"
+        autoClose={4000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       {/* Header */}
       <header className="flex items-center justify-between p-4 bg-white border-b">
         <h1 className="text-xl font-semibold">User Management</h1>

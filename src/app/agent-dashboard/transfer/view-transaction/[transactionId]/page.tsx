@@ -17,7 +17,7 @@ const page = () => {
   const { transactionId } = useParams();
   const [transaction, setTransaction] = useState({});
   const fetchTransaction = async () => {
-    const response = await fetchWithAuth(`https://mojoapi.grandafricamarket.com/api/transactions/${transactionId}`);
+    const response = await fetchWithAuth(`https://mojoapi.crosslinkglobaltravel.com/api/transactions/${transactionId}`);
     const data = await response.json();
 
     //console.log(data.data);

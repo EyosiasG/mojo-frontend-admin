@@ -150,7 +150,7 @@ export default function TransferPage() {
   const fetchTransactions = async () => {
     setLoading(true);
     try {
-      const response = await fetch("https://mojoapi.grandafricamarket.com/api/transfers", {
+      const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/transfers", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -213,7 +213,7 @@ export default function TransferPage() {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`https://mojoapi.grandafricamarket.com/api/transactions/search/${searchTerm}`, {
+        const response = await fetch(`https://mojoapi.crosslinkglobaltravel.com/api/transactions/search/${searchTerm}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

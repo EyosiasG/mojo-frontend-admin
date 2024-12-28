@@ -27,7 +27,7 @@ const Page = () => {
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const response = await fetchWithAuth("https://mojoapi.grandafricamarket.com/api/users/create");
+        const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/users/create");
         console.log(response)
         if (!response.ok) {
           throw new Error(`Failed to fetch roles: ${response.statusText}`);
@@ -78,7 +78,7 @@ const Page = () => {
     // formDataToSend.append("role", formData.role); // Add role
   
     try {
-      const response = await fetch("https://mojoapi.grandafricamarket.com/api/users", {
+      const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/users", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`, // Attach token in headers

@@ -29,7 +29,7 @@ export default function ViewRate() {
     async function fetchRate() {
       try {
         const response = await fetchWithAuth(
-          `https://mojoapi.grandafricamarket.com/api/rates/${rateId}`
+          `https://mojoapi.crosslinkglobaltravel.com/api/rates/${rateId}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch exchange rate");

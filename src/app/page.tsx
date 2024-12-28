@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 
 
 export default function LoginPage() {
@@ -16,12 +16,12 @@ export default function LoginPage() {
 
   // Handle form submission
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault(); 
+    e.preventDefault();
     setLoading(true);
     setError(null); // Reset previous errors
 
     try {
-      const response = await fetch("https://mojoapi.grandafricamarket.com/api/login", {
+      const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -41,8 +41,9 @@ export default function LoginPage() {
         localStorage.setItem("agent", "pass");
 
         console.log("Access Token:", localStorage.getItem("access_token"));
-        // Log the token to the console (for debugging)
-        // console.log("Access Token:", data.access_token);
+
+        // Show success toast
+        toast.success("Login successful! Redirecting to dashboard...");
 
         // Redirect to the agent dashboard
         router.push("/agent-dashboard");
@@ -51,26 +52,36 @@ export default function LoginPage() {
         if (data.message) {
           // If the response has a message (like 'Invalid credentials')
           setError(data.message);
+          toast.error(data.message); // Show error toast
         } else {
           // Handle generic errors
           setError("An error occurred during login. Please try again.");
+          toast.error("An error occurred during login. Please try again."); // Show error toast
         }
       }
     } catch (error) {
       // Catch network or other unexpected errors
       setError("Network error. Please try again later.");
+      toast.error("Network error. Please try again later."); // Show error toast
     } finally {
       setLoading(false);
-    }
-
-    if (error) {
-      alert(error);
     }
   };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gray-100">
-      <ToastContainer />
+      <ToastContainer
+        position="top-center"
+        autoClose={4000}
+        hideProgressBar={true}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <div className="w-full grid lg:grid-cols-2 min-h-screen p-5 gap-5">
         {/* Left side - Animation Container */}
         <div

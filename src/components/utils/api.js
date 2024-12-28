@@ -1,4 +1,4 @@
-const API_BASE_URL = "http:/https://mojoapi.grandafricamarket.com/api/"; // Replace with your API base URL
+const API_BASE_URL = "http:/https://mojoapi.crosslinkglobaltravel.com/api/"; // Replace with your API base URL
 
 // Function to get the transfer creation page data (e.g., available banks, exchange rate, etc.)
 export const getTransferData = async () => {

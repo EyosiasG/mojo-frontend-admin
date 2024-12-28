@@ -7,7 +7,7 @@ const ProjectedBarGraph = () => {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const response = await fetchWithAuth("https://mojoapi.grandafricamarket.com/api/users");
+      const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/users");
       const result = await response.json();
       console.log("API Response:", result);
       const users = result.users;

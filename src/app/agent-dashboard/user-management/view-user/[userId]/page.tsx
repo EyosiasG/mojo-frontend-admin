@@ -22,7 +22,7 @@ export default function Page() {
     const fetchUserData = async () => {
       try {
         const response = await fetchWithAuth(
-          `https://mojoapi.grandafricamarket.com/api/users/${userId}`
+          `https://mojoapi.crosslinkglobaltravel.com/api/users/${userId}`
         );
         if (!response.ok) throw new Error(`Error: ${response.statusText}`);
         const data = await response.json();
@@ -182,7 +182,7 @@ export default function Page() {
         <div className="mb-6">
           <BackLink>
             <ArrowLeft className="h-4 w-4" />
-            View User - {userData.first_name} {userData.last_name}
+            User Details For - {userData.first_name} {userData.last_name}
           </BackLink>
         </div>
 

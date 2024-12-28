@@ -1,5 +1,4 @@
-"use client"
-import { useState, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import Image from "next/image";
 import { Camera } from "lucide-react";
 import { fetchWithAuth } from "../../../components/utils/fetchwitAuth";
-// import jwt_decode from "jwt-decode";
 
 export default function SettingsPage() {
   const [user, setUser] = useState({
@@ -15,42 +13,67 @@ export default function SettingsPage() {
     last_name: '',
     email: '',
     username: '',
-    timezone: '',
   });
 
   const [loading, setLoading] = useState(true);
+  const [profileImage, setProfileImage] = useState('/img/profile.jpg');
+  const fileInputRef = useRef<HTMLInputElement>(null); // Reference for file input
+  const [base64Image, setBase64Image] = useState<string | null>(null); // New state for the base64 image
 
-  // Extract userId from the JWT token stored in localStorage
-  const getUserIdFromToken = () => {
-    // const token = localStorage.getItem("userToken");
-    // console.log(token) // Get token from localStorage (or cookies)
-    // if (token) {
-    //   // const decoded: any = jwt_decode(token); 
-    //   // console.log("decoded:" ,decoded);
-
-    //   return decoded.userId; 
-    // }
-    return 1; // Return 1 if no token found
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("snadnlasndla");
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setBase64Image(reader.result as string); // Store the base64 string in state
+        console.log("BAse64: ", base64Image);
+        setProfileImage(reader.result as string); // Update the preview image
+        setUser((prev) => ({
+          ...prev,
+          profileImage: reader.result as string,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  const userId = getUserIdFromToken(); // Get userId dynamically from the token
-
-  useEffect(() => {
-    // Fetch user settings data from the API
-    const fetchUserSettings = async () => {
-      try {
-        const res = await fetchWithAuth(`https://mojoapi.grandafricamarket.com/api/settings/${userId}`);
-        const data = await res.json();
-        setUser(data);
-      } catch (error) {
-        console.error('Error fetching user settings:', error);
-      } finally {
-        setLoading(false);
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Check if the file is an image
+      if (!file.type.startsWith('image/')) {
+        alert('Please upload a valid image file.');
+        return;
       }
-    };
 
-    fetchUserSettings();
-  }, [userId]);
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (!reader.result) return;
+        const result = reader.result as string;
+        const base64String = result.split(",")[1]; // Extract base64 string
+
+        console.log("Base64 String: ", base64String); // Log the base64 string for debugging
+
+        // Check if the base64 string is valid
+        if (!base64String || base64String.length === 0) {
+          alert('The generated base64 string is invalid.');
+          return;
+        }
+
+        setUser((prevState) => ({
+          ...prevState,
+          id_image: base64String, // Store base64 string
+        }));
+        setProfileImage(result); // Update the preview image after setting id_image
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const openFileSelector = () => {
+    fileInputRef.current?.click(); // Trigger file input click programmatically
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -65,12 +88,15 @@ export default function SettingsPage() {
     setLoading(true);
 
     try {
-      const res = await fetchWithAuth(`https://mojoapi.grandafricamarket.com/api/settings/${userId}`, {
-        method: 'POST',
+      const res = await fetchWithAuth(`https://mojoapi.crosslinkglobaltravel.com/api/settings/${user.id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(user),
+        body: JSON.stringify({
+          ...user,
+          //id_image: base64Image,
+        }),
       });
 
       if (res.ok) {
@@ -105,7 +131,7 @@ export default function SettingsPage() {
           <div className="flex items-center gap-4">
             <div className="relative">
               <Image
-                src="/img/profile.jpg"
+                src={profileImage}
                 alt="Profile picture"
                 width={100}
                 height={100}
@@ -115,11 +141,21 @@ export default function SettingsPage() {
                 size="icon"
                 variant="secondary"
                 className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full"
+                onClick={openFileSelector} // Opens the file selector
               >
                 <Camera className="h-4 w-4" />
               </Button>
             </div>
-            <Button variant="outline">Change avatar</Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+            <Button variant="outline" onClick={openFileSelector}>
+              Change avatar
+            </Button>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
@@ -172,8 +208,6 @@ export default function SettingsPage() {
           <Button onClick={handleSubmit}>Save changes</Button>
         </CardContent>
       </Card>
-
-      {/* Additional Sections for Changing Password, Logging out, and Deleting Account */}
     </div>
   );
 }

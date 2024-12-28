@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
 async function fetchTotalTransactions() {
     try {
-      const response = await fetchWithAuth("https://mojoapi.grandafricamarket.com/api/transactions");
+      const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/transactions");
       // Check if the response is OK
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

@@ -12,12 +12,12 @@ export default function DashboardLayout({
 {
   const router = useRouter();
 
-  useEffect(() => {
-    console.log(localStorage.getItem("admin"));
-    if (!localStorage.getItem("admin")) { // Check local storage
-      router.push("/admin-login"); // Reroute to login page
-    }
-  }, [router]); // Add router as a dependency
+  // useEffect(() => {
+  //   console.log(localStorage.getItem("admin"));
+  //   if (!localStorage.getItem("admin")) { // Check local storage
+  //     router.push("/admin-login"); // Reroute to login page
+  //   }
+  // }, [router]); // Add router as a dependency
 
   return (
     <Layout>

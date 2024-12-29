@@ -32,6 +32,7 @@ import Link from "next/link";
 import NotificationProfile from "@/components/NotificationProfile";
 import { format } from "date-fns";
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
+import Swal from 'sweetalert2';
 
 export default function UserManagementPage() {
   const [users, setUsers] = useState([]);
@@ -84,9 +85,16 @@ export default function UserManagementPage() {
 
   // Function to delete a user
   const handleDelete = async (userId) => {
-    const isConfirmed = window.confirm(
-      "Are you sure you want to delete this user?"
-    );
+    const isConfirmed = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => result.isConfirmed);
+
     if (isConfirmed) {
       try {
         const response = await fetchWithAuth(
@@ -103,10 +111,10 @@ export default function UserManagementPage() {
         // Remove the deleted user from the list
         setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
         await fetchUsers(); // Regenerate the user list after deletion
-        alert("User deleted successfully");
+        Swal.fire('Deleted!', 'User has been deleted.', 'success');
       } catch (err) {
         setError(err.message);
-        alert("Failed to delete user");
+        Swal.fire('Error!', 'Failed to delete user.', 'error');
       }
     }
   };

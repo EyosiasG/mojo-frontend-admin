@@ -3,6 +3,8 @@ import { useEffect } from 'react';
 import { Layout } from "@/components/AgentLayout";
 import { Poppins } from "next/font/google";
 import { useRouter } from "next/navigation";
+import { toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 
 const poppins = Poppins({
   subsets: ['latin'], // Include subsets based on your needs
@@ -14,27 +16,36 @@ export default function DashboardLayout({
   children, // will be a page or nested layout
 }: {
   children: React.ReactNode;
-}) 
-
-{
+}) {
   const router = useRouter();
 
   useEffect(() => {
     console.log(localStorage.getItem("agent"));
     if (!localStorage.getItem("agent")) { // Check local storage
+      toast.error("You need to log in as an admin."); // Show toast notification
       router.push("/"); // Reroute to login page
     }
-  }, [router]); 
+  }, [router]);
   return (
     <html>
       <body className={poppins.className}>
         <Layout>
           {/* Include shared UI here e.g. a header or sidebar */}
           {children}
+          <ToastContainer
+            position="top-center"
+            autoClose={4000}
+            hideProgressBar={true}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+          />
         </Layout>
       </body>
     </html>
-
-
   );
 }

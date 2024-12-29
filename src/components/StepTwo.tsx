@@ -15,6 +15,9 @@ import {
 import BackLink from "@/components/BackLink";
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
 import { useSearchParams } from "next/navigation";
+import { init } from "next/dist/compiled/webpack/webpack";
+import Swal from 'sweetalert2';
+import { useRouter } from "next/navigation";
 
 const Page = () => {
   const searchParams = useSearchParams();
@@ -23,12 +26,18 @@ const Page = () => {
   const [bank, setBank] = useState<string | null>(null);
   const [accountNumber, setAccountNumber] = useState<string>("");
   const [senderName, setSenderName] = useState<string>("");
+  const [recieverName, setRecieverName] = useState<string>("");
   const [accountName, setAccountName] = useState<string>("");
   const [banks, setBanks] = useState([]);
   const [customers, setCustomers] = useState<string[]>([]);
   const [filteredCustomers, setFilteredCustomers] = useState<string[]>([]);
+  const [filteredRecievers, setFilteredRecievers] = useState<string[]>([]);
   const [users, setUsers] = useState<string[]>([]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [senderId, setSenderId] = useState<string | null>(null);
+  const [recieverId, setRecieverId] = useState<string | null>(null);
+  const [customerMap, setCustomerMap] = useState<{ [key: string]: string }>({});
+  const router = useRouter();
 
   const exchangeRate = 122.85; // 1 USD = 122.5 ETB for this example
 
@@ -77,8 +86,14 @@ const Page = () => {
         }
         console.log("Fetched Users:", data.users);
         const userNames = data.users.map(user => `${user.first_name} ${user.last_name}`);
+        const userMap = data.users.reduce((map: { [key: string]: string }, user: { id: string; first_name: string; last_name: string }) => {
+          map[`${user.first_name} ${user.last_name}`] = user.id;
+          return map;
+        }, {});
         setCustomers(userNames);
+        setCustomerMap(userMap);
         console.log("Fetched Users:", userNames);
+        setUsers(userNames);
       } catch (error) {
         console.error("Error:", error);
       }
@@ -103,6 +118,8 @@ const Page = () => {
       sender_name: senderName,
       receiver_name: accountName,
       account_number: accountNumber,
+      sender_id: senderId,
+      receiver_id: recieverId
     };
 
     console.log("Request Data:", requestData);
@@ -115,28 +132,43 @@ const Page = () => {
         return;
       }
     
-      const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/transfers", {
+      const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/transfers", {
         method: "POST",
         body: JSON.stringify(requestData),
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
         },
       });
     
       if (!response.ok) {
         const error = await response.json();
         console.error("API Error:", error);
-        alert(`Error: ${error.message}`);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: error.message,
+        });
         return;
       }
     
       const data = await response.json();
       console.log("Transfer successful", data);
-      setSuccessMessage("Transaction successfully added!");
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: 'Transaction successfully added! Redirecting to transfers page',
+      });
+      setTimeout(() => {
+        router.push("/agent-dashboard/transfer");
+      }, 2000);
+      
     } catch (error) {
       console.error("Error:", error);
-      alert("An error occurred while making the request.");
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'An error occurred while making the request.',
+      });
     }
   };
 
@@ -148,7 +180,7 @@ const Page = () => {
   const handleCustomerNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
     setSenderName(inputValue);
-
+    
     // Filter customers based on input
     const suggestions = customers.filter(customer =>
       customer.toLowerCase().includes(inputValue.toLowerCase())
@@ -164,6 +196,32 @@ const Page = () => {
   const handleSuggestionClick = (customer: string) => {
     setSenderName(customer);
     setFilteredCustomers([]); // Clear suggestions when a suggestion is selected
+    setSenderId(customerMap[customer]); // Set senderId based on selected customer
+    console.log("SenderID: ", senderId);
+  };
+
+
+  const handleRecieverNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    setRecieverName(inputValue);
+    
+    // Filter customers based on input
+    const suggestions = customers.filter(customer =>
+      customer.toLowerCase().includes(inputValue.toLowerCase())
+    );
+    setFilteredRecievers(suggestions);
+
+    // Clear suggestions if input is empty
+    if (!inputValue) {
+      setFilteredRecievers([]); // Clear suggestions if input is empty
+    }
+  };
+
+  const handleRecieverSuggestionClick = (customer: string) => {
+    setRecieverName(customer);
+    setFilteredRecievers([]);
+    setRecieverId(customerMap[customer]);
+    console.log("RecieverID: ", recieverId);
   };
 
   const dummyCustomers = [
@@ -310,29 +368,41 @@ const Page = () => {
 
                       <div>
                         <label className="block text-sm text-muted-foreground mb-1">
-                          Recipient Account Name
+                          Recipient Name
                         </label>
                         <Input
                           type="text"
-                          value={accountName}
-                          onChange={(e) => setAccountName(e.target.value)}
-                          placeholder="Enter account name"
+                          value={recieverName}
+                          onChange={handleRecieverNameChange}
+                          placeholder="Enter recipient name"
                         />
+                        {filteredRecievers.length > 0 && (
+                          <ul className="suggestions-list" style={{ maxHeight: '150px', overflowY: 'auto' }}>
+                            {filteredRecievers.map((customer, index) => (
+                              <li key={index} onClick={() => handleRecieverSuggestionClick(customer)}>
+                                {customer}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
                       </div>
                     </div>
                   </div>
                 </div>
+             
 
                 <div className="flex justify-between pt-4">
                   <Button variant="outline">Previous</Button>
                   <Button type="submit">Confirm Payment</Button>
                 </div>
+              
               </form>
             </div>
           </CardContent>
         </main>
       </div>
     </div>
+    
   );
 };
 

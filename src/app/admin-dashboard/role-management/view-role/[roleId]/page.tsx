@@ -1,8 +1,74 @@
+"use client";
+
 import { ArrowLeft } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import BackLink from "@/components/BackLink";
+import { useEffect, useState } from "react";
+import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
 
-export default function RoleView() {
+interface Permission {
+  id: number;
+  name: string;
+  guard_name: string;
+  created_at: string;
+  updated_at: string;
+  enabled?: boolean;
+}
+
+interface Role {
+  id: number;
+  name: string;
+  guard_name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface RoleData {
+  role: Role;
+  permissions: Permission[];
+  rolePermissions: string[];
+}
+
+export default function RoleView({ params }: { params: { roleId: string } }) {
+  const [roleData, setRoleData] = useState<RoleData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchRole = async () => {
+      try {
+        const response = await fetchWithAuth(
+          `https://mojoapi.crosslinkglobaltravel.com/api/roles/${params.roleId}/edit`
+        );
+        if (!response.ok) throw new Error("Failed to fetch role");
+        const data = await response.json();
+        
+        // Transform the data to match our interface
+        const transformedData: RoleData = {
+          role: data.role,
+          permissions: data.permissions.map((perm: Permission) => ({
+            ...perm,
+            enabled: data.rolePermissions.includes(perm.name)
+          })),
+          rolePermissions: data.rolePermissions
+        };
+
+        setRoleData(transformedData);
+      } catch (err) {
+        const error = err as Error;
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRole();
+  }, [params.roleId]);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+  if (!roleData) return <div>Role not found</div>;
+
   return (
     <div className="min-h-screen bg-background">
       <header className="flex items-center justify-between border-b p-4">
@@ -11,14 +77,14 @@ export default function RoleView() {
             <ArrowLeft className="h-4 w-4" />
           </BackLink>
 
-          <h1 className="text-lg font-semibold">Edit Role</h1>
+          <h1 className="text-lg font-semibold">View Role</h1>
         </div>
       </header>
       <div className="max-w-4xl mx-auto p-6">
         <div className="space-y-8">
           <section className="space-y-4">
             <h2 className="text-sm font-medium text-muted-foreground">
-              View Information
+              Role Information
             </h2>
 
             <div className="space-y-4">
@@ -26,17 +92,21 @@ export default function RoleView() {
                 <h3 className="text-sm font-medium text-muted-foreground mb-1">
                   Role Name
                 </h3>
-                <p className="text-base">Admin</p>
+                <p className="text-base">{roleData.role.name}</p>
               </div>
 
               <div>
                 <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                  Status
+                  Guard Name
                 </h3>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <span>Active</span>
-                </div>
+                <p className="text-base">{roleData.role.guard_name}</p>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground mb-1">
+                  Created At
+                </h3>
+                <p className="text-base">{new Date(roleData.role.created_at).toLocaleDateString()}</p>
               </div>
             </div>
           </section>
@@ -47,40 +117,18 @@ export default function RoleView() {
             </h2>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <label htmlFor="create-user" className="text-sm">
-                  Create User
-                </label>
-                <Switch id="create-user" disabled />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <label htmlFor="view-user" className="text-sm">
-                  View User
-                </label>
-                <Switch id="view-user" defaultChecked />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <label htmlFor="view-transaction" className="text-sm">
-                  View Transaction
-                </label>
-                <Switch id="view-transaction" defaultChecked />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <label htmlFor="create-role" className="text-sm">
-                  Create Role
-                </label>
-                <Switch id="create-role" defaultChecked />
-              </div>
-
-              <div className="flex items-center justify-between">
-                <label htmlFor="view-role" className="text-sm">
-                  View Role
-                </label>
-                <Switch id="view-role" defaultChecked />
-              </div>
+              {roleData.permissions.map((permission) => (
+                <div key={permission.id} className="flex items-center justify-between">
+                  <label htmlFor={permission.id.toString()} className="text-sm">
+                    {permission.name}
+                  </label>
+                  <Switch 
+                    id={permission.id.toString()}
+                    checked={permission.enabled}
+                    disabled
+                  />
+                </div>
+              ))}
             </div>
           </section>
         </div>

@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ToastContainer, toast } from "react-toastify";
+import Swal from 'sweetalert2'; // Import SweetAlert
 
 
 export default function LoginPage() {
@@ -42,8 +42,14 @@ export default function LoginPage() {
 
         console.log("Access Token:", localStorage.getItem("access_token"));
 
-        // Show success toast
-        toast.success("Login successful! Redirecting to dashboard...");
+        // Show success alert
+        Swal.fire({
+          title: 'Success!',
+          text: 'Login successful! Redirecting to dashboard...',
+          icon: 'success',
+          timer: 4000,
+          showConfirmButton: false,
+        });
 
         // Redirect to the agent dashboard
         router.push("/agent-dashboard");
@@ -52,17 +58,38 @@ export default function LoginPage() {
         if (data.message) {
           // If the response has a message (like 'Invalid credentials')
           setError(data.message);
-          toast.error(data.message); // Show error toast
+          // Show error alert
+          Swal.fire({
+            title: 'Error!',
+            text: data.message,
+            icon: 'error',
+            timer: 4000,
+            showConfirmButton: false,
+          });
         } else {
           // Handle generic errors
           setError("An error occurred during login. Please try again.");
-          toast.error("An error occurred during login. Please try again."); // Show error toast
+          // Show error alert
+          Swal.fire({
+            title: 'Error!',
+            text: "An error occurred during login. Please try again.",
+            icon: 'error',
+            timer: 4000,
+            showConfirmButton: false,
+          });
         }
       }
     } catch (error) {
       // Catch network or other unexpected errors
       setError("Network error. Please try again later.");
-      toast.error("Network error. Please try again later."); // Show error toast
+      // Show network error alert
+      Swal.fire({
+        title: 'Network Error!',
+        text: 'Please try again later.',
+        icon: 'error',
+        timer: 4000,
+        showConfirmButton: false,
+      });
     } finally {
       setLoading(false);
     }
@@ -70,18 +97,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gray-100">
-      <ToastContainer
-        position="top-center"
-        autoClose={4000}
-        hideProgressBar={true}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
       <div className="w-full grid lg:grid-cols-2 min-h-screen p-5 gap-5">
         {/* Left side - Animation Container */}
         <div

@@ -10,9 +10,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Banknote, Users } from "lucide-react";
-import BarGraph from "@/components/charts/BarGraph";
-import PieChart from "@/components/charts/PieChart";
-import ProjectedBarGraph from "@/components/charts/ProjectedBarGraph";
+import AdminBarGraph from "@/components/charts/AdminBarGraph";
+import AdminProjectedBarGraph from "@/components/charts/AdminProjectedBarGraph";
 import NotificationProfile from "@/components/NotificationProfile";
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth"; // Custom fetch function for authenticated requests
 import { useRouter } from "next/navigation"; // Import useRouter
@@ -147,17 +146,16 @@ export default function Page() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <BarGraph />
+          <AdminBarGraph/>
 
           <div className="flex gap-6 justify-center">
-            <PieChart />
             <Card className="p-6 flex-1 justify-center flex ">
               <Calendar mode="single" selected={date} className="" />
             </Card>
           </div>
         </div>
         <div className="grid gap-6 lg:grid-cols-2">
-          <ProjectedBarGraph />
+          <AdminProjectedBarGraph/>
 
           <Card className="p-6 ">
             <div className="flex items-center justify-center h-full">

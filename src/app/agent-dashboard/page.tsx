@@ -73,13 +73,13 @@ export default function DashboardPage() {
   return (
     <>
       <div className="border-b bg-white">
-        <div className="flex h-16 items-center justify-between px-6">
-          <h1 className="text-xl font-semibold text-[#2B3674]">
+        <div className="flex flex-col sm:flex-row h-auto sm:h-16 items-center justify-between px-4 sm:px-6 py-4 sm:py-0">
+          <h1 className="text-xl font-semibold text-[#2B3674] mb-4 sm:mb-0">
             Main Dashboard
           </h1>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
             <Link href="agent-dashboard/transfer/step-one">
-              <Button className="gap-2 rounded-full bg-primary hover:bg-primary/90">
+              <Button className="w-full sm:w-auto gap-2 rounded-full bg-primary hover:bg-primary/90">
                 <Send className="h-4 w-4" />
                 Send Money
               </Button>
@@ -99,16 +99,15 @@ export default function DashboardPage() {
         <div className="p-6">
           <div className="grid gap-6">
             {/* Charts Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-1 gap-4 px-36">
+            <div className="grid grid-cols-1 px-4 md:px-12 lg:px-24">
               <BarGraph />
-
             </div>
 
             {/* Calendar and Stats Section */}
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid gap-6 md:grid-cols-2">
               <ProjectedBarGraph />
-
-              <Card className="p-6 ">
+              
+              <Card className="p-6">
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center">
                     <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">

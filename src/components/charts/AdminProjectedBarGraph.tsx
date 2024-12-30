@@ -3,12 +3,12 @@ import { Card } from "../ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { fetchWithAuth } from "../utils/fetchwitAuth";
 
-const ProjectedBarGraph = () => {
+const AdminProjectedBarGraph = () => {
   const [monthlyData, setMonthlyData] = useState<{ name: string; actual: number }[]>([]);
 
   useEffect(() => {
     const fetchTransactions = async () => {
-      const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/agent/transactions");
+      const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/transactions");
       const result = await response.json();
       const transactions = result.data;
 
@@ -53,4 +53,4 @@ const ProjectedBarGraph = () => {
   );
 };
 
-export default ProjectedBarGraph;
+export default AdminProjectedBarGraph;

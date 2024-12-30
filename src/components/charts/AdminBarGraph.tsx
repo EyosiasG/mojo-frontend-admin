@@ -3,24 +3,24 @@ import { Card } from "../ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { fetchWithAuth } from "../utils/fetchwitAuth";
 
-const ProjectedBarGraph = () => {
-  const [monthlyData, setMonthlyData] = useState<{ name: string; actual: number }[]>([]);
+const AdminBarGraph = () => {
+  const [monthlyData, setMonthlyData] = useState<{ name: string; value: number }[]>([]);
 
   useEffect(() => {
     const fetchTransactions = async () => {
-      const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/agent/transactions");
+      const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/transactions");
       const result = await response.json();
       const transactions = result.data;
 
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       const monthlyTotals = months.map(month => ({
         name: month,
-        actual: 0
+        value: 0
       }));
 
       transactions.forEach(transaction => {
         const month = new Date(transaction.created_at).getMonth();
-        monthlyTotals[month].actual += parseFloat(transaction.amount);
+        monthlyTotals[month].value += parseFloat(transaction.amount);
       });
 
       setMonthlyData(monthlyTotals);
@@ -46,11 +46,15 @@ const ProjectedBarGraph = () => {
           <YAxis />
           <Tooltip />
           <Legend />
-          <Bar dataKey="actual" fill="#1e40af" />
+          <Bar 
+            dataKey="value" 
+            fill="#1e40af"
+            radius={[4, 4, 0, 0]}
+          />
         </BarChart>
       </ResponsiveContainer>
     </Card>
   );
 };
 
-export default ProjectedBarGraph;
+export default AdminBarGraph;

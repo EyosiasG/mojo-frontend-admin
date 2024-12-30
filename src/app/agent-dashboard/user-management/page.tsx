@@ -40,6 +40,7 @@ export default function UserManagementPage() {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
+
   // Function to fetch users
   const fetchUsers = async () => {
     try {
@@ -62,8 +63,8 @@ export default function UserManagementPage() {
         throw new Error('Invalid response format from server');
       }
 
-      // Sort users by registration date (created_at) in ascending order
-      const sortedUsers = data.users.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+      // Sort users by registration date (created_at) in descending order (newest first)
+      const sortedUsers = data.users.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       setUsers(sortedUsers); // Set the sorted users
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
@@ -78,6 +79,8 @@ export default function UserManagementPage() {
       setLoading(false);
     }
   };
+
+
 
   useEffect(() => {
     fetchUsers(); // Call the fetchUsers function here
@@ -126,11 +129,11 @@ export default function UserManagementPage() {
       const response = await fetchWithAuth(
         `https://mojoapi.crosslinkglobaltravel.com/api/users/search/${searchQuery}`
       );
-  
+
       if (!response.ok) {
         throw new Error(`Error: ${response.statusText}`);
       }
-  
+
       const data = await response.json();
       console.log("Search Users: ", data.data);
       if (!data.data || data.data.length === 0) {
@@ -142,15 +145,15 @@ export default function UserManagementPage() {
       alert("Failed to find user");
     }
   };
-  
+
   if (loading) return <div>Loading...</div>;
 
   return (
     <>
       <div className="border-b bg-white">
-        <div className="flex h-16 items-center justify-between px-6">
-          <h1 className="text-xl font-semibold">User Management</h1>
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 md:px-6 md:py-4">
+          <h1 className="text-lg font-semibold md:text-xl mb-3 sm:mb-0">User Management</h1>
+          <div className="flex w-full sm:w-auto justify-center sm:justify-end gap-4">
             <NotificationProfile
               profileLink="/agent-dashboard/settings"
               notificationLink="/agent-dashboard/notifications"
@@ -159,29 +162,29 @@ export default function UserManagementPage() {
         </div>
       </div>
 
+
       <div className="p-6">
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <div className="relative flex-1">
+        <div className="mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="relative flex-1 w-full md:w-auto">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
             <Input
-              className="pl-10"
+              className="pl-10 w-full"
               placeholder="Search"
               value={searchQuery}
               onChange={(e) => {
                 const value = e.target.value.trim();
                 setSearchQuery(value);
-               // Always call handleSearch when input changes
               }}
             />
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" className="gap-2" onClick={handleSearch}>
+          <div className="flex flex-col md:flex-row items-center gap-2 w-full md:w-auto">
+            <Button variant="outline" className="gap-2 w-full md:w-auto" onClick={handleSearch}>
               <Search className="h-4 w-4" />
               Search
             </Button>
 
-            <Link href="user-management/create-user">
-              <Button className="gap-2 bg-primary hover:bg-primary/90">
+            <Link href="user-management/create-user" className="w-full md:w-auto">
+              <Button className="gap-2 bg-primary hover:bg-primary/90 w-full">
                 <PlusCircle className="h-4 w-4" />
                 Create User
               </Button>
@@ -190,88 +193,107 @@ export default function UserManagementPage() {
         </div>
 
         <div className="rounded-lg border bg-white">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-12">
-                  <Checkbox />
-                </TableHead>
-                <TableHead>
-                  <div className="flex items-center gap-2">
-                    User ID
-                    <ChevronDown className="h-4 w-4" />
-                  </div>
-                </TableHead>
-                <TableHead>First Name</TableHead>
-                <TableHead>Last  Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Created At</TableHead>
-                <TableHead>ID</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="w-12"></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.map((user, i) => (
-                <TableRow key={user.id || i}>
-                  <TableCell>
-                    <Checkbox />
-                  </TableCell>
-                  <TableCell>{user.id}</TableCell>
-                  <TableCell>{user.first_name}</TableCell>
-                  <TableCell>{user.last_name}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.phone}</TableCell>
-                  <TableCell>
-                    {user.created_at
-                      ? format(new Date(user.created_at), "MMMM d, yyyy")
-                      : "N/A"}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={user.status === "active" ? "success" : "warning"}
-                      className="capitalize"
-                    >
-                      {user.status || "unknown"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <MoreVertical className="h-4 w-4" />
-                          <span className="sr-only">Open menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <Link
-                            href={`user-management/view-user/${user.id}`}
-                            className="w-full"
+          <div className="overflow-x-auto">
+            <div className="min-w-full inline-block align-middle">
+              <div className="overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12 hidden md:table-cell">
+                        <Checkbox />
+                      </TableHead>
+                      <TableHead className="hidden md:table-cell">
+                        <div className="flex items-center gap-2">
+                          User ID
+                          <ChevronDown className="h-4 w-4" />
+                        </div>
+                      </TableHead>
+                      <TableHead>First Name</TableHead>
+                      <TableHead>Last Name</TableHead>
+                      <TableHead className="hidden md:table-cell">Email</TableHead>
+                      <TableHead className="hidden md:table-cell">Phone</TableHead>
+                      <TableHead className="hidden md:table-cell">Created At</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="w-12"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users.map((user, i) => (
+                      <TableRow
+                        key={user.id || i}
+                        className="border-b last:border-b-0"
+                      >
+                        <TableCell className="hidden md:table-cell">
+                          <Checkbox />
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {user.id}
+                        </TableCell>
+                        <TableCell>
+                          {user.first_name}
+                        </TableCell>
+                        <TableCell>
+                          {user.last_name}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {user.email}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {user.phone}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {user.created_at
+                            ? format(new Date(user.created_at), "MMMM d, yyyy")
+                            : "N/A"}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={user.status === "active" ? "success" : "warning"}
+                            className="capitalize whitespace-nowrap"
                           >
-                            View
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href={`user-management/edit-user/${user.id}`}>
-                            Edit
-                          </Link>
-                        </DropdownMenuItem>
+                            {user.status || "unknown"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreVertical className="h-4 w-4" />
+                                <span className="sr-only">Open menu</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem asChild>
+                                <Link
+                                  href={`user-management/view-user/${user.id}`}
+                                  className="w-full"
+                                >
+                                  View
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <Link href={`user-management/edit-user/${user.id}`}>
+                                  Edit
+                                </Link>
+                              </DropdownMenuItem>
 
-                        <DropdownMenuItem onClick={() => handleDelete(user.id)}>
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                              <DropdownMenuItem onClick={() => handleDelete(user.id)}>
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          </div>
+
           {users.length > 0 ? (
-            <div className="flex items-center justify-between px-4 py-4">
-              <div className="text-sm text-gray-500">
+            <div className="flex items-center justify-between px-4 py-4 flex-wrap">
+              <div className="text-sm text-gray-500 w-full text-center md:text-left md:w-auto">
                 Showing 1 to 10 of {users.length} results
               </div>
             </div>

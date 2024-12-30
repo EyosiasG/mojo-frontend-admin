@@ -1,20 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { Card } from "../ui/card";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { fetchWithAuth } from "../utils/fetchwitAuth";
 
 const BarGraph = () => {
-  const [monthlyData, setMonthlyData] = useState<number[]>(Array(12).fill(0));
+  const [monthlyData, setMonthlyData] = useState<{ name: string; value: number }[]>([]);
 
   useEffect(() => {
     const fetchTransactions = async () => {
-      const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/transactions");
+      const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/agent/transactions");
       const result = await response.json();
       const transactions = result.data;
 
-      const monthlyTotals = Array(12).fill(0);
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const monthlyTotals = months.map(month => ({
+        name: month,
+        value: 0
+      }));
+
       transactions.forEach(transaction => {
         const month = new Date(transaction.created_at).getMonth();
-        monthlyTotals[month] += parseFloat(transaction.amount);
+        monthlyTotals[month].value += parseFloat(transaction.amount);
       });
 
       setMonthlyData(monthlyTotals);
@@ -24,36 +30,29 @@ const BarGraph = () => {
   }, []);
 
   return (
-    <Card className="p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold">Transactions</h2>
-      </div>
-      <div className="h-[300px] flex items-end gap-2">
-        {/* Placeholder for bar chart */}
-        {monthlyData.map((amount, i) => (
-          <div
-            key={i}
-            className="bg-primary/90 w-full rounded-t"
-            style={{
-              height: `${(amount / Math.max(...monthlyData)) * 100}%`,
-            }}
+    <Card className="p-4 w-full">
+      <ResponsiveContainer width="100%" height={350}>
+        <BarChart
+          data={monthlyData}
+          margin={{
+            top: 20,
+            right: 30,
+            left: 20,
+            bottom: 20,
+          }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="name" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Bar 
+            dataKey="value" 
+            fill="#1e40af"
+            radius={[4, 4, 0, 0]}
           />
-        ))}
-      </div>
-      <div className="flex justify-between mt-2 text-sm text-gray-500">
-        <span>Jan</span>
-        <span>Feb</span>
-        <span>Mar</span>
-        <span>Apr</span>
-        <span>May</span>
-        <span>Jun</span>
-        <span>Jul</span>
-        <span>Aug</span>
-        <span>Sep</span>
-        <span>Oct</span>
-        <span>Nov</span>
-        <span>Dec</span>
-      </div>
+        </BarChart>
+      </ResponsiveContainer>
     </Card>
   );
 };

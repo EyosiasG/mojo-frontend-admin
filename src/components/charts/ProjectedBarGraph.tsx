@@ -8,22 +8,21 @@ const ProjectedBarGraph = () => {
 
   useEffect(() => {
     const fetchTransactions = async () => {
-      const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/agent/transactions");
-      const result = await response.json();
-      const transactions = result.data;
+      try {
+        const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/agent/dashboard");
+        const result = await response.json();
+        
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const monthlyTotals = months.map((month, index) => ({
+          name: month,
+          actual: result.transactions?.[index + 1] || 0 // Adding 1 because API uses 1-based month numbers
+        }));
 
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const monthlyTotals = months.map(month => ({
-        name: month,
-        actual: 0
-      }));
-
-      transactions.forEach(transaction => {
-        const month = new Date(transaction.created_at).getMonth();
-        monthlyTotals[month].actual += parseFloat(transaction.amount);
-      });
-
-      setMonthlyData(monthlyTotals);
+        setMonthlyData(monthlyTotals);
+      } catch (error) {
+        console.error('Error fetching transaction data:', error);
+        setMonthlyData([]);
+      }
     };
 
     fetchTransactions();

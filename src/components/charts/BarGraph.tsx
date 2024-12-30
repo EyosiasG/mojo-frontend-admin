@@ -5,29 +5,47 @@ import { fetchWithAuth } from "../utils/fetchwitAuth";
 
 const BarGraph = () => {
   const [monthlyData, setMonthlyData] = useState<{ name: string; value: number }[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTransactions = async () => {
-      const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/agent/transactions");
-      const result = await response.json();
-      const transactions = result.data;
+      try {
+        const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/transfers");
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch data: ${response.statusText}`);
+        }
 
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const monthlyTotals = months.map(month => ({
-        name: month,
-        value: 0
-      }));
+        const result = await response.json();
+        
+        if (!result.data || !Array.isArray(result.data)) {
+          throw new Error('Invalid data format received from server');
+        }
 
-      transactions.forEach(transaction => {
-        const month = new Date(transaction.created_at).getMonth();
-        monthlyTotals[month].value += parseFloat(transaction.amount);
-      });
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const monthlyTotals = months.map(month => ({
+          name: month,
+          value: 0
+        }));
 
-      setMonthlyData(monthlyTotals);
+        result.data.forEach(transaction => {
+          const month = new Date(transaction.created_at).getMonth();
+          monthlyTotals[month].value += parseFloat(transaction.amount) || 0;
+        });
+
+        setMonthlyData(monthlyTotals);
+      } catch (err) {
+        console.error('Error fetching transaction data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load chart data');
+      }
     };
 
     fetchTransactions();
   }, []);
+
+  if (error) {
+    return <Card className="p-4 w-full text-center text-red-500">{error}</Card>;
+  }
 
   return (
     <Card className="p-4 w-full">

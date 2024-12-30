@@ -186,17 +186,11 @@ export default function TransferPage() {
   return (
     <>
       <div className="border-b bg-white">
-        <div className="flex h-16 items-center justify-between px-6">
-          <h1 className="text-xl font-semibold text-[#2B3674]">
+        <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 md:px-6 md:py-4">
+          <h1 className="text-lg font-semibold text-[#2B3674] md:text-xl mb-3 sm:mb-0">
             Transfer Money
           </h1>
-          <div className="flex items-center gap-4">
-            <Link href="transfer/step-one">
-              <Button className="gap-2 rounded-full bg-primary hover:bg-primary/90">
-                <Send className="h-4 w-4" />
-                <span className="hidden sm:inline">Send Money</span>
-              </Button>
-            </Link>
+          <div className="flex w-full sm:w-auto justify-center sm:justify-end gap-4">
             <NotificationProfile
               profileLink="/agent-dashboard/settings"
               notificationLink="/agent-dashboard/notifications"
@@ -205,8 +199,8 @@ export default function TransferPage() {
         </div>
       </div>
 
-      <div className="p-6">
-        <div className="mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="p-4 md:p-6">
+        <div className="mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="relative flex-1 w-full">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
             <Input 
@@ -222,12 +216,12 @@ export default function TransferPage() {
             />
           </div>
           
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Button variant="outline" className="gap-2 flex-1 sm:flex-none" onClick={handleSearch}> 
+          <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+            <Button variant="outline" className="gap-2 w-full sm:w-auto" onClick={handleSearch}> 
               <Search className="h-4 w-4" />
               Search
             </Button>
-            <Link href="transfer/step-one" className="flex flex-1 sm:flex-none">
+            <Link href="transfer/step-one" className="w-full sm:w-auto">
               <Button className="gap-2 rounded-full bg-primary hover:bg-primary/90 w-full">
                 <Send className="h-4 w-4" />
                 Send Money
@@ -237,14 +231,14 @@ export default function TransferPage() {
         </div>
 
         <div className="rounded-lg border bg-white">
-          {loading && <div>Loading...</div>}
-          {error && <div className="text-red-500">{error}</div>}
+          {loading && <div className="p-4 text-center">Loading...</div>}
+          {error && <div className="p-4 text-center text-red-500">{error}</div>}
 
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-12 min-w-[40px]">
+                  <TableHead className="w-12 hidden md:table-cell">
                     <Checkbox />
                   </TableHead>
                   <TableHead className="min-w-[120px]">
@@ -253,50 +247,20 @@ export default function TransferPage() {
                       <ChevronDown className="h-4 w-4" />
                     </div>
                   </TableHead>
-                  <TableHead className="min-w-[150px]">
-                    <div className="flex items-center gap-2">
-                      Sender Name
-                      <ChevronDown className="h-4 w-4" />
-                    </div>
-                  </TableHead>
-                  <TableHead className="min-w-[150px]">
-                    <div className="flex items-center gap-2">
-                      Recipient Names
-                      <ChevronDown className="h-4 w-4" />
-                    </div>
-                  </TableHead>
-                  <TableHead className="min-w-[100px]">
-                    <div className="flex items-center gap-2">
-                      Amount
-                      <ChevronDown className="h-4 w-4" />
-                    </div>
-                  </TableHead>
-                  <TableHead className="min-w-[100px]">
-                    <div className="flex items-center gap-2">
-                      ETB Amount
-                      <ChevronDown className="h-4 w-4" />
-                    </div>
-                  </TableHead>
-                  <TableHead className="min-w-[120px]">
-                    <div className="flex items-center gap-2">
-                      Date
-                      <ChevronDown className="h-4 w-4" />
-                    </div>
-                  </TableHead>
-                  <TableHead className="min-w-[100px]">
-                    <div className="flex items-center gap-2">
-                      Status
-                      <ChevronDown className="h-4 w-4" />
-                    </div>
-                  </TableHead>
-                  <TableHead className="w-12 min-w-[40px]"></TableHead>
+                  <TableHead className="min-w-[150px]">Sender</TableHead>
+                  <TableHead className="min-w-[150px]">Recipient</TableHead>
+                  <TableHead className="min-w-[100px]">Amount</TableHead>
+                  <TableHead className="hidden md:table-cell">ETB Amount</TableHead>
+                  <TableHead className="hidden md:table-cell">Date</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="w-12"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {Array.isArray(transactions) && transactions.length > 0 ? (
                   transactions.map((transaction) => (
                     <TableRow key={transaction.transaction_id}>
-                      <TableCell>
+                      <TableCell className="hidden md:table-cell">
                         <Checkbox />
                       </TableCell>
                       <TableCell className="whitespace-nowrap">{transaction.transaction_id}</TableCell>
@@ -309,8 +273,8 @@ export default function TransferPage() {
                           return `${sign}${amount}`;
                         })()}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap">{transaction.etb_amount}</TableCell>
-                      <TableCell className="whitespace-nowrap">{formatDate(transaction.created_at)}</TableCell>
+                      <TableCell className="hidden md:table-cell whitespace-nowrap">{transaction.etb_amount}</TableCell>
+                      <TableCell className="hidden md:table-cell whitespace-nowrap">{formatDate(transaction.created_at)}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <div
@@ -351,6 +315,7 @@ export default function TransferPage() {
                             <DropdownMenuItem>
                               <Link
                                 href={`transfer/view-transaction/${transaction.id}`}
+                                className="w-full"
                               >
                                 View
                               </Link>
@@ -362,7 +327,7 @@ export default function TransferPage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center">
+                    <TableCell colSpan={9} className="text-center p-4">
                       No transactions found.
                     </TableCell>
                   </TableRow>
@@ -371,13 +336,13 @@ export default function TransferPage() {
             </Table>
           </div>
           {transactions.length > 0 ? (
-            <div className="flex items-center justify-between px-4 py-4">
+            <div className="flex items-center justify-between p-4">
               <div className="text-sm text-gray-500">
                 Showing 1 to 10 of {transactions.length} results
               </div>
             </div>
           ) : (
-            <div className="text-red-500 text-center py-4">No transactions found!</div>
+            <div className="text-red-500 text-center p-4">No transactions found!</div>
           )}
         </div>
       </div>

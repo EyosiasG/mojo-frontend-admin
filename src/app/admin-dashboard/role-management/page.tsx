@@ -1,4 +1,6 @@
-// "use client";
+"use client";
+
+import { useEffect, useState } from "react";
 import NotificationProfile from "@/components/NotificationProfile";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -26,46 +28,65 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
+import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
+import { toast } from "react-toastify";
 
 interface Role {
   id: string;
   name: string;
-  users: number;
-  created: string;
+  guard_name: string;
+  created_at: string;
   status: "active" | "inactive";
 }
 
-const roles: Role[] = [
-  {
-    id: "001",
-    name: "Admin",
-    users: 12,
-    created: "Nov 13,2024",
-    status: "active",
-  },
-  {
-    id: "001",
-    name: "Cashier",
-    users: 1,
-    created: "Nov 13,2024",
-    status: "active",
-  },
-  {
-    id: "001",
-    name: "Support",
-    users: 1,
-    created: "Nov 13,2024",
-    status: "active",
-  },
-  {
-    id: "001",
-    name: "Viewer",
-    users: 1,
-    created: "Nov 13,2024",
-    status: "active",
-  },
-];
-const page = () => {
+const Page = () => {
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/roles");
+        if (!response.ok) throw new Error("Failed to fetch roles");
+        const data = await response.json();
+        setRoles(data.data || []); // Provide default empty array if data.roles is undefined
+      } catch (err) {
+        const error = err as Error; // Type assertion
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRoles();
+  }, []);
+
+  const handleDelete = async (roleId: string) => {
+    try {
+      const response = await fetchWithAuth(
+        `https://mojoapi.crosslinkglobaltravel.com/api/roles/${roleId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete role");
+      }
+
+      // Remove the deleted role from the state
+      setRoles(roles.filter(role => role.id !== roleId));
+      toast.success("Role deleted successfully");
+    } catch (error) {
+      console.error("Error deleting role:", error);
+      toast.error("Failed to delete role");
+    }
+  };
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -119,20 +140,17 @@ const page = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {roles.map((role) => (
-            <TableRow key={role.id + role.name}>
+          {roles && roles.map((role) => (
+            <TableRow key={role.id}>
               <TableCell>
                 <Checkbox />
               </TableCell>
               <TableCell>{role.id}</TableCell>
               <TableCell>{role.name}</TableCell>
-              <TableCell>{role.users}</TableCell>
-              <TableCell>{role.created}</TableCell>
+              <TableCell>{role.guard_name}</TableCell>
+              <TableCell>{new Date(role.created_at).toLocaleDateString()}</TableCell>
               <TableCell>
-                <span className="inline-flex items-center gap-1">
-                  <span className="h-2 w-2 rounded-full bg-green-500" />
-                  Active
-                </span>
+                {role.status}
               </TableCell>
               <TableCell>
                 <DropdownMenu>
@@ -143,9 +161,16 @@ const page = () => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem>View</DropdownMenuItem>
-                    <DropdownMenuItem>Edit</DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">
+                    <Link href={`/admin-dashboard/role-management/view-role/${role.id}`}>
+                      <DropdownMenuItem>View</DropdownMenuItem>
+                    </Link>
+                    <Link href={`/admin-dashboard/role-management/edit-role/${role.id}`}>
+                      <DropdownMenuItem>Edit</DropdownMenuItem>
+                    </Link>
+                    <DropdownMenuItem 
+                      className="text-destructive"
+                      onClick={() => handleDelete(role.id)}
+                    >
                       Delete
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -170,15 +195,8 @@ const page = () => {
           {">"}
         </Button>
       </div>
-      {/* <style jsx>{`
-      .role-table :global(td),
-      .role-table :global(th) {
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
-      }
-    `}</style> */}
     </div>
   );
 };
 
-export default page;
+export default Page;

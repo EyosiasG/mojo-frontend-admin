@@ -1,53 +1,30 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Swal from 'sweetalert2';
 
 export const useInactivityLogout = () => {
   const router = useRouter();
+  const TIMEOUT = 0.5 * 60 * 1000; // 30 minutes
 
   useEffect(() => {
-    const handleLogout = () => {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("user");
-      localStorage.removeItem("agent");
-      router.push("/"); // Redirect to login page
-      
-      Swal.fire({
-        title: 'Session Expired',
-        text: 'You have been logged out due to inactivity.',
-        icon: 'warning',
-        timer: 4000,
-        showConfirmButton: false,
-      });
-    };
+    let timeoutId: NodeJS.Timeout;
 
     const resetTimer = () => {
-      localStorage.setItem('lastActivity', Date.now().toString());
+      clearTimeout(timeoutId);
+      console.log('Timer reset - setting new timeout');
+      timeoutId = setTimeout(() => {
+        console.log('Inactivity timeout reached - logging out');
+        localStorage.removeItem('access_token');
+        router.push('/');
+      }, TIMEOUT);
     };
 
-    const checkInactivity = () => {
-      const lastActivity = localStorage.getItem('lastActivity');
-      if (lastActivity) {
-        const inactiveTime = Date.now() - parseInt(lastActivity);
-        if (inactiveTime > 1 * 60 * 1000) {
-          handleLogout();
-        }
-      }
-    };
-
-    const activities = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'];
-    activities.forEach(activity => {
-      document.addEventListener(activity, resetTimer);
-    });
-
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+    events.forEach(event => document.addEventListener(event, resetTimer));
     resetTimer();
-    const intervalId = setInterval(checkInactivity, 60000);
 
     return () => {
-      activities.forEach(activity => {
-        document.removeEventListener(activity, resetTimer);
-      });
-      clearInterval(intervalId);
+      events.forEach(event => document.removeEventListener(event, resetTimer));
+      clearTimeout(timeoutId);
     };
   }, [router]);
 }; 

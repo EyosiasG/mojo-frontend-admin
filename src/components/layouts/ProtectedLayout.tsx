@@ -1,5 +1,5 @@
 "use client";
-import { useInactivityLogout } from '@/hooks/useInactivityLogout';
+import { useInactivityLogout } from '../../hooks/useInactivityLogout';
 
 export default function ProtectedLayout({
   children,

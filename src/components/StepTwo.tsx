@@ -85,7 +85,9 @@ const Page = () => {
           throw new Error('Invalid response format from server');
         }
         console.log("Fetched Users:", data.users);
-        const userNames = data.users.map(user => `${user.first_name} ${user.last_name}`);
+        const userNames = data.users.map((user: { first_name: string; last_name: string }) => 
+          `${user.first_name} ${user.last_name}`
+        );
         const userMap = data.users.reduce((map: { [key: string]: string }, user: { id: string; first_name: string; last_name: string }) => {
           map[`${user.first_name} ${user.last_name}`] = user.id;
           return map;

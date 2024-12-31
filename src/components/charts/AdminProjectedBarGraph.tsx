@@ -4,33 +4,28 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { fetchWithAuth } from "../utils/fetchwitAuth";
 
 const AdminProjectedBarGraph = () => {
-  const [monthlyData, setMonthlyData] = useState<{ name: string; actual: number }[]>([]);
+  const [monthlyData, setMonthlyData] = useState<{ name: string; users: number }[]>([]);
 
   useEffect(() => {
-    const fetchTransactions = async () => {
+    const fetchUserData = async () => {
       const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/transactions");
       const result = await response.json();
-      const transactions = result.data;
-
+      
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const monthlyTotals = months.map(month => ({
+      const monthlyTotals = months.map((month, index) => ({
         name: month,
-        actual: 0
+        users: result.users[index + 1] || 0
       }));
-
-      transactions.forEach(transaction => {
-        const month = new Date(transaction.created_at).getMonth();
-        monthlyTotals[month].actual += parseFloat(transaction.amount);
-      });
 
       setMonthlyData(monthlyTotals);
     };
 
-    fetchTransactions();
+    fetchUserData();
   }, []);
 
   return (
     <Card className="p-4 w-full">
+      <h2 className="text-xl font-semibold mb-4 text-center">Monthly User Distribution</h2>
       <ResponsiveContainer width="100%" height={350}>
         <BarChart
           data={monthlyData}
@@ -46,7 +41,7 @@ const AdminProjectedBarGraph = () => {
           <YAxis />
           <Tooltip />
           <Legend />
-          <Bar dataKey="actual" fill="#1e40af" />
+          <Bar dataKey="users" fill="#1e40af" />
         </BarChart>
       </ResponsiveContainer>
     </Card>

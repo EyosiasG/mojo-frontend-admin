@@ -152,7 +152,7 @@ export default function UserManagementPage() {
     <>
       <div className="border-b bg-white">
         <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 md:px-6 md:py-4">
-          <h1 className="text-lg font-semibold md:text-xl mb-3 sm:mb-0">User Management</h1>
+          <h1 className="text-lg font-semibold md:text-xl ml-8 mb-3 sm:mb-0">User Management</h1>
           <div className="flex w-full sm:w-auto justify-center sm:justify-end gap-4">
             <NotificationProfile
               profileLink="/agent-dashboard/settings"
@@ -213,7 +213,6 @@ export default function UserManagementPage() {
                       <TableHead className="hidden md:table-cell">Email</TableHead>
                       <TableHead className="hidden md:table-cell">Phone</TableHead>
                       <TableHead className="hidden md:table-cell">Created At</TableHead>
-                      <TableHead>Status</TableHead>
                       <TableHead className="w-12"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -246,14 +245,7 @@ export default function UserManagementPage() {
                             ? format(new Date(user.created_at), "MMMM d, yyyy")
                             : "N/A"}
                         </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={user.status === "active" ? "success" : "warning"}
-                            className="capitalize whitespace-nowrap"
-                          >
-                            {user.status || "unknown"}
-                          </Badge>
-                        </TableCell>
+                     
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>

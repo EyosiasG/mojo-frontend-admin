@@ -1,4 +1,4 @@
-import { Bell } from "lucide-react";
+import { Bell, User } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -20,16 +20,10 @@ export default function NotificationProfile({
       </Link>
       <Link
         href={profileLink}
-        className="rounded-full hover:ring-2 hover:ring-gray-200 transition-all"
+        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
         aria-label="Profile"
       >
-        <Image
-          src="/img/avatar.png"
-          alt="Profile picture"
-          width={40}
-          height={40}
-          className="rounded-full"
-        />
+        <User className="w-5 h-5 text-gray-500" />
       </Link>
     </div>
   );

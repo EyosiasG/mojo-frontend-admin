@@ -249,7 +249,7 @@ const Page = () => {
       <div className="max-w-5xl mx-30 p-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-semibold text-primary">
+          <h1 className="text-2xl ml-8 font-semibold text-primary">
             Transfer Money
           </h1>
           <div className="flex items-center gap-4">

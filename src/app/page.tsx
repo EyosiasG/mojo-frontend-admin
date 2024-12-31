@@ -21,6 +21,8 @@ export default function LoginPage() {
     setError(null); // Reset previous errors
 
     try {
+      console.log('Attempting to connect to:', "https://mojoapi.crosslinkglobaltravel.com/api/login");
+      
       const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/login", {
         method: "POST",
         headers: {
@@ -32,7 +34,9 @@ export default function LoginPage() {
         }),
       });
 
+      console.log('Response status:', response.status);
       const data = await response.json();
+      console.log('Response data:', data);
 
       if (response.ok) {
         // Store the token and user data in localStorage
@@ -80,12 +84,14 @@ export default function LoginPage() {
         }
       }
     } catch (error) {
-      // Catch network or other unexpected errors
-      setError("Network error. Please try again later.");
-      // Show network error alert
+      console.error('Login error:', error);
+      // Make the error message more specific
+      const errorMessage = error instanceof Error ? error.message : 'Network error. Please check your internet connection and try again.';
+      setError(errorMessage);
+      
       Swal.fire({
-        title: 'Network Error!',
-        text: 'Please try again later.',
+        title: 'Connection Error',
+        text: errorMessage,
         icon: 'error',
         timer: 4000,
         showConfirmButton: false,

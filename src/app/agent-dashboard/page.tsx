@@ -74,7 +74,7 @@ export default function DashboardPage() {
     <>
       <div className="border-b bg-white">
         <div className="flex flex-col sm:flex-row h-auto sm:h-16 items-center justify-between px-4 sm:px-6 py-4 sm:py-0">
-          <h1 className="text-xl font-semibold text-[#2B3674] mb-4 sm:mb-0">
+          <h1 className="text-xl font-semibold text-[#2B3674] ml-8 mb-4 sm:mb-0">
             Main Dashboard
           </h1>
           <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -92,8 +92,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="p-6">
-        <div>
+      <div className="py-6">
+        <div className="flex justify-end px-12">
           {formattedDate.toString()}
         </div>
         <div className="p-6">

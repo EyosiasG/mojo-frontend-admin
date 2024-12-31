@@ -280,7 +280,7 @@ export default function SettingsPage() {
   
 
   return (
-    <Layout>
+    <>
       <ToastContainer
         position="top-center"
         autoClose={2500}
@@ -292,7 +292,7 @@ export default function SettingsPage() {
         pauseOnHover
         theme="light"
       />
-      <div className="container mx-auto py-10 space-y-8">
+      <div className="container mx-auto py-10 space-y-8 max-w-3xl">
         {error && <p className="text-red-500">{error}</p>}
 
         {/* Profile Settings */}
@@ -487,6 +487,6 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
       </div>
-    </Layout>
+    </>
   );
 }

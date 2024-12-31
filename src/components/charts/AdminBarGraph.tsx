@@ -31,6 +31,7 @@ const AdminBarGraph = () => {
 
   return (
     <Card className="p-4 w-full">
+      <h2 className="text-xl font-semibold mb-4 text-center">Monthly Transaction Summary</h2>
       <ResponsiveContainer width="100%" height={350}>
         <BarChart
           data={monthlyData}

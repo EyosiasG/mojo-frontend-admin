@@ -16,12 +16,20 @@ import { Button } from "@/components/ui/button";
 const page = () => {
   const { transactionId } = useParams();
   const [transaction, setTransaction] = useState({});
+  const [currencySign, setCurrencySign] = useState('$');
+
   const fetchTransaction = async () => {
     const response = await fetchWithAuth(`https://mojoapi.crosslinkglobaltravel.com/api/transactions/${transactionId}`);
     const data = await response.json();
 
     //console.log(data.data);
     return data.data;
+  };
+
+  const fetchCurrency = async (currencyId) => {
+    const response = await fetchWithAuth(`https://mojoapi.crosslinkglobaltravel.com/api/currencies/${currencyId}`);
+    const data = await response.json();
+    return data.data.sign;
   };
 
   const handleView = async () => {
@@ -66,8 +74,8 @@ const page = () => {
       { label: 'Sender Name', value: String(transaction.sender_name || 'N/A') },
       { label: 'Receiver Name', value: String(transaction.reciever_name || 'N/A') },
       { label: 'Account Number', value: String(transaction.account_number || 'N/A') },
-      { label: 'Amount in ETB', value: `${transaction.amount || 'N/A'} ETB` },
-      { label: 'Amount', value: `${transaction.etb_amount || 'N/A'}` },
+      { label: 'Amount', value: `${currencySign}${transaction.amount || 'N/A'}` },
+      { label: 'Amount in ETB', value: `${transaction.etb_amount || 'N/A'} ETB` },
       { label: 'Status', value: String(transaction.status || 'Active') },
     ];
   
@@ -148,8 +156,8 @@ const page = () => {
       { label: 'Sender Name', value: String(transaction.sender_name || 'N/A') },
       { label: 'Receiver Name', value: String(transaction.reciever_name || 'N/A') },
       { label: 'Account Number', value: String(transaction.account_number || 'N/A') },
-      { label: 'Amount in ETB', value: `${transaction.amount || 'N/A'} ETB` },
-      { label: 'Amount', value: `${transaction.etb_amount || 'N/A'}` },
+      { label: 'Amount', value: `${currencySign}${transaction.amount || 'N/A'}` },
+      { label: 'Amount in ETB', value: `${transaction.etb_amount || 'N/A'} ETB` },
       { label: 'Status', value: String(transaction.status || 'Active') },
     ];
   
@@ -197,7 +205,11 @@ const page = () => {
     const fetchAndSetTransaction = async () => {
       const transactionData = await fetchTransaction();
       setTransaction(transactionData);
-      console.log(transactionData);
+      
+      if (transactionData.currency_id) {
+        const sign = await fetchCurrency(transactionData.currency_id);
+        setCurrencySign(sign);
+      }
     };
     fetchAndSetTransaction();
   }, []);
@@ -260,7 +272,7 @@ const page = () => {
                 <div className="grid grid-cols-1 gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground mt-2">Amount</p>
-                    <p className="font-medium">{transaction.amount}</p>
+                    <p className="font-medium">{currencySign}{transaction.amount}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Amount in ETB</p>
@@ -304,23 +316,15 @@ const page = () => {
                 <div className="grid gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Full name</p>
-                    <p className="font-medium">{transaction.reciever_name}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Email</p>
-                    <p className="font-medium">{transaction.account_number}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Phone No.</p>
-                    <p className="font-medium">09572752191</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Address</p>
-                    <p className="font-medium">America</p>
+                    <p className="font-medium">{transaction.receiver_name}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Account No.</p>
-                    <p className="font-medium">58027502760</p>
+                    <p className="font-medium">{transaction.account_number}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Bank Name</p>
+                    <p className="font-medium">{transaction.bank_name}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <p className="text-sm text-muted-foreground">12/2/2024</p>

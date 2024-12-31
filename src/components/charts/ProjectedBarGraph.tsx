@@ -46,7 +46,7 @@ const ProjectedBarGraph = () => {
           <YAxis />
           <Tooltip />
           <Legend />
-          <Bar dataKey="actual" fill="#1e40af" />
+          <Bar dataKey="Number of Users" fill="#1e40af" />
         </BarChart>
       </ResponsiveContainer>
     </Card>

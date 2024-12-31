@@ -67,6 +67,7 @@ const BarGraph = () => {
           <Legend />
           <Bar 
             dataKey="value" 
+            name="Amount of Monthly Transactions"
             fill="#1e40af"
             radius={[4, 4, 0, 0]}
           />

@@ -2,7 +2,7 @@
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Swal from 'sweetalert2'; // Import SweetAlert
 
@@ -13,6 +13,61 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter(); // Next.js Router for redirection
+
+  // Add timer management
+  useEffect(() => {
+    // Function to handle logout
+    const handleLogout = () => {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("agent");
+      router.push("/"); // Redirect to login page
+      
+      Swal.fire({
+        title: 'Session Expired',
+        text: 'You have been logged out due to inactivity.',
+        icon: 'warning',
+        timer: 4000,
+        showConfirmButton: false,
+      });
+    };
+
+    // Reset timer on user activity
+    const resetTimer = () => {
+      localStorage.setItem('lastActivity', Date.now().toString());
+    };
+
+    // Check for inactivity
+    const checkInactivity = () => {
+      const lastActivity = localStorage.getItem('lastActivity');
+      if (lastActivity) {
+        const inactiveTime = Date.now() - parseInt(lastActivity);
+        if (inactiveTime > 15 * 60 * 1000) { // 15 minutes in milliseconds
+          handleLogout();
+        }
+      }
+    };
+
+    // Set up activity listeners
+    const activities = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'];
+    activities.forEach(activity => {
+      document.addEventListener(activity, resetTimer);
+    });
+
+    // Set initial activity timestamp
+    resetTimer();
+
+    // Set up interval to check inactivity
+    const intervalId = setInterval(checkInactivity, 60000); // Check every minute
+
+    // Cleanup function
+    return () => {
+      activities.forEach(activity => {
+        document.removeEventListener(activity, resetTimer);
+      });
+      clearInterval(intervalId);
+    };
+  }, [router]); // Add router as dependency
 
   // Handle form submission
   const handleLogin = async (e: React.FormEvent) => {

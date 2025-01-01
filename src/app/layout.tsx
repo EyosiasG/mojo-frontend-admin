@@ -1,9 +1,12 @@
+
+import { useRouter } from "next/navigation";
 import type { Metadata } from "next";
 // import localFont from "next/font/local";
 import "./globals.css";
 import { DM_Sans } from "next/font/google";
 import { Montserrat } from "next/font/google";
 import "react-toastify/dist/ReactToastify.css";
+
 
 // const geistSans = localFont({
 //   src: "./fonts/GeistVF.woff",
@@ -34,6 +37,7 @@ export const metadata: Metadata = {
     shortcut: '/favicon.ico',
   },
 };
+
 
 export default function RootLayout({
   children,

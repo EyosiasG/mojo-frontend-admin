@@ -8,6 +8,7 @@ import {
   Trash2,
   Filter,
   Download,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -254,7 +255,16 @@ export default function TransferPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {Array.isArray(transactions) && transactions.length > 0 ? (
+                    {loading ? (
+                      <TableRow>
+                        <TableCell colSpan={9} className="text-center py-8">
+                          <div className="flex justify-center items-center">
+                            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                            <span className="ml-2">Loading transactions...</span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : Array.isArray(transactions) && transactions.length > 0 ? (
                       transactions.map((transaction) => (
                         <TableRow key={transaction.transaction_id} className="border-b last:border-b-0">
                           <TableCell className="hidden md:table-cell">
@@ -324,7 +334,9 @@ export default function TransferPage() {
             </div>
           </div>
 
-          {transactions.length > 0 ? (
+          {loading ? (
+            null // Don't show anything while loading
+          ) : transactions.length > 0 ? (
             <div className="flex items-center justify-between px-4 py-4 flex-wrap">
               <div className="text-sm text-gray-500 w-full text-center md:text-left md:w-auto">
                 Showing 1 to 10 of {transactions.length} results

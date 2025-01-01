@@ -1,10 +1,16 @@
 export async function fetchWithAuth(url, options = {}) {
-  // Use a fallback for the token if the preferred key doesn't exist
   const token = localStorage.getItem("access_token") || localStorage.getItem("authToken");
-  // console.log("Token retrieved:", token);
 
   if (!token) {
-    console.error("Authentication token is missing.");
+    const Swal = (await import('sweetalert2')).default;
+    
+    await Swal.fire({
+      icon: 'error',
+      title: 'Authentication Required',
+      text: 'Please log in to continue.',
+    });
+
+    window.location.href = '/';
     throw new Error("Authentication token is missing.");
   }
 

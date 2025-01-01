@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import NotificationProfile from "@/components/NotificationProfile";
 import BackLink from "@/components/BackLink";
+import Swal from 'sweetalert2';
 
 const Page = () => {
   const [amount, setAmount] = useState<string>("");
@@ -20,6 +21,19 @@ const Page = () => {
 
   const formatCurrency = (value: number): string => {
     return value.toFixed(2);
+  };
+
+  const handleNext = () => {
+    const numAmount = parseFloat(amount) || 0;
+    if (numAmount <= 0) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Invalid Amount',
+        text: 'Please enter an amount greater than 0',
+      });
+      return;
+    }
+    window.location.href = `step-two?amount=${amount}`;
   };
 
   return (
@@ -102,11 +116,12 @@ const Page = () => {
                 </div>
 
                 <div className="flex justify-between pt-4">
-                  <Button variant="outline">Previous</Button>
-
-                  <Button>
-                    <Link href={`step-two?amount=${amount}`}>Next</Link>
-                  </Button>
+                  <BackLink>
+                    <ArrowLeft className="h-4 w-4" />
+                    Go Back
+                  </BackLink>
+                 
+                  <Button onClick={handleNext}>Next</Button>
                 </div>
               </div>
             </CardContent>

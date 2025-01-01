@@ -73,6 +73,7 @@ export default function DashboardPage() {
   return (
     <>
       <div className="border-b bg-white">
+       
         <div className="flex flex-col sm:flex-row h-auto sm:h-16 items-center justify-between px-4 sm:px-6 py-4 sm:py-0">
           <h1 className="text-xl font-semibold text-[#2B3674] ml-8 mb-4 sm:mb-0">
             Main Dashboard
@@ -91,12 +92,37 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 sm:px-12 py-4 bg-gradient-to-r from-gray-50 to-white mt-10 gap-4 sm:gap-0">
+        <div className="w-full sm:w-auto">
+          {/* Exchange Rate Card */}
+          <div className="flex flex-col bg-white rounded-xl px-4 sm:px-6 py-3 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 w-full sm:w-auto">
+            <div className="flex flex-col w-full sm:w-auto">
+              <span className="text-xs font-medium text-gray-500 mb-1">Exchange Rate</span>
+              <div className="flex items-center justify-between sm:justify-start gap-2 mb-2">
+                <div className="flex items-center">
+                  <span className="text-sm font-bold text-gray-800">1 USD</span>
+                  <span className="text-gray-400 mx-2">→</span>
+                  <span className="text-lg font-bold text-primary">127.65 ETB</span>
+                </div>
+                <span className="text-xs text-green-500 bg-green-50 px-2 py-1 rounded-full">+2.3%</span>
+              </div>
+              {/* Last Updated - now part of the card */}
+              <div className="flex items-center text-xs text-gray-500 mt-1 pt-2 border-t border-gray-100">
+                <Clock2 className="h-3 w-3 mr-1" />
+                <span className="whitespace-nowrap">Last updated: {new Date().toLocaleTimeString()}</span>
+              </div>
+            </div>
+          </div>
+        </div>
 
-      <div className="py-6">
-        <div className="flex justify-end px-12">
+        {/* Date Display */}
+        <div className="text-sm font-medium text-gray-700 w-full sm:w-auto text-left sm:text-right">
           {formattedDate.toString()}
         </div>
-        <div className="p-6">
+      </div>
+
+      <div className="py-6">
+        <div className="px-6">
           <div className="grid gap-6">
             {/* Charts Section */}
             <div className="grid grid-cols-1 px-4 md:px-12 lg:px-24">
@@ -113,7 +139,7 @@ export default function DashboardPage() {
                     <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
                       <Banknote className="h-6 w-6 text-primary" />
                     </div>
-                    <div className="text-2xl font-bold">{totalTransactions.toFixed(2)}</div>
+                    <div className="text-2xl font-bold">${totalTransactions.toFixed(2)}</div>
                     <div className="text-sm text-gray-500 mb-3">Total Transaction</div>
                     <div className="flex space-x-4">
                       {Object.entries(totalTransactionsByStatus).map(([status, count]) => (

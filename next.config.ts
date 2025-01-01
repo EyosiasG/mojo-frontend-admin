@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ['ui-avatars.com', 'mojoapi.grandafricamarket.com', 'mojoapi.crosslinkglobaltravel.com'], // Add the domain here
+    domains: ['ui-avatars.com', 'mojoapi.grandafricamarket.com', 'mojoapi.crosslinkglobaltravel.com', 'toppng.com', 'www.pngitem.com'], // Add the domain here
   },
   eslint: {
     ignoreDuringBuilds: true, // Disable ESLint during builds

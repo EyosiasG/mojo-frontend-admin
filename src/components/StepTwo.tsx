@@ -45,7 +45,7 @@ const Page = () => {
     const numAmount = parseFloat(usd) || 0;
     return numAmount * exchangeRate;
   };
- 
+
 
   useEffect(() => {
     let isMounted = true; // track whether the component is mounted
@@ -85,7 +85,7 @@ const Page = () => {
           throw new Error('Invalid response format from server');
         }
         console.log("Fetched Users:", data.users);
-        const userNames = data.users.map((user: { first_name: string; last_name: string }) => 
+        const userNames = data.users.map((user: { first_name: string; last_name: string }) =>
           `${user.first_name} ${user.last_name}`
         );
         const userMap = data.users.reduce((map: { [key: string]: string }, user: { id: string; first_name: string; last_name: string }) => {
@@ -99,7 +99,7 @@ const Page = () => {
       } catch (error) {
         console.error("Error:", error);
       }
-    } 
+    }
     fetchBanks();
     fetchUsers();
     return () => {
@@ -110,8 +110,43 @@ const Page = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate account number
-   
+    // Validation checks
+    if (!bank) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Validation Error',
+        text: 'Please select a bank'
+      });
+      return;
+    }
+
+    if (!senderId) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Validation Error',
+        text: 'Please select a valid sender from the suggestions'
+      });
+      return;
+    }
+
+    if (!recieverId) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Validation Error',
+        text: 'Please select a valid receiver from the suggestions'
+      });
+      return;
+    }
+
+    if (!accountNumber) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Validation Error',
+        text: 'Please enter an account number'
+      });
+      return;
+    }
+
     const requestData = {
       currency_id: 1,
       amount: amount,
@@ -133,7 +168,7 @@ const Page = () => {
         alert("No authentication token found.");
         return;
       }
-    
+
       const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/transfers", {
         method: "POST",
         body: JSON.stringify(requestData),
@@ -141,7 +176,7 @@ const Page = () => {
           "Content-Type": "application/json",
         },
       });
-    
+
       if (!response.ok) {
         const error = await response.json();
         console.error("API Error:", error);
@@ -152,7 +187,7 @@ const Page = () => {
         });
         return;
       }
-    
+
       const data = await response.json();
       console.log("Transfer successful", data);
       Swal.fire({
@@ -163,7 +198,7 @@ const Page = () => {
       setTimeout(() => {
         router.push("/agent-dashboard/transfer");
       }, 2000);
-      
+
     } catch (error) {
       console.error("Error:", error);
       Swal.fire({
@@ -182,7 +217,7 @@ const Page = () => {
   const handleCustomerNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
     setSenderName(inputValue);
-    
+
     // Filter customers based on input
     const suggestions = customers.filter(customer =>
       customer.toLowerCase().includes(inputValue.toLowerCase())
@@ -206,7 +241,7 @@ const Page = () => {
   const handleRecieverNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
     setRecieverName(inputValue);
-    
+
     // Filter customers based on input
     const suggestions = customers.filter(customer =>
       customer.toLowerCase().includes(inputValue.toLowerCase())
@@ -391,20 +426,27 @@ const Page = () => {
                     </div>
                   </div>
                 </div>
-             
+
 
                 <div className="flex justify-between pt-4">
-                  <Button variant="outline">Previous</Button>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => router.back()} 
+                    className="flex items-center gap-2"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Go Back
+                  </Button>
                   <Button type="submit">Confirm Payment</Button>
                 </div>
-              
+
               </form>
             </div>
           </CardContent>
         </main>
       </div>
     </div>
-    
+
   );
 };
 

@@ -249,6 +249,7 @@ export default function TransferPage() {
                       <TableHead>Recipient</TableHead>
                       <TableHead>Amount</TableHead>
                       <TableHead className="hidden md:table-cell">ETB Amount</TableHead>
+                      <TableHead className="hidden md:table-cell">Bank Name</TableHead>
                       <TableHead className="hidden md:table-cell">Date</TableHead>
                       <TableHead className="hidden md:table-cell">Status</TableHead>
                       <TableHead className="w-12"></TableHead>
@@ -271,7 +272,9 @@ export default function TransferPage() {
                             <Checkbox />
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
-                            {transaction.transaction_id}
+                            <div className="max-w-[150px] overflow-hidden text-ellipsis whitespace-nowrap">
+                              {transaction.transaction_id}
+                            </div>
                           </TableCell>
                           <TableCell>{transaction.sender_name}</TableCell>
                           <TableCell>{transaction.receiver_name}</TableCell>
@@ -284,6 +287,9 @@ export default function TransferPage() {
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
                             {transaction.etb_amount}
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            {transaction.bank_name}
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
                             {formatDate(transaction.created_at)}

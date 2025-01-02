@@ -1,9 +1,10 @@
 "use client"
-import { useEffect, useState } from "react";
-import { CheckCircle2, Search, XCircle } from "lucide-react";
+
+import { CheckCircle2, Search, XCircle, Bell } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import NotificationProfile from "@/components/NotificationProfile";
-import axios from "axios"; // Import axios for API requests
+import { useEffect, useState } from "react";
+import Image from "next/image";
 
 interface Notification {
   id: number;
@@ -13,88 +14,35 @@ interface Notification {
   timestamp: string;
 }
 
-export default function Page() {
-  const [notifications, setNotifications] = useState<Notification[]>([]); // State to store notifications
-  const [loading, setLoading] = useState<boolean>(true); // Loading state
+export default function NotificationPage() {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Fetch notifications from the API
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        // Get the token from localStorage
-        const token = localStorage.getItem("access_token");
-
-        if (!token) {
-          console.error("No token found. Please log in.");
-          return;
-        }
-
-        // Make the API request with Authorization header
-        const response = await axios.get('https://mojoapi.crosslinkglobaltravel.com/api/notifications', {
-          headers: {
-            Authorization: `Bearer ${token}`, // Include token in Authorization header
-          },
-        });
-
-        // console.log("Fetched Notifications Response:", response); // Log the entire response to verify the structure
-        // console.log("Fetched Notifications Data:", response.data); // Log just the data
-
-        setNotifications(response.data); // Update state with the fetched notifications
+        const response = await fetch('https://mojoapi.crosslinkglobaltravel.com/api/notifications'); // Replace with your API endpoint
+        const data = await response.json();
+        setNotifications(data);
       } catch (error) {
         console.error('Error fetching notifications:', error);
       } finally {
-        setLoading(false); // Set loading to false after fetching data
+        setLoading(false);
       }
     };
 
     fetchNotifications();
   }, []);
 
-  const markAsRead = async (notificationId: number) => {
-    try {
-      const token = localStorage.getItem("access_token");
-
-      if (!token) {
-        console.error("No token found. Please log in.");
-        return;
-      }
-
-      await axios.post(
-        `https://mojoapi.crosslinkglobaltravel.com/api/notifications/${notificationId}/read`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // Include token in Authorization header
-          },
-        }
-      );
-
-      setNotifications((prevNotifications) =>
-        prevNotifications.map((notification) =>
-          notification.id === notificationId
-            ? { ...notification, read: true }
-            : notification
-        )
-      );
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-    }
-  };
-
-  if (loading) return <div>Loading...</div>; // Show loading state while fetching notifications
-
   return (
     <div className="container mx-auto p-4">
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Notification</h1>
         <div className="flex items-center gap-4">
-          <div className="relative">
-            <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input className="pl-8" placeholder="Search" type="search" />
-          </div>
+
           <NotificationProfile
-            profileLink="/admin-dashboard/settings"
-            notificationLink="/admin-dashboard/notifications"
+            profileLink="/agent-dashboard/settings"
+            notificationLink="/agent-dashboard/notifications"
           />
         </div>
       </div>
@@ -103,13 +51,17 @@ export default function Page() {
         <div className="border-b p-4">
           <h2 className="font-semibold">Most Recent</h2>
         </div>
-        <div className="divide-y">
-          {notifications.length > 0 ? (
-            notifications.map((notification) => (
+        
+        {loading ? (
+          <div className="p-8 text-center">
+            <p>Loading notifications...</p>
+          </div>
+        ) : notifications.length > 0 ? (
+          <div className="divide-y">
+            {notifications.map((notification) => (
               <div
                 key={notification.id}
                 className="flex items-start gap-3 p-4 transition-colors hover:bg-muted/50"
-                onClick={() => markAsRead(notification.id)} // Mark as read on click
               >
                 {notification.success ? (
                   <CheckCircle2 className="mt-1 h-5 w-5 text-green-500" />
@@ -128,11 +80,15 @@ export default function Page() {
                   </p>
                 </div>
               </div>
-            ))
-          ) : (
-            <div className="p-4 text-muted-foreground">No notifications available.</div>
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center p-8">
+            <Bell className="h-16 w-16 text-gray-300 mb-4" />
+            <p className="text-lg font-medium text-gray-500">No notifications yet</p>
+            <p className="text-sm text-gray-400">When you receive notifications, they will appear here</p>
+          </div>
+        )}
       </div>
     </div>
   );

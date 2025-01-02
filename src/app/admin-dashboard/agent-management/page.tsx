@@ -106,20 +106,19 @@ export default function UserManagementPage() {
           </div>
         </div>
 
-        <div className="rounded-lg border bg-white">
+        <div className="rounded-lg border bg-white overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-12">
+                <TableHead className="w-12 hidden md:table-cell">
                   <Checkbox />
                 </TableHead>
-                <TableHead>Agent ID</TableHead>
+                <TableHead className="hidden md:table-cell">Agent ID</TableHead>
                 <TableHead>First Name</TableHead>
                 <TableHead>Last Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Phone no.</TableHead>
-                <TableHead>Created At</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead className="hidden md:table-cell">Email</TableHead>
+                <TableHead className="hidden md:table-cell">Phone no.</TableHead>
+                <TableHead className="hidden md:table-cell">Created At</TableHead>
                 <TableHead className="w-12"></TableHead>
               </TableRow>
             </TableHeader>
@@ -132,35 +131,22 @@ export default function UserManagementPage() {
                 </TableRow>
               ) : (
                 users.map((user) => {
-                  const formattedDate = new Date(
-                    user.created_at
-                  ).toLocaleDateString("en-US", {
+                  const formattedDate = new Date(user.created_at).toLocaleDateString("en-US", {
                     month: "long",
                     day: "numeric",
                     year: "numeric",
                   });
                   return (
                     <TableRow key={user.id}>
-                      <TableCell>
+                      <TableCell className="hidden md:table-cell">
                         <Checkbox />
                       </TableCell>
-                      <TableCell>{user.Id}</TableCell>
+                      <TableCell className="hidden md:table-cell">{user.id}</TableCell>
                       <TableCell>{user.first_name}</TableCell>
                       <TableCell>{user.last_name}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>{user.phone}</TableCell>
-                      <TableCell>{formattedDate}</TableCell>{" "}
-                      {/* Display the formatted date here */}
-                      <TableCell>
-                        <Badge
-                          variant={
-                            user.status === "active" ? "success" : "warning"
-                          }
-                          className="capitalize"
-                        >
-                          {user.status}
-                        </Badge>
-                      </TableCell>
+                      <TableCell className="hidden md:table-cell">{user.email}</TableCell>
+                      <TableCell className="hidden md:table-cell">{user.phone}</TableCell>
+                      <TableCell className="hidden md:table-cell">{formattedDate}</TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>

@@ -11,9 +11,10 @@ import { Upload } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useRouter } from "next/navigation";
+import Swal from 'sweetalert2';
 // import jwt_decode from "jwt-decode";
 
-export default function AdminSettingsPage() {
+export default function SettingsPage() {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -33,6 +34,13 @@ export default function AdminSettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [userData, setUserData] = useState({});
+  const [validationErrors, setValidationErrors] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+  });
+
   useEffect(() => {
     const getUserData = async () => {
       try {
@@ -57,7 +65,7 @@ export default function AdminSettingsPage() {
           lastName: data.last_name || "",
           email: data.email || "",
           phone: data.phone,
-          idImage: data.id_image,
+          idImage: data.profile_photo_url,
         });
       } catch (err: unknown) {
         setError(err.message);
@@ -82,17 +90,48 @@ export default function AdminSettingsPage() {
   // Handle form submission for updating user profile
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate fields
+    let errorMessages = [];
+
+    if (!formData.firstName.trim()) {
+        errorMessages.push("First name is required");
+    }
+    if (!formData.lastName.trim()) {
+        errorMessages.push("Last name is required");
+    }
+    if (!formData.email.trim()) {
+        errorMessages.push("Email is required");
+    }
+    if (!formData.phone.trim()) {
+        errorMessages.push("Phone number is required");
+    }
+
+    if (errorMessages.length > 0) {
+        Swal.fire({
+            title: 'Validation Error',
+            html: errorMessages.join('<br>'),
+            icon: 'error',
+            confirmButtonColor: '#3085d6',
+        });
+        return;
+    }
+
     setIsLoading(true);
     const userId = userData.id;
 
-    // Prepare the data to send, including all required fields
-    const updatedData = {
+    // Prepare the data to send, excluding id_image by default
+    const updatedData: any = {
         first_name: formData.firstName,
         last_name: formData.lastName,
         email: formData.email,
         phone: formData.phone || "", // Ensure phone is included, even if empty
-        id_image: formData.idImage, // Ensure it has the correct prefix
     };
+
+    // Only include id_image if it's different from the original data
+    if (formData.idImage !== userData.profile_photo_url) {
+        updatedData.id_image = formData.idImage;
+    }
 
     console.log("Request body: ", updatedData);
 
@@ -117,10 +156,15 @@ export default function AdminSettingsPage() {
         const data = await response.json();
         setFormData(data);
         setError(null);
-        toast.success("Profile updated successfully! Redirecting to dashboard" );
-        setTimeout(() => {
-          router.push("/agent-dashboard");
-      }, 2000);
+        Swal.fire({
+            title: 'Success!',
+            text: 'Profile updated successfully!',
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false
+        }).then(() => {
+            router.push("/agent-dashboard");
+        });
 
     } catch (err: unknown) {
         setError(err.message);
@@ -133,13 +177,33 @@ export default function AdminSettingsPage() {
   // Handle password change submission
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    
+    let errorMessages = [];
 
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setError("Passwords do not match");
-      setIsLoading(false);
-      return;
+    if (!passwordData.currentPassword.trim()) {
+        errorMessages.push("Current password is required");
     }
+    if (!passwordData.newPassword.trim()) {
+        errorMessages.push("New password is required");
+    }
+    if (!passwordData.confirmPassword.trim()) {
+        errorMessages.push("Please confirm your new password");
+    }
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+        errorMessages.push("Passwords do not match");
+    }
+
+    if (errorMessages.length > 0) {
+        Swal.fire({
+            title: 'Validation Error',
+            html: errorMessages.join('<br>'),
+            icon: 'error',
+            confirmButtonColor: '#3085d6',
+        });
+        return;
+    }
+
+    setIsLoading(true);
 
     const updatedData = {
       first_name: formData.firstName,
@@ -171,16 +235,21 @@ export default function AdminSettingsPage() {
         throw new Error("Failed to change password");
       }
 
-      toast.success("Password updated successfully!");
+      Swal.fire({
+        title: 'Success!',
+        text: 'Password updated successfully!',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      }).then(() => {
+        router.push("/agent-dashboard");
+      });
       setPasswordData({
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
       });
       setError(null);
-      setTimeout(() => {
-        router.push("/agent-dashboard");
-    }, 2000);
     } catch (err: unknown) {
       setError(err.message);
       toast.error(err.message);
@@ -280,7 +349,7 @@ export default function AdminSettingsPage() {
   
 
   return (
-    <Layout>
+    <>
       <ToastContainer
         position="top-center"
         autoClose={2500}
@@ -292,7 +361,7 @@ export default function AdminSettingsPage() {
         pauseOnHover
         theme="light"
       />
-      <div className="container mx-auto py-10 space-y-8">
+      <div className="container mx-auto py-10 space-y-8 max-w-3xl">
         {error && <p className="text-red-500">{error}</p>}
 
         {/* Profile Settings */}
@@ -349,7 +418,11 @@ export default function AdminSettingsPage() {
                     value={formData.firstName}
                     onChange={handleChange}
                     placeholder="Enter your first name"
+                    className={validationErrors.firstName ? "border-red-500" : ""}
                   />
+                  {validationErrors.firstName && (
+                    <p className="text-red-500 text-sm">{validationErrors.firstName}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Last Name</Label>
@@ -359,7 +432,11 @@ export default function AdminSettingsPage() {
                     value={formData.lastName}
                     onChange={handleChange}
                     placeholder="Enter your last name"
+                    className={validationErrors.lastName ? "border-red-500" : ""}
                   />
+                  {validationErrors.lastName && (
+                    <p className="text-red-500 text-sm">{validationErrors.lastName}</p>
+                  )}
                 </div>
               </div>
               <div className="space-y-2">
@@ -371,9 +448,13 @@ export default function AdminSettingsPage() {
                   onChange={handleChange}
                   type="email"
                   placeholder="Enter your email"
+                  className={validationErrors.email ? "border-red-500" : ""}
                 />
+                {validationErrors.email && (
+                  <p className="text-red-500 text-sm">{validationErrors.email}</p>
+                )}
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 mb-3">
                 <Label htmlFor="username">Phone Number</Label>
                 <Input
                   id="phone"
@@ -381,7 +462,11 @@ export default function AdminSettingsPage() {
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder="Enter your phone number"
+                  className={validationErrors.phone ? "border-red-500" : ""}
                 />
+                {validationErrors.phone && (
+                  <p className="text-red-500 text-sm">{validationErrors.phone}</p>
+                )}
               </div>
               <Button type="submit" disabled={isLoading}>
                 {isLoading ? "Saving..." : "Save changes"}
@@ -409,7 +494,11 @@ export default function AdminSettingsPage() {
                   value={passwordData.currentPassword}
                   onChange={handlePasswordChange}
                   required
+                  className={validationErrors.currentPassword ? "border-red-500" : ""}
                 />
+                {validationErrors.currentPassword && (
+                  <p className="text-red-500 text-sm">{validationErrors.currentPassword}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="newPassword">New password</Label>
@@ -420,9 +509,13 @@ export default function AdminSettingsPage() {
                   value={passwordData.newPassword}
                   onChange={handlePasswordChange}
                   required
+                  className={validationErrors.newPassword ? "border-red-500" : ""}
                 />
+                {validationErrors.newPassword && (
+                  <p className="text-red-500 text-sm">{validationErrors.newPassword}</p>
+                )}
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 mb-3">
                 <Label htmlFor="confirmPassword">Confirm new password</Label>
                 <Input
                   id="confirmPassword"
@@ -431,7 +524,11 @@ export default function AdminSettingsPage() {
                   value={passwordData.confirmPassword}
                   onChange={handlePasswordChange}
                   required
+                  className={validationErrors.confirmPassword ? "border-red-500" : ""}
                 />
+                {validationErrors.confirmPassword && (
+                  <p className="text-red-500 text-sm">{validationErrors.confirmPassword}</p>
+                )}
               </div>
               <Button type="submit" disabled={isLoading}>
                 {isLoading ? "Saving..." : "Save password"}
@@ -450,7 +547,7 @@ export default function AdminSettingsPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogoutSubmit}>
-              <div className="space-y-2">
+              <div className="space-y-2 mb-3">
                 <Label htmlFor="logoutPassword">Enter password</Label>
                 <Input
                   id="logoutPassword"
@@ -459,7 +556,11 @@ export default function AdminSettingsPage() {
                   value={logoutPassword}
                   onChange={(e) => setLogoutPassword(e.target.value)}
                   required
+                  className={validationErrors.logoutPassword ? "border-red-500" : ""}
                 />
+                {validationErrors.logoutPassword && (
+                  <p className="text-red-500 text-sm">{validationErrors.logoutPassword}</p>
+                )}
               </div>
               <Button type="submit" disabled={isLoading}>
                 {isLoading ? "Logging out..." : "Logout"}
@@ -487,6 +588,6 @@ export default function AdminSettingsPage() {
           </CardContent>
         </Card>
       </div>
-    </Layout>
+    </>
   );
 }

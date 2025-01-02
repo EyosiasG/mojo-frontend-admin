@@ -11,6 +11,7 @@ import {
   BadgeCent,
   Bell,
 } from "lucide-react";
+import { User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useState } from "react";
@@ -91,6 +92,16 @@ export function Layout({ children }: LayoutProps) {
                 <Link href="/admin-dashboard/agent-management">
                   <Users2 className="h-4 w-4" />
                   Agent Management
+                </Link>
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-3"
+                asChild
+              >
+                <Link href="/admin-dashboard/user-management">
+                  <User className="h-4 w-4" />
+                  User Management
                 </Link>
               </Button>
               <Button

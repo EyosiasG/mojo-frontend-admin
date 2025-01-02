@@ -11,7 +11,7 @@ import Swal from 'sweetalert2';
 
 const Page = () => {
   const [amount, setAmount] = useState<string>("");
-  const exchangeRate = 122.85;
+  const exchangeRate = 127.65;
   const transactionFee = 0.0;
 
   const calculateETB = (usd: string): number => {

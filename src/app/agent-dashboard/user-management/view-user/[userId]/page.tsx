@@ -116,6 +116,7 @@ export default function Page() {
   // User details section
   let yPosition = 370; // Start below the image
   const details = [
+    { label: 'User ID', value: userData?.id || 'N/A' },
     { label: 'First Name', value: userData?.first_name || 'N/A' },
     { label: 'Last Name', value: userData?.last_name || 'N/A' },
     { label: 'Email', value: userData?.email || 'N/A' },
@@ -228,6 +229,7 @@ export default function Page() {
 
     // Add user details with improved formatting
     const details = [
+      { label: 'User ID', value: userData.id },
       { label: 'First Name', value: userData.first_name },
       { label: 'Last Name', value: userData.last_name },
       { label: 'Email', value: userData.email },
@@ -333,6 +335,11 @@ export default function Page() {
               </div>
             </div>
             <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">User ID</p>
+                <p className="font-medium">{userData.id}</p>
+              </div>
+
               <div>
                 <p className="text-sm text-muted-foreground mb-1">First Name</p>
                 <p className="font-medium">{userData.first_name}</p>

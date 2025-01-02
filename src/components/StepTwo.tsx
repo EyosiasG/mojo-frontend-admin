@@ -39,7 +39,7 @@ const Page = () => {
   const [customerMap, setCustomerMap] = useState<{ [key: string]: string }>({});
   const router = useRouter();
 
-  const exchangeRate = 122.85; // 1 USD = 122.5 ETB for this example
+  const exchangeRate = 127.65; 
 
   const calculateETB = (usd: string): number => {
     const numAmount = parseFloat(usd) || 0;

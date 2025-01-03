@@ -3,7 +3,7 @@
 import { ArrowLeft } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import BackLink from "@/components/BackLink";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
 
 interface Permission {
@@ -30,6 +30,7 @@ interface RoleData {
 }
 
 export default function RoleView({ params }: { params: { roleId: string } }) {
+  const unwrappedParams = use(params);
   const [roleData, setRoleData] = useState<RoleData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +39,7 @@ export default function RoleView({ params }: { params: { roleId: string } }) {
     const fetchRole = async () => {
       try {
         const response = await fetchWithAuth(
-          `https://mojoapi.crosslinkglobaltravel.com/api/roles/${params.roleId}/edit`
+          `https://mojoapi.crosslinkglobaltravel.com/api/roles/${unwrappedParams.roleId}/edit`
         );
         if (!response.ok) throw new Error("Failed to fetch role");
         const data = await response.json();
@@ -48,9 +49,9 @@ export default function RoleView({ params }: { params: { roleId: string } }) {
           role: data.role,
           permissions: data.permissions.map((perm: Permission) => ({
             ...perm,
-            enabled: data.rolePermissions.includes(perm.name)
+            enabled: Object.keys(data.rolePermissions).includes(perm.id.toString())
           })),
-          rolePermissions: data.rolePermissions
+          rolePermissions: Object.keys(data.rolePermissions)
         };
 
         setRoleData(transformedData);
@@ -63,7 +64,7 @@ export default function RoleView({ params }: { params: { roleId: string } }) {
     };
 
     fetchRole();
-  }, [params.roleId]);
+  }, [unwrappedParams.roleId]);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;

@@ -97,7 +97,7 @@ export default function UserManagementPage() {
               <Download className="h-4 w-4" />
               Export
             </Button>
-            <Link href="agent-management/create-agent">
+            <Link href="~/admin-dashboard/agent-management/create-agent">
               <Button className="gap-2 bg-primary hover:bg-primary/90">
                 <PlusCircle className="h-4 w-4" />
                 Create Agent

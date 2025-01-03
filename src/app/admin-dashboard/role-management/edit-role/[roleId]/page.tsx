@@ -56,9 +56,9 @@ export default function Page({ params }: { params: { roleId: string } }) {
 
         // Transform permissions data
         const mappedPermissions = data.permissions.map((perm: any) => ({
-          id: perm.id,
+          id: perm.id.toString(),
           name: perm.name,
-          enabled: data.rolePermissions.includes(perm.id)
+          enabled: Object.keys(data.rolePermissions).includes(perm.id.toString())
         }));
 
         setPermissions(mappedPermissions);
@@ -87,7 +87,7 @@ export default function Page({ params }: { params: { roleId: string } }) {
     try {
       const enabledPermissions = permissions
         .filter(p => p.enabled)
-        .map(p => p.name); // Changed from p.id to p.name
+        .map(p => p.id); // Changed from p.id to p.name
 
       const token = localStorage.getItem("access_token");
       const response = await fetchWithAuth(

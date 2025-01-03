@@ -94,7 +94,7 @@ export default function LoginPage() {
 
             <div className="space-y-6 px-4">
               <h1 className="text-2xl font-semibold text-center">
-                Login To Your Account
+                Admin Login
               </h1>
 
               {/* Display error message */}

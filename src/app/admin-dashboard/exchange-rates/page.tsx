@@ -29,6 +29,7 @@ interface CurrencyEntry {
   id: string;
   name: string;
   sign: string;
+  rate: string;
   status: string;
   created_at: string;
 }
@@ -190,15 +191,6 @@ export default function Page() {
             <Search className="h-4 w-4" />
             Search
           </Button>
-          <Button variant="outline" size="icon">
-            <Trash className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon">
-            <Filter className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon">
-            <Download className="h-4 w-4" />
-          </Button>
           <Link href="exchange-rates/add-exchange-rate">
             <Button>Create Exchange Rate</Button>
           </Link>
@@ -209,52 +201,27 @@ export default function Page() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-12">
-                <Checkbox />
-              </TableHead>
               <TableHead>Rate ID</TableHead>
               <TableHead>Currency</TableHead>
-              <TableHead>Effective Date</TableHead>
-              <TableHead>Sign</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead className="hidden md:table-cell">Rate</TableHead>
+              <TableHead className="hidden md:table-cell">Created At</TableHead>
               <TableHead className="w-12"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {rates.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-4">
+                <TableCell colSpan={5} className="text-center py-4">
                   No exchange rates found
                 </TableCell>
               </TableRow>
             ) : (
               rates.map((rate) => (
                 <TableRow key={rate.id}>
-                  <TableCell>
-                    <Checkbox />
-                  </TableCell>
                   <TableCell>{rate.id}</TableCell>
                   <TableCell>{rate.name}</TableCell>
-                  <TableCell>
-                    {new Intl.DateTimeFormat("en-US", {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    }).format(new Date(rate.created_at))}
-                  </TableCell>
-
-                  <TableCell>{rate.sign}</TableCell>
-                  <TableCell>
-                    <span
-                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        rate.status === "active"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-yellow-100 text-yellow-700"
-                      }`}
-                    >
-                      {rate.status === "active" ? "Active" : "Inactive"}
-                    </span>
-                  </TableCell>
+                  <TableCell className="hidden md:table-cell">{rate.rate}</TableCell>
+                  <TableCell className="hidden md:table-cell">{rate.created_at}</TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

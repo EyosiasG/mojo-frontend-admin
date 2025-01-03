@@ -5,6 +5,8 @@ import { Switch } from "@/components/ui/switch";
 import BackLink from "@/components/BackLink";
 import { useEffect, useState, use } from "react";
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 interface Permission {
   id: number;
@@ -66,63 +68,48 @@ export default function RoleView({ params }: { params: { roleId: string } }) {
     fetchRole();
   }, [unwrappedParams.roleId]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return <div className="min-h-screen bg-background flex items-center justify-center">Loading...</div>;
+  }
   if (error) return <div>Error: {error}</div>;
   if (!roleData) return <div>Role not found</div>;
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="flex items-center justify-between border-b p-4">
+      <header className="flex flex-col sm:flex-row items-center justify-between border-b p-4 gap-4">
         <div className="flex items-center gap-4">
-          <BackLink>
+          <BackLink href="/admin-dashboard/role-management">
             <ArrowLeft className="h-4 w-4" />
           </BackLink>
-
           <h1 className="text-lg font-semibold">View Role</h1>
         </div>
       </header>
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="space-y-8">
-          <section className="space-y-4">
-            <h2 className="text-sm font-medium text-muted-foreground">
-              Role Information
-            </h2>
 
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                  Role Name
-                </h3>
-                <p className="text-base">{roleData.role.name}</p>
-              </div>
+      <div className="mx-auto max-w-6xl p-4 sm:p-6">
+        <p className="text-sm text-muted-foreground mb-4 sm:mb-6">
+          Role information
+        </p>
 
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                  Guard Name
-                </h3>
-                <p className="text-base">{roleData.role.guard_name}</p>
-              </div>
+        <div className="space-y-4 sm:space-y-6">
+          <div className="space-y-2">
+            <Label>Role Name</Label>
+            <Input 
+              value={roleData.role.name}
+              disabled
+            />
+          </div>
 
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-1">
-                  Created At
-                </h3>
-                <p className="text-base">{new Date(roleData.role.created_at).toLocaleDateString()}</p>
-              </div>
-            </div>
-          </section>
-
-          <section className="space-y-4">
-            <h2 className="text-sm font-medium text-muted-foreground">
-              Permissions
-            </h2>
-
-            <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
+            <Label>Permissions</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
               {roleData.permissions.map((permission) => (
-                <div key={permission.id} className="flex items-center justify-between">
-                  <label htmlFor={permission.id.toString()} className="text-sm">
+                <div
+                  key={permission.id}
+                  className="flex items-center justify-between p-2 sm:p-3 border rounded"
+                >
+                  <Label htmlFor={permission.id.toString()} className="cursor-pointer text-sm">
                     {permission.name}
-                  </label>
+                  </Label>
                   <Switch 
                     id={permission.id.toString()}
                     checked={permission.enabled}
@@ -131,7 +118,7 @@ export default function RoleView({ params }: { params: { roleId: string } }) {
                 </div>
               ))}
             </div>
-          </section>
+          </div>
         </div>
       </div>
     </div>

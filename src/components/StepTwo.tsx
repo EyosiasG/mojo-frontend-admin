@@ -352,6 +352,26 @@ const Page = () => {
                         />
                       </div>
                     </div>
+                    <div>
+                        <label className="block text-sm text-muted-foreground mb-1">
+                          Customer Name
+                        </label>
+                        <Input
+                          type="text"
+                          value={senderName}
+                          onChange={handleCustomerNameChange}
+                          placeholder="Enter sender name"
+                        />
+                        {filteredCustomers.length > 0 && (
+                          <ul className="suggestions-list" style={{ maxHeight: '150px', overflowY: 'auto' }}>
+                            {filteredCustomers.map((customer, index) => (
+                              <li key={index} onClick={() => handleSuggestionClick(customer)}>
+                                {customer}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
 
                     <div className="space-y-4">
                       <div>
@@ -382,26 +402,7 @@ const Page = () => {
                           placeholder="Enter account number"
                         />
                       </div>
-                      <div>
-                        <label className="block text-sm text-muted-foreground mb-1">
-                          Customer Name
-                        </label>
-                        <Input
-                          type="text"
-                          value={senderName}
-                          onChange={handleCustomerNameChange}
-                          placeholder="Enter sender name"
-                        />
-                        {filteredCustomers.length > 0 && (
-                          <ul className="suggestions-list" style={{ maxHeight: '150px', overflowY: 'auto' }}>
-                            {filteredCustomers.map((customer, index) => (
-                              <li key={index} onClick={() => handleSuggestionClick(customer)}>
-                                {customer}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
+                     
 
                       <div>
                         <label className="block text-sm text-muted-foreground mb-1">

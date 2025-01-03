@@ -1,113 +1,150 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Camera, Upload } from "lucide-react";
+import { ArrowLeft, Upload, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import NotificationProfile from "@/components/NotificationProfile";
 import BackLink from "@/components/BackLink";
-import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
+import { useRouter } from 'next/navigation';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const Page = () => {
-  const [formData, setFormData] = useState({
+const AddUserPage = () => {
+  const router = useRouter();
+  const [roles, setRoles] = useState([]);
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const accessToken = localStorage.getItem("access_token");
+        const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/roles", {
+          headers: {
+            "Authorization": `Bearer ${accessToken}`,
+          },
+        });
+        const data = await response.json();
+        setRoles(data.data);
+      } catch (error) {
+        console.error("Failed to fetch roles:", error);
+        toast.error("Failed to load roles");
+      }
+    };
+    fetchRoles();
+  }, []);
+
+  const [userData, setUserData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     phone: "",
     idImage: null,
-    role: "user", // Default role
+    role: "Agent",
   });
+  const [imagePreview, setImagePreview] = useState(
+    "/placeholder.svg?height=100&width=100"
+  );
+  const [error, setError] = useState(null);
 
-  const [roles, setRoles] = useState<string[]>([]); // Initialize as an empty array
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Fetch roles dynamically when the component mounts
-  useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/users/create");
-        console.log(response)
-        if (!response.ok) {
-          throw new Error(`Failed to fetch roles: ${response.statusText}`);
-        }
-        const data = await response.json();
-        setRoles(data.roles || []); // Ensure roles is set to an empty array if no roles are returned
-      } catch (err) {
-        console.error("Error fetching roles:", err);
-        setError("Failed to load roles.");
-      }
-    };
-
-    fetchRoles();
-  }, []);
-
-  // Handle form input changes, including dropdown
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prevState) => ({
+  const handleChange = (key, value) => {
+    setUserData((prevState) => ({
       ...prevState,
-      [name]: value,
+      [key]: value,
     }));
   };
 
-  // Handle file upload
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prevState) => ({
-      ...prevState,
-      idImage: e.target.files ? e.target.files[0] : null,
-    }));
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64String = reader.result.split(",")[1]; // Extract base64 data
+        setUserData((prevState) => ({
+          ...prevState,
+          idImage: base64String, // Store base64 string
+        }));
+      };
+      reader.readAsDataURL(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("token"); // Retrieve token from localStorage
-  
-    if (!token) {
-      console.error("Token not found");
-      return;
-    }
-  
-    const formDataToSend = new FormData();
-    formDataToSend.append("firstName", formData.firstName);
-    formDataToSend.append("lastName", formData.lastName);
-    formDataToSend.append("email", formData.email);
-    formDataToSend.append("phone", formData.phone);
-    // formDataToSend.append("role", formData.role); // Add role
-  
+
+    // Create a JSON object for the request body using userData
+    const requestBody = {
+        first_name: userData.firstName, // Use actual first name
+        last_name: userData.lastName,     // Use actual last name
+        email: userData.email,             // Use actual email
+        phone: userData.phone,             // Use actual phone number
+        password: "12345678",              // Dummy password
+        id_image: userData.idImage,        // Include the base64 image string
+        role: "Agent",                // Add this line
+    };
+
+    console.log("Request Body:", requestBody); // Log the request data
+
     try {
-      const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/users", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`, // Attach token in headers
-        },
-        body: formDataToSend,
-      });
-  
-      if (!response.ok) {
-        throw new Error("Failed to submit data");
-      }
-  
-      const data = await response.json();
-      console.log("User added successfully:", data);
+        const accessToken = localStorage.getItem("access_token");
+        console.log("Access Token:", accessToken); // Log the access token
+        const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/users/store", {
+            method: "POST",
+            body: JSON.stringify(requestBody), // Use JSON.stringify for the request body
+            headers: {
+                "Content-Type": "application/json", // Change content type to application/json
+                "Authorization": `Bearer ${accessToken}`,
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error("Network response was not ok");
+        }
+
+        console.log("Agent added successfully.");
+        toast.success("Agent added successfully!");
+        setTimeout(() => {
+            router.push("/admin-dashboard/agent-management");
+        }, 2000);
     } catch (err) {
-      console.error("Error submitting data:", err);
+        console.error("Failed to add user:", err.message);
+        toast.error("Failed to add user. Please check your input and try again.");
     }
   };
-  
 
   return (
     <div className="min-h-screen bg-gray-50">
+     <ToastContainer
+        position="top-right"
+        autoClose={4000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       {/* Header */}
       <header className="flex items-center justify-between p-4 bg-white border-b">
         <h1 className="text-xl font-semibold">User Management</h1>
         <div className="flex items-center gap-4">
           <NotificationProfile
-            profileLink="/admin-dashboard/settings"
-            notificationLink="/admin-dashboard/notifications"
+            profileLink="/agent-dashboard/settings"
+            notificationLink="/agent-dashboard/notifications"
           />
+          <div className="h-8 w-8 rounded-full bg-gray-200 overflow-hidden">
+            <Image
+              src="/placeholder.svg?height=32&width=32"
+              alt="Profile"
+              width={32}
+              height={32}
+              className="object-cover"
+            />
+          </div>
         </div>
       </header>
 
@@ -130,150 +167,95 @@ const Page = () => {
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label
-                    htmlFor="firstName"
-                    className="block text-sm font-medium mb-2"
-                  >
+                  <label htmlFor="firstName" className="block text-sm font-medium mb-2">
                     First Name
                   </label>
                   <Input
                     id="firstName"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange}
                     placeholder="Enter first name"
+                    value={userData.firstName}
+                    onChange={(e) => handleChange("firstName", e.target.value)}
                   />
                 </div>
                 <div>
-                  <label
-                    htmlFor="lastName"
-                    className="block text-sm font-medium mb-2"
-                  >
+                  <label htmlFor="lastName" className="block text-sm font-medium mb-2">
                     Last Name
                   </label>
                   <Input
                     id="lastName"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleChange}
                     placeholder="Enter last name"
+                    value={userData.lastName}
+                    onChange={(e) => handleChange("lastName", e.target.value)}
                   />
                 </div>
                 <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium mb-2"
-                  >
+                  <label htmlFor="email" className="block text-sm font-medium mb-2">
                     Email
                   </label>
                   <Input
                     id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
                     type="email"
                     placeholder="Enter email"
+                    value={userData.email}
+                    onChange={(e) => handleChange("email", e.target.value)}
                   />
                 </div>
                 <div>
-                  <label
-                    htmlFor="phone"
-                    className="block text-sm font-medium mb-2"
-                  >
+                  <label htmlFor="phone" className="block text-sm font-medium mb-2">
                     Phone No.
                   </label>
                   <Input
                     id="phone"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
                     type="tel"
                     placeholder="Enter phone number"
+                    value={userData.phone}
+                    onChange={(e) => handleChange("phone", e.target.value)}
                   />
                 </div>
-
-                {/* Role Dropdown */}
-                {/* <div>
-                  <label
-                    htmlFor="role"
-                    className="block text-sm font-medium mb-2"
-                  >
+                <div>
+                  <label htmlFor="role" className="block text-sm font-medium mb-2">
                     Role
                   </label>
-                  <select
-                    id="role"
-                    name="role"
-                    value={formData.role}
-                    onChange={handleChange}
-                    className="w-full border rounded-lg p-2"
-                  >
-                    {roles && roles.length > 0 ? (
-                      roles.map((role) => (
-                        <option key={role} value={role}>
-                          {role.charAt(0).toUpperCase() + role.slice(1)} {/* Capitalizing the role */}
-                      {/* </option>
-                      ))
-                    ) : (
-                      <option value="user">Loading roles...</option>
-                    )} */}
-                  {/* </select>
-                </div> */} 
-              </div> 
+                </div>
+              </div>
 
-              {/* File Upload */}
-              {/* <div>
-                <label className="block text-sm font-medium mb-2">
-                  Upload Id
-                </label>
-                <div className="border-2 border-dashed rounded-lg p-8 text-center">
+              <div>
+                <label className="block text-sm font-medium mb-2">Upload ID</label>
+                <div className="border-2 border-dashed rounded-lg p-8 text-center relative">
                   <div className="mb-4">
                     <Image
-                      src="/placeholder.svg?height=100&width=100"
+                      src={imagePreview}
                       alt="Upload preview"
                       width={100}
                       height={100}
                       className="mx-auto"
                     />
                   </div>
-                  <div className="flex justify-center gap-4">
-                    <Button type="button" className="flex items-center gap-2">
-                      <Camera className="h-4 w-4" />
-                      Take photo
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="flex items-center gap-2"
-                      onClick={() =>
-                        document.getElementById("fileInput").click()
-                      }
-                    >
-                      <Upload className="h-4 w-4" />
-                      Upload Image
-                    </Button>
+                  <Button
+                    variant="outline"
+                    className="relative flex items-center gap-2"
+                  >
+                    <Upload className="h-4 w-4" />
+                    Upload Image
                     <input
                       type="file"
-                      id="fileInput"
-                      name="idImage"
-                      className="hidden"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      onChange={handleImageUpload}
                       accept="image/*"
-                      onChange={handleFileChange}
                     />
-                  </div>
+                  </Button>
                 </div>
-              </div> */}
+              </div>
+
+              {error && <p className="text-sm text-red-500">{error}</p>}
 
               <div className="flex justify-end gap-4">
                 <Button type="button" variant="outline">
                   Cancel
                 </Button>
-                <Button type="submit" disabled={loading}>
-                  {loading ? "Saving..." : "Save"}
-                </Button>
+                <Button type="submit">Save</Button>
               </div>
             </form>
-
-            {error && <p className="text-red-500 mt-4">{error}</p>}
           </CardContent>
         </Card>
       </main>
@@ -281,4 +263,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default AddUserPage;

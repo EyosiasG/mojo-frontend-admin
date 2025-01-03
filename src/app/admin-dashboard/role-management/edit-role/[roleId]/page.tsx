@@ -124,25 +124,25 @@ export default function Page({ params }: { params: { roleId: string } }) {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="flex items-center justify-between border-b p-4">
+      <header className="flex flex-col sm:flex-row items-center justify-between border-b p-4 gap-4">
         <div className="flex items-center gap-4">
           <BackLink href="/admin-dashboard/role-management">
             <ArrowLeft className="h-4 w-4" />
           </BackLink>
           <h1 className="text-lg font-semibold">Edit Role</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" onClick={() => router.back()}>Cancel</Button>
-          <Button onClick={handleSubmit}>Save Changes</Button>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Button className="flex-1 sm:flex-initial" variant="ghost" onClick={() => router.back()}>Cancel</Button>
+          <Button className="flex-1 sm:flex-initial" onClick={handleSubmit}>Save Changes</Button>
         </div>
       </header>
 
-      <div className="mx-auto max-w-2xl p-6">
-        <p className="text-sm text-muted-foreground mb-6">
+      <div className="mx-auto max-w-6xl p-4 sm:p-6">
+        <p className="text-sm text-muted-foreground mb-4 sm:mb-6">
           Update role information
         </p>
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <div className="space-y-2">
             <Label htmlFor="role-name">Role Name</Label>
             <Input 
@@ -153,36 +153,21 @@ export default function Page({ params }: { params: { roleId: string } }) {
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
-            <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger id="status">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <Label>Permissions</Label>
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
               {permissions.map((permission) => (
                 <div
                   key={permission.id}
-                  className="flex items-center justify-between"
+                  className="flex items-center justify-between p-2 sm:p-3 border rounded"
                 >
-                  <Label htmlFor={permission.id} className="cursor-pointer">
+                  <Label htmlFor={permission.id} className="cursor-pointer text-sm">
                     {permission.name}
                   </Label>
                   <Switch
                     id={permission.id}
                     checked={permission.enabled}
-                    onCheckedChange={() =>
-                      handlePermissionChange(permission.id)
-                    }
+                    onCheckedChange={() => handlePermissionChange(permission.id)}
                   />
                 </div>
               ))}

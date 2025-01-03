@@ -20,6 +20,7 @@ const AddUserPage = () => {
     email: "",
     phone: "",
     idImage: null,
+    role: "Customer",
   });
   const [imagePreview, setImagePreview] = useState(
     "/placeholder.svg?height=100&width=100"
@@ -60,6 +61,7 @@ const AddUserPage = () => {
         phone: userData.phone,             // Use actual phone number
         password: "12345678",              // Dummy password
         id_image: userData.idImage,        // Include the base64 image string
+        role: "Customer",
     };
 
     console.log("Request Body:", requestBody); // Log the request data

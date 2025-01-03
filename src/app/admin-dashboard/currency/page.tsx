@@ -158,10 +158,10 @@ const CurrencyManagementPage = () => {
   );
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-2 md:p-6 space-y-4 md:space-y-6">
       <ToastContainer position="top-right" />
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Currency Management</h1>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <h1 className="text-xl md:text-2xl font-semibold">Currency Management</h1>
         <NotificationProfile
           profileLink="/admin-dashboard/settings"
           notificationLink="/admin-dashboard/notifications"
@@ -169,35 +169,24 @@ const CurrencyManagementPage = () => {
       </div>
 
       <div className="relative">
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <div className="relative flex-1 flex gap-2">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="relative flex-1 flex flex-col md:flex-row gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
               <Input 
-                className="pl-10" 
+                className="pl-10 w-full" 
                 placeholder="Search by currency ID" 
                 value={searchQuery}
                 onChange={handleSearch}
               />
             </div>
-            <Button onClick={handleSearchClick}>
+            <Button onClick={handleSearchClick} className="w-full md:w-auto">
               Search
             </Button>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon">
-              <Trash2 className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <Filter className="h-4 w-4" />
-              Filters
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <Download className="h-4 w-4" />
-              Export
-            </Button>
-            <Link href="currency/add-currency">
-              <Button className="gap-2 bg-primary hover:bg-primary/90">
+          <div className="flex items-center">
+            <Link href="currency/add-currency" className="w-full md:w-auto">
+              <Button className="gap-2 bg-primary hover:bg-primary/90 w-full md:w-auto">
                 <PlusCircle className="h-4 w-4" />
                 Add Currency
               </Button>
@@ -206,81 +195,83 @@ const CurrencyManagementPage = () => {
         </div>
       </div>
 
-      <Table className="role-table">
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-12">
-              <Checkbox />
-            </TableHead>
-            <TableHead>Currency ID</TableHead>
-            <TableHead>Currency Name</TableHead>
-            <TableHead>Sign</TableHead>
-            <TableHead>Created At</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {currencies.map((currency) => (
-            <TableRow key={currency.id}>
-              <TableCell>
+      <div className="overflow-x-auto">
+        <Table className="role-table min-w-full">
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-12">
                 <Checkbox />
-              </TableCell>
-              <TableCell>{currency.id}</TableCell>
-              <TableCell>{currency.name}</TableCell>
-              <TableCell>{currency.sign}</TableCell>
-              <TableCell>{currency.created_at}</TableCell>
-              <TableCell>
-                <span
-                  className={`inline-flex items-center gap-1 ${
-                    currency.status === "active"
-                      ? "text-green-500"
-                      : "text-gray-500"
-                  }`}
-                >
-                  <span
-                    className={`h-2 w-2 rounded-full ${
-                      currency.status === "active"
-                        ? "bg-green-500"
-                        : "bg-gray-500"
-                    }`}
-                  />
-                  {currency.status.charAt(0).toUpperCase() +
-                    currency.status.slice(1)}
-                </span>
-              </TableCell>
-              <TableCell>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <MoreHorizontal className="h-4 w-4" />
-                      <span className="sr-only">Open menu</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
-                      <Link href={`currency/view-currency/${currency.id}`}>
-                        View
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Link href={`currency/edit-currency/${currency.id}`}>
-                        Edit
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-destructive"
-                      onClick={() => handleDelete(currency.id)}
-                    >
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
+              </TableHead>
+              <TableHead>Currency ID</TableHead>
+              <TableHead>Currency Name</TableHead>
+              <TableHead className="hidden md:table-cell">Sign</TableHead>
+              <TableHead className="hidden md:table-cell">Created At</TableHead>
+              <TableHead className="hidden md:table-cell">Status</TableHead>
+              <TableHead></TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {currencies.map((currency) => (
+              <TableRow key={currency.id}>
+                <TableCell>
+                  <Checkbox />
+                </TableCell>
+                <TableCell>{currency.id}</TableCell>
+                <TableCell>{currency.name}</TableCell>
+                <TableCell className="hidden md:table-cell">{currency.sign}</TableCell>
+                <TableCell className="hidden md:table-cell">{currency.created_at}</TableCell>
+                <TableCell className="hidden md:table-cell">
+                  <span
+                    className={`inline-flex items-center gap-1 ${
+                      currency.status === "active"
+                        ? "text-green-500"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    <span
+                      className={`h-2 w-2 rounded-full ${
+                        currency.status === "active"
+                          ? "bg-green-500"
+                          : "bg-gray-500"
+                      }`}
+                    />
+                    {currency.status.charAt(0).toUpperCase() +
+                      currency.status.slice(1)}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Open menu</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem>
+                        <Link href={`currency/view-currency/${currency.id}`}>
+                          View
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Link href={`currency/edit-currency/${currency.id}`}>
+                          Edit
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-destructive"
+                        onClick={() => handleDelete(currency.id)}
+                      >
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };

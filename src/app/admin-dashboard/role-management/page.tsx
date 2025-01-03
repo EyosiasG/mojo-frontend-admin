@@ -20,12 +20,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Download,
-  Filter,
   MoreHorizontal,
   PlusCircle,
-  Search,
-  Trash2,
   Loader2,
 } from "lucide-react";
 import Link from "next/link";
@@ -104,22 +100,11 @@ const Page = () => {
 
       <div className="relative">
         <div className="mb-6 flex items-center justify-between gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
-            <Input className="pl-10" placeholder="Search" />
+          <div className="flex-1">
+            {/* Search bar removed */}
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon">
-              <Trash2 className="h-4 w-4" />
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <Filter className="h-4 w-4" />
-              Filters
-            </Button>
-            <Button variant="outline" className="gap-2">
-              <Download className="h-4 w-4" />
-              Export
-            </Button>
+            {/* Removed Trash, Filter, and Export buttons */}
             <Link href="role-management/create-role">
               <Button className="gap-2 bg-primary hover:bg-primary/90">
                 <PlusCircle className="h-4 w-4" />
@@ -138,9 +123,8 @@ const Page = () => {
             </TableHead>
             <TableHead>Role ID</TableHead>
             <TableHead>Role Name</TableHead>
-            <TableHead>Number of users</TableHead>
+            <TableHead>Guard Name</TableHead>
             <TableHead>Created At</TableHead>
-            <TableHead>Status</TableHead>
             <TableHead></TableHead>
           </TableRow>
         </TableHeader>
@@ -154,9 +138,7 @@ const Page = () => {
               <TableCell>{role.name}</TableCell>
               <TableCell>{role.guard_name}</TableCell>
               <TableCell>{new Date(role.created_at).toLocaleDateString()}</TableCell>
-              <TableCell>
-                {role.status}
-              </TableCell>
+             
               <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

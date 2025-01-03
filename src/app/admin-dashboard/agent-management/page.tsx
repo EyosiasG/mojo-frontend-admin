@@ -69,7 +69,7 @@ export default function UserManagementPage() {
     <>
       <div className="border-b bg-white">
         <div className="flex h-16 items-center justify-between px-6">
-          <h1 className="text-xl font-semibold">User Management</h1>
+          <h1 className="text-xl font-semibold">Agent Management</h1>
           <div className="flex items-center gap-4">
             <NotificationProfile
               profileLink="/admin-dashboard/settings"
@@ -97,7 +97,7 @@ export default function UserManagementPage() {
               <Download className="h-4 w-4" />
               Export
             </Button>
-            <Link href="~/admin-dashboard/agent-management/create-agent">
+            <Link href="agent-management/create-agent">
               <Button className="gap-2 bg-primary hover:bg-primary/90">
                 <PlusCircle className="h-4 w-4" />
                 Create Agent

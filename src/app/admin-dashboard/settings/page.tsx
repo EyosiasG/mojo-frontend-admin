@@ -12,6 +12,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useRouter } from "next/navigation";
 import Swal from 'sweetalert2';
+import { Loader2 } from "lucide-react";
 // import jwt_decode from "jwt-decode";
 
 export default function SettingsPage() {
@@ -40,9 +41,11 @@ export default function SettingsPage() {
     email: "",
     phone: "",
   });
+  const [isDataLoading, setIsDataLoading] = useState(true);
 
   useEffect(() => {
     const getUserData = async () => {
+      setIsDataLoading(true);
       try {
         const response = await fetch(
           "https://mojoapi.crosslinkglobaltravel.com/api/user",
@@ -67,8 +70,10 @@ export default function SettingsPage() {
           phone: data.phone,
           idImage: data.profile_photo_url,
         });
+        setIsDataLoading(false);
       } catch (err: unknown) {
         setError(err.message);
+        setIsDataLoading(false);
       }
     };
     getUserData();
@@ -375,14 +380,20 @@ export default function SettingsPage() {
           <CardContent className="space-y-6">
             <div className="flex items-center gap-4">
               <div className="relative">
-                {formData.idImage && (
-                  <Image
-                    src={`data:image/png;base64,${formData.idImage}`}
-                    alt="Profile picture"
-                    width={100}
-                    height={100}
-                    className="rounded-lg object-cover"
-                  />
+                {isDataLoading ? (
+                  <div className="w-[100px] h-[100px] rounded-lg flex items-center justify-center bg-gray-100">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                  </div>
+                ) : (
+                  formData.idImage && (
+                    <Image
+                      src={`data:image/png;base64,${formData.idImage}`}
+                      alt="Profile picture"
+                      width={100}
+                      height={100}
+                      className="rounded-lg object-cover"
+                    />
+                  )
                 )}
                 <input
                   type="file"
@@ -412,28 +423,42 @@ export default function SettingsPage() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    placeholder="Enter your first name"
-                    className={validationErrors.firstName ? "border-red-500" : ""}
-                  />
+                  {isDataLoading ? (
+                    <div className="flex items-center space-x-2">
+                      <Input disabled />
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    </div>
+                  ) : (
+                    <Input
+                      id="firstName"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      placeholder="Enter your first name"
+                      className={validationErrors.firstName ? "border-red-500" : ""}
+                    />
+                  )}
                   {validationErrors.firstName && (
                     <p className="text-red-500 text-sm">{validationErrors.firstName}</p>
                   )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    placeholder="Enter your last name"
-                    className={validationErrors.lastName ? "border-red-500" : ""}
-                  />
+                  {isDataLoading ? (
+                    <div className="flex items-center space-x-2">
+                      <Input disabled />
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    </div>
+                  ) : (
+                    <Input
+                      id="lastName"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      placeholder="Enter your last name"
+                      className={validationErrors.lastName ? "border-red-500" : ""}
+                    />
+                  )}
                   {validationErrors.lastName && (
                     <p className="text-red-500 text-sm">{validationErrors.lastName}</p>
                   )}
@@ -441,29 +466,43 @@ export default function SettingsPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email address</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  type="email"
-                  placeholder="Enter your email"
-                  className={validationErrors.email ? "border-red-500" : ""}
-                />
+                {isDataLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <Input disabled />
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </div>
+                ) : (
+                  <Input
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    type="email"
+                    placeholder="Enter your email"
+                    className={validationErrors.email ? "border-red-500" : ""}
+                  />
+                )}
                 {validationErrors.email && (
                   <p className="text-red-500 text-sm">{validationErrors.email}</p>
                 )}
               </div>
               <div className="space-y-2 mb-3">
-                <Label htmlFor="username">Phone Number</Label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="Enter your phone number"
-                  className={validationErrors.phone ? "border-red-500" : ""}
-                />
+                <Label htmlFor="phone">Phone Number</Label>
+                {isDataLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <Input disabled />
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </div>
+                ) : (
+                  <Input
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder="Enter your phone number"
+                    className={validationErrors.phone ? "border-red-500" : ""}
+                  />
+                )}
                 {validationErrors.phone && (
                   <p className="text-red-500 text-sm">{validationErrors.phone}</p>
                 )}

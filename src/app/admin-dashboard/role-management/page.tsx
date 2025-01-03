@@ -26,6 +26,7 @@ import {
   PlusCircle,
   Search,
   Trash2,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
@@ -84,7 +85,11 @@ const Page = () => {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return (
+    <div className="flex items-center justify-center h-screen">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  );
   if (error) return <div>Error: {error}</div>;
 
   return (

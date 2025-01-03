@@ -193,7 +193,7 @@ export default function UserManagementPage() {
               Search
             </Button>
 
-            <Link href="user-management/create-user" className="w-full md:w-auto">
+            <Link href="user-management/create-customer" className="w-full md:w-auto">
               <Button className="gap-2 bg-primary hover:bg-primary/90 w-full">
                 <PlusCircle className="h-4 w-4" />
                 Create User
@@ -267,14 +267,14 @@ export default function UserManagementPage() {
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem asChild>
                                 <Link
-                                  href={`user-management/view-user/${user.id}`}
+                                  href={`user-management/view-customer/${user.id}`}
                                   className="w-full"
                                 >
                                   View
                                 </Link>
                               </DropdownMenuItem>
                               <DropdownMenuItem asChild>
-                                <Link href={`user-management/edit-user/${user.id}`}>
+                                <Link href={`user-management/edit-customer/${user.id}`}>
                                   Edit
                                 </Link>
                               </DropdownMenuItem>

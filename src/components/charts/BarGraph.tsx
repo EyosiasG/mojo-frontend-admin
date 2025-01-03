@@ -10,7 +10,7 @@ const BarGraph = () => {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/transfers");
+        const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/agent/dashboard");
         
         if (!response.ok) {
           throw new Error(`Failed to fetch data: ${response.statusText}`);
@@ -18,20 +18,15 @@ const BarGraph = () => {
 
         const result = await response.json();
         
-        if (!result.data || !Array.isArray(result.data)) {
+        if (result.status !== "success" || !result.transactions) {
           throw new Error('Invalid data format received from server');
         }
 
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const monthlyTotals = months.map(month => ({
+        const monthlyTotals = months.map((month, index) => ({
           name: month,
-          value: 0
+          value: result.transactions[(index + 1).toString()] || 0
         }));
-
-        result.data.forEach(transaction => {
-          const month = new Date(transaction.created_at).getMonth();
-          monthlyTotals[month].value += parseFloat(transaction.amount) || 0;
-        });
 
         setMonthlyData(monthlyTotals);
       } catch (err) {

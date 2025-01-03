@@ -5,25 +5,34 @@ import { fetchWithAuth } from "../utils/fetchwitAuth";
 
 const AdminBarGraph = () => {
   const [monthlyData, setMonthlyData] = useState<{ name: string; value: number }[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTransactions = async () => {
-      const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/transactions");
-      const result = await response.json();
-      const transactions = result.data;
+      try {
+        const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/dashboard");
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch data: ${response.statusText}`);
+        }
 
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      const monthlyTotals = months.map(month => ({
-        name: month,
-        value: 0
-      }));
+        const result = await response.json();
+        
+        if (result.status !== "success" || !result.transactions) {
+          throw new Error('Invalid data format received from server');
+        }
 
-      transactions.forEach(transaction => {
-        const month = new Date(transaction.created_at).getMonth();
-        monthlyTotals[month].value += parseFloat(transaction.amount);
-      });
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const monthlyTotals = months.map((month, index) => ({
+          name: month,
+          value: result.transactions[(index + 1).toString()] || 0
+        }));
 
-      setMonthlyData(monthlyTotals);
+        setMonthlyData(monthlyTotals);
+      } catch (err) {
+        console.error('Error fetching transaction data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load chart data');
+      }
     };
 
     fetchTransactions();
@@ -50,6 +59,7 @@ const AdminBarGraph = () => {
           <Bar 
             dataKey="value" 
             fill="#1e40af"
+            name="Amount of Monthly Transactions"
             radius={[4, 4, 0, 0]}
           />
         </BarChart>

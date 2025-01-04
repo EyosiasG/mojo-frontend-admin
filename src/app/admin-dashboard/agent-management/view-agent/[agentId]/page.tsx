@@ -38,91 +38,12 @@ export default function Page() {
     }
   }, [agentId]);
 
-  useEffect(() => {
-    const loadImage = async () => {
-      try {
-        const imageUrl = userData?.image_url;
-        if (!imageUrl) return;
-
-        const response = await fetch(imageUrl);
-        if (!response.ok) throw new Error('Image not found');
-
-        setUserImage(imageUrl);
-      } catch (err) {
-        console.log('Failed to load user image, using placeholder');
-        setUserImage('https://toppng.com/uploads/preview/user-account-management-logo-user-icon-11562867145a56rus2zwu.png');
-      }
-    };
-
-    if (userData) {
-      loadImage();
-    }
-  }, [userData]);
-
   const handleView = async () => {
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([400, 600]);
     let embeddedImage = null;
 
     try {
-      // Find the image element that's already loaded in the page
-      const imgElement = document.querySelector('img[alt="ID Document"]') as HTMLImageElement;
-      
-      if (!imgElement) {
-        throw new Error('Image element not found');
-      }
-
-      // Create a canvas and draw the loaded image
-      const canvas = document.createElement('canvas');
-      canvas.width = imgElement.naturalWidth;
-      canvas.height = imgElement.naturalHeight;
-      
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        throw new Error('Could not get canvas context');
-      }
-
-      // Wait for image to be fully loaded
-      await new Promise((resolve) => {
-        if (imgElement.complete) {
-          resolve(true);
-        } else {
-          imgElement.onload = () => resolve(true);
-        }
-      });
-
-      // Draw image to canvas
-      ctx.drawImage(imgElement, 0, 0);
-      
-      // Convert to PNG data
-      const pngData = canvas.toDataURL('image/png').split(',')[1];
-      const imageBytes = Uint8Array.from(atob(pngData), c => c.charCodeAt(0));
-      
-      // Embed in PDF
-      embeddedImage = await pdfDoc.embedPng(imageBytes);
-      console.log('Image embedded successfully');
-
-    } catch (err) {
-      console.error('Image processing error:', err);
-      console.log('Detailed error:', {
-        message: err.message,
-        stack: err.stack
-      });
-    }
-
-    // Draw the image only if successfully embedded
-    if (embeddedImage) {
-      const imageWidth = 100;
-      const imageHeight = 100;
-      page.drawImage(embeddedImage, {
-        x: (page.getWidth() - imageWidth) / 2,
-        y: 400,
-        width: imageWidth,
-        height: imageHeight,
-      });
-    }
-
-    // Header Section
     page.drawRectangle({
       x: 0,
       y: 500,
@@ -143,7 +64,6 @@ export default function Page() {
     // User details section
     let yPosition = 370;
     const details = [
-      { label: 'User ID', value: userData?.id || 'N/A' },
       { label: 'First Name', value: userData?.first_name || 'N/A' },
       { label: 'Last Name', value: userData?.last_name || 'N/A' },
       { label: 'Email', value: userData?.email || 'N/A' },
@@ -193,49 +113,16 @@ export default function Page() {
     const pdfData = await pdfDoc.save();
     const pdfUrl = URL.createObjectURL(new Blob([pdfData], { type: 'application/pdf' }));
     window.open(pdfUrl, '_blank');
-  };
+  } catch (err) {
+    console.error('Error generating PDF:', err);
+  }
+};
 
   const handleDownload = async () => {
     // Create PDF document
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([400, 600]);
-    let embeddedImage = null;
-
-    try {
-      const imgElement = document.querySelector('img[alt="ID Document"]') as HTMLImageElement;
-      if (!imgElement) throw new Error('Image element not found');
-
-      const canvas = document.createElement('canvas');
-      canvas.width = imgElement.naturalWidth;
-      canvas.height = imgElement.naturalHeight;
-      
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('Could not get canvas context');
-
-      await new Promise((resolve) => {
-        if (imgElement.complete) resolve(true);
-        else imgElement.onload = () => resolve(true);
-      });
-
-      ctx.drawImage(imgElement, 0, 0);
-      const pngData = canvas.toDataURL('image/png').split(',')[1];
-      const imageBytes = Uint8Array.from(atob(pngData), c => c.charCodeAt(0));
-      embeddedImage = await pdfDoc.embedPng(imageBytes);
-
-    } catch (err) {
-      console.error('Image processing error:', err);
-    }
-
-    // Rest of PDF generation (same as handleView)
-    if (embeddedImage) {
-      page.drawImage(embeddedImage, {
-        x: (page.getWidth() - 100) / 2,
-        y: 400,
-        width: 100,
-        height: 100,
-      });
-    }
-
+  
     // Header
     page.drawRectangle({
       x: 0,
@@ -254,7 +141,6 @@ export default function Page() {
     // User details
     let yPosition = 370;
     const details = [
-      { label: 'User ID', value: userData?.id || 'N/A' },
       { label: 'First Name', value: userData?.first_name || 'N/A' },
       { label: 'Last Name', value: userData?.last_name || 'N/A' },
       { label: 'Email', value: userData?.email || 'N/A' },
@@ -347,29 +233,6 @@ export default function Page() {
           <CardContent className="p-6">
             <h2 className="text-lg font-semibold mb-10 text-center">View Information</h2>
             
-            {/* Add Image Section */}
-            <div className="flex items-center justify-center gap-4 mb-10">
-              <div className="relative w-full max-w-[300px]">
-                <div className="aspect-[3/2] bg-gray-200 overflow-hidden rounded-lg">
-                  <Image
-                    src={userData?.id_image || "https://toppng.com/uploads/preview/user-account-management-logo-user-icon-11562867145a56rus2zwu.png"}
-                    alt="ID Document"
-                    width={300}
-                    height={200}
-                    className="object-cover w-full h-full"
-                  />
-                </div>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="absolute top-2 right-2 bg-white/80 hover:bg-white"
-                  onClick={() => setIsImageMaximized(true)}
-                >
-                  <Maximize2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-
             <div className="grid grid-cols-2 gap-x-8 gap-y-6 max-w-2xl mx-auto px-4 sm:px-8">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">User ID</p>
@@ -443,29 +306,6 @@ export default function Page() {
           </CardContent>
         </Card>
       </main>
-
-      {/* Add Image Modal */}
-      {isImageMaximized && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="relative max-w-[90vw] w-fit h-fit max-h-[90vh] bg-white rounded-lg p-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-2 right-2 z-10"
-              onClick={() => setIsImageMaximized(false)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-            <Image
-              src={userData?.id_image || "https://toppng.com/uploads/preview/user-account-management-logo-user-icon-11562867145a56rus2zwu.png"}
-              alt="ID Document"
-              width={1200}
-              height={800}
-              className="object-contain"
-            />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

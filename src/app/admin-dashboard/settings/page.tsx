@@ -13,7 +13,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useRouter } from "next/navigation";
 import Swal from 'sweetalert2';
 import { Loader2 } from "lucide-react";
-import axios from "axios";
+// import jwt_decode from "jwt-decode";
 
 export default function SettingsPage() {
   const [formData, setFormData] = useState({
@@ -22,6 +22,7 @@ export default function SettingsPage() {
     email: "",
     phone: "",
     idImage: null,
+    idImageUrl: null,
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -42,8 +43,6 @@ export default function SettingsPage() {
     phone: "",
   });
   const [isDataLoading, setIsDataLoading] = useState(true);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageUrl, setImageUrl] = useState<string>("");
 
   useEffect(() => {
     const getUserData = async () => {
@@ -64,20 +63,17 @@ export default function SettingsPage() {
         }
 
         const data = await response.json();
-        console.log("Fetched data:", data); // Debug log
-        
-        // Access the first user from the users array
-        const user = data.users[0];
-        setUserData(user);
+        setUserData(data);
         setFormData({
-          firstName: user.first_name || "",
-          lastName: user.last_name || "",
-          email: user.email || "",
-          phone: user.phone || "",
-          idImage: user.id_image,
+          firstName: data.first_name || "",
+          lastName: data.last_name || "",
+          email: data.email || "",
+          phone: data.phone,
+          idImage: data.id_image || null,
+          idImageUrl: data.profile_photo_url || null,
         });
         setIsDataLoading(false);
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err.message);
         setIsDataLoading(false);
       }
@@ -85,6 +81,7 @@ export default function SettingsPage() {
     getUserData();
   }, []);
 
+  
   // Handle form input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -173,7 +170,7 @@ export default function SettingsPage() {
             timer: 2000,
             showConfirmButton: false
         }).then(() => {
-            router.push("/agent-dashboard");
+            router.push("/admin-dashboard");
         });
 
     } catch (err: unknown) {
@@ -252,7 +249,7 @@ export default function SettingsPage() {
         timer: 2000,
         showConfirmButton: false
       }).then(() => {
-        router.push("/agent-dashboard");
+        router.push("/admin-dashboard");
       });
       setPasswordData({
         currentPassword: "",
@@ -341,73 +338,23 @@ export default function SettingsPage() {
         alert("File size exceeds 5MB. Please choose a smaller file.");
         return;
       }
-
+  
       const reader = new FileReader();
       reader.onload = (event) => {
-        if (event.target?.result) {
-          const base64String = event.target.result as string;
-          // Remove the data:image/png;base64, prefix
-          const trimmedBase64 = base64String.replace(/^data:image\/[a-z]+;base64,/, '');
-          console.log("Trimmed base64:", trimmedBase64.substring(0, 50) + "..."); // Debug log
-          
-          setFormData(prevData => {
-            const newData = {
-              ...prevData,
-              idImage: trimmedBase64
-            };
-            return newData;
-          });
-        }
+        const base64String = event.target?.result as string;
+        const cleanBase64 = base64String.replace('data:image/png;base64,', '');
+        setFormData((prevData) => ({ 
+          ...prevData, 
+          idImage: cleanBase64,  // Clean base64 for API
+          idImageUrl: base64String  // Full data URL for display
+        }));
       };
       reader.readAsDataURL(file);
     }
   };
+  
 
-  // Add a useEffect to monitor formData changes
-  useEffect(() => {
-    console.log("formData updated:", formData.idImage?.substring(0, 50) + "..."); // Debug log
-  }, [formData]);
-
-  // Modify the handleImageUpload function
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("image", file);
-
-    try {
-      const response = await axios.post("/api/upload", formData);
-      // Store the returned image URL in state
-      setImageUrl(response.data.url);
-      
-      // Update the settings with the new image URL
-      await updateSettings({
-        ...settings,
-        logo: response.data.url
-      });
-      
-      toast.success("Image uploaded successfully!");
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      toast.error("Failed to upload image");
-    }
-  };
-
-  // Modify the useEffect to set the image URL when settings load
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const response = await axios.get("/api/settings");
-        setSettings(response.data);
-        // Set the image URL from settings
-        setImageUrl(response.data.logo || "");
-      } catch (error) {
-        console.error("Error fetching settings:", error);
-      }
-    };
-    fetchSettings();
-  }, []);
+  
 
   return (
     <>
@@ -429,7 +376,6 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Personal Information</CardTitle>
-           
             <p className="text-sm text-muted-foreground">
               Use a permanent address where you can receive mail
             </p>
@@ -442,16 +388,21 @@ export default function SettingsPage() {
                     <Loader2 className="h-8 w-8 animate-spin" />
                   </div>
                 ) : (
-                  <div className="relative w-[100px] h-[100px]">
-                    <Image
-                      src={userData?.id_image || '/default-profile.png'}
-                      alt="Profile picture"
-                      width={100}
-                      height={100}
-                      className="rounded-lg object-cover"
-                      priority
-                    />
-                  </div>
+                  <>
+                    {formData.idImageUrl ? (
+                      <Image
+                        src={formData.idImageUrl}
+                        alt="Profile picture"
+                        width={100}
+                        height={100}
+                        className="rounded-lg object-cover"
+                      />
+                    ) : (
+                      <div className="w-[100px] h-[100px] rounded-lg flex items-center justify-center bg-gray-100">
+                        <Camera className="h-8 w-8 text-gray-400" />
+                      </div>
+                    )}
+                  </>
                 )}
                 <input
                   type="file"
@@ -460,20 +411,22 @@ export default function SettingsPage() {
                   className="hidden"
                   id="imageUpload"
                 />
+                
               </div>
               <Button
-                variant="outline"
-                className="relative flex items-center gap-2"
-              >
-                <Upload className="h-4 w-4" />
-                Change Image
-                <input
-                  type="file"
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  onChange={handleImageChange}
-                  accept="image/*"
-                />
-              </Button>
+                    variant="outline"
+                    className="relative flex items-center gap-2"
+                  >
+                    <Upload className="h-4 w-4" />
+                    Change Image
+                    <input
+                      type="file"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      onChange={handleImageChange}
+                      accept="image/*"
+                    />
+                  </Button>
+                  {/*/check*/}
             </div>
             <form onSubmit={handleProfileSubmit}>
               <div className="grid gap-4 md:grid-cols-2">

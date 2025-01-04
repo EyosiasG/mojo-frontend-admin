@@ -9,56 +9,139 @@ import { ArrowLeft, Eye, Download, FileText, Upload, Camera } from "lucide-react
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
+import Swal from 'sweetalert2';
+
+const token = localStorage.getItem('access_token');
 
 export default function Page() {
-  const { userId } = useParams();
+  const { agentId } = useParams();
   const [userData, setUserData] = useState(null);
   const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+    status: '',
     idImage: null,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch user data
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const response = await fetchWithAuth(
-          `https://mojoapi.crosslinkglobaltravel.com/api/users/${userId}`
+          `https://mojoapi.crosslinkglobaltravel.com/api/users/${agentId}`,
+          {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
         if (!response.ok) throw new Error(`Error: ${response.statusText}`);
         const data = await response.json();
-        console.log(data);
-        setUserData(data.user); // Accessing the `user` object inside the response
+        console.log('Fetched user data:', data); // Debug log
+        
+        // Check if data.user exists, if not, try data directly
+        const userInfo = data.user || data;
+        
+        setUserData(userInfo);
+        setFormData({
+          first_name: userInfo.first_name || '',
+          last_name: userInfo.last_name || '',
+          email: userInfo.email || '',
+          phone: userInfo.phone || '',
+          status: userInfo.status || 'Active',
+          idImage: null,
+        });
       } catch (err) {
         console.error("Failed to fetch user data:", err);
         setError(`Failed to load user data: ${err.message}`);
       }
     };
 
-    if (userId) {
+    if (agentId) {
       fetchUserData();
     }
-  }, [userId]);
+  }, [agentId]);
 
-  // Add this handler for image changes
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        alert("File size exceeds 5MB. Please choose a smaller file.");
-        return;
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Add loading state
+    setIsSubmitting(true);
+
+    // Validation
+    if (!formData.first_name || !formData.last_name || !formData.email || !formData.phone) {
+      Swal.fire({
+        title: 'Error',
+        text: 'Please fill in all required fields',
+        icon: 'error',
+        confirmButtonColor: '#3085d6',
+      });
+      return;
+    }
+
+    // Confirmation dialog
+    const result = await Swal.fire({
+      title: 'Confirm Update',
+      text: 'Are you sure you want to save these changes?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, save changes'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const response = await fetchWithAuth(
+          `https://mojoapi.crosslinkglobaltravel.com/api/users/${agentId}`,
+          {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(formData),
+          }
+        );
+        
+        if (!response.ok) throw new Error(`Error: ${response.statusText}`);
+        
+        const data = await response.json();
+        setUserData(data.user);
+        
+        // Success message
+        Swal.fire({
+          title: 'Success!',
+          text: 'User information updated successfully',
+          icon: 'success',
+          confirmButtonColor: '#3085d6',
+        });
+      } catch (err) {
+        console.error("Failed to update user:", err);
+        Swal.fire({
+          title: 'Error',
+          text: `Failed to update user: ${err.message}`,
+          icon: 'error',
+          confirmButtonColor: '#3085d6',
+        });
+      } finally {
+        setIsSubmitting(false);
       }
-  
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        let base64String = event.target.result as string;
-        base64String = base64String.replace("data:image/png;base64,", ""); 
-        setFormData((prevData) => ({ 
-          ...prevData, 
-          idImage: base64String 
-        }));
-      };
-      reader.readAsDataURL(file);
+    } else {
+      setIsSubmitting(false);
     }
   };
 
@@ -75,7 +158,7 @@ export default function Page() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="flex items-center justify-between p-4 bg-white border-b">
-        <h1 className="text-xl font-semibold text-primary">User Management</h1>
+        <h1 className="text-xl font-semibold text-primary">Agent Management</h1>
         <div className="flex items-center gap-4">
           <NotificationProfile
             profileLink="/agent-dashboard/settings"
@@ -104,105 +187,79 @@ export default function Page() {
 
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-lg font-semibold mb-6">View Information</h2>
-
-            <div className="flex items-center gap-4 mb-6">
-              <div className="relative">
-                {formData.idImage ? (
-                  <Image
-                    src={`data:image/png;base64,${formData.idImage}`}
-                    alt="Profile picture"
-                    width={100}
-                    height={100}
-                    className="rounded-lg object-cover"
+            <h2 className="text-lg font-semibold mb-6">Edit Information</h2>
+            <form onSubmit={handleSubmit}>
+              <div className="grid grid-cols-2 gap-x-8 gap-y-6">
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1">First Name</label>
+                  <input
+                    type="text"
+                    name="first_name"
+                    value={formData.first_name}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border rounded"
                   />
-                ) : (
-                  <div className="w-[100px] h-[100px] rounded-lg bg-gray-100 flex items-center justify-center">
-                    <Camera className="h-8 w-8 text-gray-400" />
-                  </div>
-                )}
-              </div>
-              <Button
-                variant="outline"
-                className="relative flex items-center gap-2"
-              >
-                <Upload className="h-4 w-4" />
-                Change Image
-                <input
-                  type="file"
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  onChange={handleImageChange}
-                  accept="image/*"
-                />
-              </Button>
-            </div>
+                </div>
 
-            <div className="grid grid-cols-2 gap-x-8 gap-y-6">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">First Name</p>
-                {/* <p className="font-medium">{userData.first_name}</p> */}
-              </div>
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1">Last Name</label>
+                  <input
+                    type="text"
+                    name="last_name"
+                    value={formData.last_name}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border rounded"
+                  />
+                </div>
 
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Last Name</p>
-                {/* <p className="font-medium">{userData.last_name}</p> */}
-              </div>
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border rounded"
+                  />
+                </div>
 
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Email</p>
-                {/* <p className="font-medium">{userData.email}</p> */}
-              </div>
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1">Phone no.</label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border rounded"
+                  />
+                </div>
 
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Phone no.</p>
-                {/* <p className="font-medium">{userData.phone}</p> */}
-              </div>
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1">Status</label>
+                  <select
+                    name="status"
+                    value={formData.status}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border rounded"
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                  </select>
+                </div>
 
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Date</p>
-                {/* <p className="font-medium">
-                  {userData.created_at
-                    ? new Date(userData.created_at).toLocaleDateString(
-                        "en-US",
-                        {
-                          month: "long",
-                          day: "numeric",
-                          year: "numeric",
-                        }
-                      )
-                    : "N/A"}
-                </p> */}
-              </div>
+              
 
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Status</p>
-                {/* <p className="font-medium">{userData.status || "Active"}</p> */}
-              </div>
-
-              <div className="col-span-2 pt-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white rounded">
-                      <FileText className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium">ID.PDF</p>
-                      <p className="text-sm text-muted-foreground">320 KB</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm text-muted-foreground">12/2/2024</p>
-                    <Button variant="ghost" size="icon">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon">
-                      <Download className="h-4 w-4" />
-                    </Button>
-                  </div>
+                <div className="col-span-2 mt-6">
+                  <Button 
+                    type="submit" 
+                    className="w-full" 
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Saving...' : 'Save Changes'}
+                  </Button>
                 </div>
               </div>
-            </div>
+            </form>
           </CardContent>
         </Card>
       </main>

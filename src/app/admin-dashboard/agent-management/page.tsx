@@ -84,6 +84,31 @@ export default function UserManagementPage() {
     }
   };
 
+  const handleDelete = async (userId: string) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, delete it!'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const response = await fetchWithAuth(
+          `https://mojoapi.crosslinkglobaltravel.com/api/users/${userId}`,
+          { method: 'DELETE' }
+        );
+        if (response.ok) {
+          setUsers(users.filter(user => user.id !== userId));
+          Swal.fire('Deleted!', 'Agent has been deleted.', 'success');
+        }
+      } catch (error) {
+        Swal.fire('Error!', 'Failed to delete agent.', 'error');
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -205,6 +230,14 @@ export default function UserManagementPage() {
                                 className="w-full"
                               >
                                 View
+                              </Link>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Link
+                                href={`agent-management/edit-agent/${user.id}`}
+                                className="w-full"
+                              >
+                                Edit
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem

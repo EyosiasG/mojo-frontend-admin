@@ -16,24 +16,6 @@ const AddUserPage = () => {
   const router = useRouter();
   const [roles, setRoles] = useState([]);
 
-  useEffect(() => {
-    const fetchRoles = async () => {
-      try {
-        const accessToken = localStorage.getItem("access_token");
-        const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/roles", {
-          headers: {
-            "Authorization": `Bearer ${accessToken}`,
-          },
-        });
-        const data = await response.json();
-        setRoles(data.data);
-      } catch (error) {
-        console.error("Failed to fetch roles:", error);
-        toast.error("Failed to load roles");
-      }
-    };
-    fetchRoles();
-  }, []);
 
   const [userData, setUserData] = useState({
     firstName: "",
@@ -81,7 +63,7 @@ const AddUserPage = () => {
         email: userData.email,             // Use actual email
         phone: userData.phone,             // Use actual phone number
         password: "12345678",              // Dummy password
-        id_image: userData.idImage,        // Include the base64 image string
+        id_image: null,        // Include the base64 image string
         role: "Agent",                // Add this line
     };
 
@@ -216,34 +198,6 @@ const AddUserPage = () => {
                   <label htmlFor="role" className="block text-sm font-medium mb-2">
                     Role
                   </label>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Upload ID</label>
-                <div className="border-2 border-dashed rounded-lg p-8 text-center relative">
-                  <div className="mb-4">
-                    <Image
-                      src={imagePreview}
-                      alt="Upload preview"
-                      width={100}
-                      height={100}
-                      className="mx-auto"
-                    />
-                  </div>
-                  <Button
-                    variant="outline"
-                    className="relative flex items-center gap-2"
-                  >
-                    <Upload className="h-4 w-4" />
-                    Upload Image
-                    <input
-                      type="file"
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      onChange={handleImageUpload}
-                      accept="image/*"
-                    />
-                  </Button>
                 </div>
               </div>
 

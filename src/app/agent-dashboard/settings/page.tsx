@@ -22,6 +22,7 @@ export default function SettingsPage() {
     email: "",
     phone: "",
     idImage: null,
+    idImageUrl: null,
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -68,7 +69,8 @@ export default function SettingsPage() {
           lastName: data.last_name || "",
           email: data.email || "",
           phone: data.phone,
-          idImage: data.profile_photo_url,
+          idImage: data.id_image || null,
+          idImageUrl: data.profile_photo_url || null,
         });
         setIsDataLoading(false);
       } catch (err: unknown) {
@@ -168,7 +170,7 @@ export default function SettingsPage() {
             timer: 2000,
             showConfirmButton: false
         }).then(() => {
-            router.push("/agent-dashboard");
+            router.push("/admin-dashboard");
         });
 
     } catch (err: unknown) {
@@ -339,11 +341,12 @@ export default function SettingsPage() {
   
       const reader = new FileReader();
       reader.onload = (event) => {
-        let base64String = event.target.result as string;
-        base64String = base64String.replace("data:image/png;base64,", ""); 
+        const base64String = event.target?.result as string;
+        const cleanBase64 = base64String.replace('data:image/png;base64,', '');
         setFormData((prevData) => ({ 
           ...prevData, 
-          idImage: base64String 
+          idImage: cleanBase64,  // Clean base64 for API
+          idImageUrl: base64String  // Full data URL for display
         }));
       };
       reader.readAsDataURL(file);
@@ -385,15 +388,21 @@ export default function SettingsPage() {
                     <Loader2 className="h-8 w-8 animate-spin" />
                   </div>
                 ) : (
-                  formData.idImage && (
-                    <Image
-                      src={`data:image/png;base64,${formData.idImage}`}
-                      alt="Profile picture"
-                      width={100}
-                      height={100}
-                      className="rounded-lg object-cover"
-                    />
-                  )
+                  <>
+                    {formData.idImageUrl ? (
+                      <Image
+                        src={formData.idImageUrl}
+                        alt="Profile picture"
+                        width={100}
+                        height={100}
+                        className="rounded-lg object-cover"
+                      />
+                    ) : (
+                      <div className="w-[100px] h-[100px] rounded-lg flex items-center justify-center bg-gray-100">
+                        <Camera className="h-8 w-8 text-gray-400" />
+                      </div>
+                    )}
+                  </>
                 )}
                 <input
                   type="file"

@@ -5,7 +5,7 @@ import BackLink from "@/components/BackLink";
 import NotificationProfile from "@/components/NotificationProfile";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Eye, Download, FileText } from "lucide-react";
+import { ArrowLeft, Eye, Download, FileText, Upload, Camera } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
@@ -14,6 +14,9 @@ export default function Page() {
   const { userId } = useParams();
   const [userData, setUserData] = useState(null);
   const [error, setError] = useState(null);
+  const [formData, setFormData] = useState({
+    idImage: null,
+  });
 
   // Fetch user data
   useEffect(() => {
@@ -36,6 +39,28 @@ export default function Page() {
       fetchUserData();
     }
   }, [userId]);
+
+  // Add this handler for image changes
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        alert("File size exceeds 5MB. Please choose a smaller file.");
+        return;
+      }
+  
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        let base64String = event.target.result as string;
+        base64String = base64String.replace("data:image/png;base64,", ""); 
+        setFormData((prevData) => ({ 
+          ...prevData, 
+          idImage: base64String 
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Render error or loading state if applicable
   if (error) {
@@ -80,6 +105,37 @@ export default function Page() {
         <Card>
           <CardContent className="p-6">
             <h2 className="text-lg font-semibold mb-6">View Information</h2>
+
+            <div className="flex items-center gap-4 mb-6">
+              <div className="relative">
+                {formData.idImage ? (
+                  <Image
+                    src={`data:image/png;base64,${formData.idImage}`}
+                    alt="Profile picture"
+                    width={100}
+                    height={100}
+                    className="rounded-lg object-cover"
+                  />
+                ) : (
+                  <div className="w-[100px] h-[100px] rounded-lg bg-gray-100 flex items-center justify-center">
+                    <Camera className="h-8 w-8 text-gray-400" />
+                  </div>
+                )}
+              </div>
+              <Button
+                variant="outline"
+                className="relative flex items-center gap-2"
+              >
+                <Upload className="h-4 w-4" />
+                Change Image
+                <input
+                  type="file"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  onChange={handleImageChange}
+                  accept="image/*"
+                />
+              </Button>
+            </div>
 
             <div className="grid grid-cols-2 gap-x-8 gap-y-6">
               <div>

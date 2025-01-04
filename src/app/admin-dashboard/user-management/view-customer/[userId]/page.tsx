@@ -8,9 +8,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Eye, Download, FileText, Maximize2, X } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
+import { PDFDocument, rgb } from 'pdf-lib';
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
-import { PDFDocument, rgb } from 'pdf-lib'; // Import PDF generation library
-
 
 export default function Page() {
   const { userId } = useParams();
@@ -19,31 +18,46 @@ export default function Page() {
   const [userImage, setUserImage] = useState<string | null>(null);
   const [isImageMaximized, setIsImageMaximized] = useState(false);
 
-  // Fetch user data
   useEffect(() => {
     const fetchUserData = async () => {
       try {
+        console.log("Fetching user data for ID:", userId);
         const response = await fetchWithAuth(
           `https://mojoapi.crosslinkglobaltravel.com/api/users/${userId}`
         );
-        if (!response.ok) throw new Error(`Error: ${response.statusText}`);
+        console.log("API Response:", response);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("API Error:", errorText);
+          throw new Error(`Error: ${response.status} - ${errorText}`);
+        }
+        
         const data = await response.json();
-        setUserData(data.user); // Accessing the `user` object inside the response
+        console.log("Received data:", data);
+        
+        if (!data.user) {
+          throw new Error("No user data received from API");
+        }
+        
+        setUserData(data.user);
       } catch (err) {
         console.error("Failed to fetch user data:", err);
-        setError("Failed to load user data.");
+        setError(`Failed to load user data: ${err.message}`);
       }
     };
 
     if (userId) {
       fetchUserData();
+    } else {
+      console.error("No userId provided");
+      setError("No user ID provided");
     }
   }, [userId]);
 
   useEffect(() => {
     const loadImage = async () => {
       try {
-        // Assuming the image URL is in userData.image_url
         const imageUrl = userData?.image_url;
         if (!imageUrl) return;
 
@@ -62,68 +76,44 @@ export default function Page() {
     }
   }, [userData]);
 
-
   const handleView = async () => {
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([400, 600]);
     let embeddedImage = null;
 
     try {
-      // Find the image element that's already loaded in the page
+      // Get and process the ID document image
       const imgElement = document.querySelector('img[alt="ID Document"]') as HTMLImageElement;
-      
-      if (!imgElement) {
-        throw new Error('Image element not found');
-      }
+      if (!imgElement) throw new Error('Image element not found');
 
-      // Create a canvas and draw the loaded image
       const canvas = document.createElement('canvas');
       canvas.width = imgElement.naturalWidth;
       canvas.height = imgElement.naturalHeight;
       
       const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        throw new Error('Could not get canvas context');
-      }
+      if (!ctx) throw new Error('Could not get canvas context');
 
-      // Wait for image to be fully loaded
       await new Promise((resolve) => {
-        if (imgElement.complete) {
-          resolve(true);
-        } else {
-          imgElement.onload = () => resolve(true);
-        }
+        if (imgElement.complete) resolve(true);
+        else imgElement.onload = () => resolve(true);
       });
 
-      // Draw image to canvas
       ctx.drawImage(imgElement, 0, 0);
-      
-      // Convert to PNG data
       const pngData = canvas.toDataURL('image/png').split(',')[1];
       const imageBytes = Uint8Array.from(atob(pngData), c => c.charCodeAt(0));
-      
-      // Embed in PDF
       embeddedImage = await pdfDoc.embedPng(imageBytes);
-      console.log('Image embedded successfully');
 
     } catch (err) {
       console.error('Image processing error:', err);
-      console.log('Detailed error:', {
-        message: err.message,
-        stack: err.stack
-      });
-      // Continue without the image
     }
 
-    // Draw the image only if successfully embedded
+    // Draw image if successfully embedded
     if (embeddedImage) {
-      const imageWidth = 100;
-      const imageHeight = 100;
       page.drawImage(embeddedImage, {
-        x: (page.getWidth() - imageWidth) / 2,
+        x: (page.getWidth() - 100) / 2,
         y: 400,
-        width: imageWidth,
-        height: imageHeight,
+        width: 100,
+        height: 100,
       });
     }
 
@@ -142,11 +132,8 @@ export default function Page() {
       color: rgb(1, 1, 1),
     });
 
-    // Add a line for separation
-    page.drawLine({ start: { x: 50, y: 390 }, end: { x: 350, y: 390 }, color: rgb(0.7, 0.7, 0.7), thickness: 1 });
-
     // User details section
-    let yPosition = 370; // Start below the image
+    let yPosition = 370;
     const details = [
       { label: 'User ID', value: userData?.id || 'N/A' },
       { label: 'First Name', value: userData?.first_name || 'N/A' },
@@ -172,7 +159,7 @@ export default function Page() {
       yPosition -= 20;
     });
 
-    // Footer Section
+    // Footer
     page.drawLine({
       start: { x: 50, y: yPosition - 10 },
       end: { x: 350, y: yPosition - 10 },
@@ -195,73 +182,49 @@ export default function Page() {
       color: rgb(0.5, 0.5, 0.5),
     });
 
-  const pdfData = await pdfDoc.save();
-  const pdfUrl = URL.createObjectURL(new Blob([pdfData], { type: 'application/pdf' }));
-  window.open(pdfUrl, '_blank');
-};
-
-  
+    const pdfData = await pdfDoc.save();
+    const pdfUrl = URL.createObjectURL(new Blob([pdfData], { type: 'application/pdf' }));
+    window.open(pdfUrl, '_blank');
+  };
 
   const handleDownload = async () => {
+    // Create PDF document with the same content as handleView
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([400, 600]);
     let embeddedImage = null;
 
     try {
-      // Find the image element that's already loaded in the page
       const imgElement = document.querySelector('img[alt="ID Document"]') as HTMLImageElement;
-      
-      if (!imgElement) {
-        throw new Error('Image element not found');
-      }
+      if (!imgElement) throw new Error('Image element not found');
 
-      // Create a canvas and draw the loaded image
       const canvas = document.createElement('canvas');
       canvas.width = imgElement.naturalWidth;
       canvas.height = imgElement.naturalHeight;
       
       const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        throw new Error('Could not get canvas context');
-      }
+      if (!ctx) throw new Error('Could not get canvas context');
 
-      // Wait for image to be fully loaded
       await new Promise((resolve) => {
-        if (imgElement.complete) {
-          resolve(true);
-        } else {
-          imgElement.onload = () => resolve(true);
-        }
+        if (imgElement.complete) resolve(true);
+        else imgElement.onload = () => resolve(true);
       });
 
-      // Draw image to canvas
       ctx.drawImage(imgElement, 0, 0);
-      
-      // Convert to PNG data
       const pngData = canvas.toDataURL('image/png').split(',')[1];
       const imageBytes = Uint8Array.from(atob(pngData), c => c.charCodeAt(0));
-      
-      // Embed in PDF
       embeddedImage = await pdfDoc.embedPng(imageBytes);
-      console.log('Image embedded successfully');
 
     } catch (err) {
       console.error('Image processing error:', err);
-      console.log('Detailed error:', {
-        message: err.message,
-        stack: err.stack
-      });
     }
 
-    // Draw the image only if successfully embedded
+    // Draw image if successfully embedded
     if (embeddedImage) {
-      const imageWidth = 100;
-      const imageHeight = 100;
       page.drawImage(embeddedImage, {
-        x: (page.getWidth() - imageWidth) / 2,
+        x: (page.getWidth() - 100) / 2,
         y: 400,
-        width: imageWidth,
-        height: imageHeight,
+        width: 100,
+        height: 100,
       });
     }
 
@@ -280,11 +243,8 @@ export default function Page() {
       color: rgb(1, 1, 1),
     });
 
-    // Add a line for separation
-    page.drawLine({ start: { x: 50, y: 390 }, end: { x: 350, y: 390 }, color: rgb(0.7, 0.7, 0.7), thickness: 1 });
-
     // User details section
-    let yPosition = 370; // Start below the image
+    let yPosition = 370;
     const details = [
       { label: 'User ID', value: userData?.id || 'N/A' },
       { label: 'First Name', value: userData?.first_name || 'N/A' },
@@ -310,7 +270,7 @@ export default function Page() {
       yPosition -= 20;
     });
 
-    // Footer Section
+    // Footer
     page.drawLine({
       start: { x: 50, y: yPosition - 10 },
       end: { x: 350, y: yPosition - 10 },
@@ -332,20 +292,19 @@ export default function Page() {
       size: 10,
       color: rgb(0.5, 0.5, 0.5),
     });
-
-
 
     const pdfData = await pdfDoc.save();
     const pdfUrl = URL.createObjectURL(new Blob([pdfData], { type: 'application/pdf' }));
 
     const link = document.createElement('a');
     link.href = pdfUrl;
-    link.setAttribute('download', 'user_details.pdf');
+    link.setAttribute('download', 'customer_details.pdf');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(pdfUrl); // Clean up the URL object
+    URL.revokeObjectURL(pdfUrl);
   };
+
   if (error) {
     return <p className="text-red-500 text-center">{error}</p>;
   }
@@ -364,28 +323,36 @@ export default function Page() {
             profileLink="/agent-dashboard/settings"
             notificationLink="/agent-dashboard/notifications"
           />
-
+          <div className="h-8 w-8 rounded-full bg-gray-200 overflow-hidden">
+            <Image
+              src="/placeholder.svg?height=32&width=32"
+              alt="Profile"
+              width={32}
+              height={32}
+              className="object-cover"
+            />
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="p-4 max-w-4xl mx-auto">
-
         <div className="mb-6">
           <BackLink>
             <ArrowLeft className="h-4 w-4" />
-            User Details For - {userData.first_name} {userData.last_name}
+            View User - {userData.first_name} {userData.last_name}
           </BackLink>
         </div>
 
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-lg font-semibold mb-6 text-center">View Information</h2>
+            <h2 className="text-lg font-semibold mb-10 text-center">View Information</h2>
+            
             <div className="flex items-center justify-center gap-4 mb-10">
               <div className="relative w-full max-w-[300px]">
                 <div className="aspect-[3/2] bg-gray-200 overflow-hidden rounded-lg">
                   <Image
-                    src={userData.id_image || "https://toppng.com/uploads/preview/user-account-management-logo-user-icon-11562867145a56rus2zwu.png"}
+                    src={userData?.id_image || "https://toppng.com/uploads/preview/user-account-management-logo-user-icon-11562867145a56rus2zwu.png"}
                     alt="ID Document"
                     width={300}
                     height={200}
@@ -402,12 +369,8 @@ export default function Page() {
                 </Button>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-x-8 gap-y-6 max-w-2xl mx-auto px-4 sm:px-8">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">User ID</p>
-                <p className="font-medium">{userData.id}</p>
-              </div>
 
+            <div className="grid grid-cols-2 gap-x-8 gap-y-6">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">First Name</p>
                 <p className="font-medium">{userData.first_name}</p>
@@ -429,17 +392,17 @@ export default function Page() {
               </div>
 
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Registration Date</p>
+                <p className="text-sm text-muted-foreground mb-1">Date</p>
                 <p className="font-medium">
                   {userData.created_at
                     ? new Date(userData.created_at).toLocaleDateString(
-                      "en-US",
-                      {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                      }
-                    )
+                        "en-US",
+                        {
+                          month: "long",
+                          day: "numeric",
+                          year: "numeric",
+                        }
+                      )
                     : "N/A"}
                 </p>
               </div>
@@ -488,7 +451,7 @@ export default function Page() {
               <X className="h-4 w-4" />
             </Button>
             <Image
-              src={userData.id_image || "https://toppng.com/uploads/preview/user-account-management-logo-user-icon-11562867145a56rus2zwu.png"}
+              src={userData?.id_image || "https://toppng.com/uploads/preview/user-account-management-logo-user-icon-11562867145a56rus2zwu.png"}
               alt="ID Document"
               width={1200}
               height={800}

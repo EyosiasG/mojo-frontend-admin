@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import BackLink from "@/components/BackLink";
 import NotificationProfile from "@/components/NotificationProfile";
 import { Button } from "@/components/ui/button";
@@ -8,24 +8,31 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Eye, Download, FileText } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
+import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
+import { Input } from "@/components/ui/input";
 
 export default function Page() {
   const { userId } = useParams();
   const [userData, setUserData] = useState(null);
   const [error, setError] = useState(null);
+  const [profileImage, setProfileImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const fileInputRef = useRef(null);
 
+  // Fetch user data
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch(
+        const response = await fetchWithAuth(
           `https://mojoapi.crosslinkglobaltravel.com/api/users/${userId}`
         );
         if (!response.ok) throw new Error(`Error: ${response.statusText}`);
         const data = await response.json();
+        console.log(data);
         setUserData(data.user); // Accessing the `user` object inside the response
       } catch (err) {
         console.error("Failed to fetch user data:", err);
-        setError("Failed to load user data.");
+        setError(`Failed to load user data: ${err.message}`);
       }
     };
 
@@ -34,6 +41,53 @@ export default function Page() {
     }
   }, [userId]);
 
+  // Add this new function to handle image changes
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+      setProfileImage(file);
+
+      // Upload image
+      try {
+        const formData = new FormData();
+        formData.append('profile_image', file);
+
+        const response = await fetchWithAuth(
+          `https://mojoapi.crosslinkglobaltravel.com/api/users/${userId}/profile-image`,
+          {
+            method: 'POST',
+            body: formData,
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.text();
+          throw new Error(errorData || 'Failed to upload image');
+        }
+        
+        // Refresh user data after successful upload
+        const updatedUserResponse = await fetchWithAuth(
+          `https://mojoapi.crosslinkglobaltravel.com/api/users/${userId}`
+        );
+        if (!updatedUserResponse.ok) {
+          throw new Error('Failed to fetch updated user data');
+        }
+        const updatedUserData = await updatedUserResponse.json();
+        setUserData(updatedUserData.user);
+      } catch (err) {
+        console.error('Failed to upload image:', err);
+        setError(err instanceof Error ? err.message : 'Failed to upload image');
+      }
+    }
+  };
+
+  // Render error or loading state if applicable
   if (error) {
     return <p className="text-red-500 text-center">{error}</p>;
   }
@@ -52,13 +106,23 @@ export default function Page() {
             profileLink="/agent-dashboard/settings"
             notificationLink="/agent-dashboard/notifications"
           />
-          <div className="h-8 w-8 rounded-full bg-gray-200 overflow-hidden">
+          <div 
+            className="relative h-8 w-8 rounded-full bg-gray-200 overflow-hidden cursor-pointer"
+            onClick={() => fileInputRef.current?.click()}
+          >
             <Image
-              src="/placeholder.svg?height=32&width=32"
+              src={imagePreview || userData.profile_image || "/placeholder.svg?height=32&width=32"}
               alt="Profile"
               width={32}
               height={32}
               className="object-cover"
+            />
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              accept="image/*"
+              onChange={handleImageChange}
             />
           </div>
         </div>
@@ -75,6 +139,29 @@ export default function Page() {
 
         <Card>
           <CardContent className="p-6">
+            <div className="mb-6">
+              <div className="flex items-center gap-4">
+                <div 
+                  className="relative h-24 w-24 rounded-full bg-gray-200 overflow-hidden cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Image
+                    src={imagePreview || userData.profile_image || "/placeholder.svg"}
+                    alt="Profile"
+                    fill
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                    <p className="text-white text-sm">Change Photo</p>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-medium">{userData.first_name} {userData.last_name}</h3>
+                  <p className="text-sm text-muted-foreground">Click to update profile photo</p>
+                </div>
+              </div>
+            </div>
+
             <h2 className="text-lg font-semibold mb-6">View Information</h2>
 
             <div className="grid grid-cols-2 gap-x-8 gap-y-6">
@@ -102,14 +189,11 @@ export default function Page() {
                 <p className="text-sm text-muted-foreground mb-1">Date</p>
                 <p className="font-medium">
                   {userData.created_at
-                    ? new Date(userData.created_at).toLocaleDateString(
-                        "en-US",
-                        {
-                          month: "long",
-                          day: "numeric",
-                          year: "numeric",
-                        }
-                      )
+                    ? new Date(userData.created_at).toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })
                     : "N/A"}
                 </p>
               </div>

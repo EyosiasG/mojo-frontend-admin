@@ -5,7 +5,7 @@ import BackLink from "@/components/BackLink";
 import NotificationProfile from "@/components/NotificationProfile";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Eye, Download, FileText, Maximize2, X } from "lucide-react";
+import { ArrowLeft, Eye, Download, FileText, Maximize2, X, Loader } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { PDFDocument, rgb } from 'pdf-lib';
@@ -310,7 +310,12 @@ export default function Page() {
   }
 
   if (!userData) {
-    return <p className="text-center text-gray-500">Loading...</p>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <Loader className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-center text-gray-500">Loading user data...</p>
+      </div>
+    );
   }
 
   return (

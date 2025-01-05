@@ -261,9 +261,9 @@ const page = () => {
       {/* Main Content */}
       <main className="p-4 max-w-4xl mx-auto">
         <div className="mb-6">
-          <BackLink>
+          <BackLink href="/admin-dashboard/transactions" className="flex items-center gap-2">
             <ArrowLeft className="h-4 w-4" />
-            View Transaction
+            <span>Go Back</span>
           </BackLink>
         </div>
 

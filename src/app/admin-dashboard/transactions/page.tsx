@@ -318,7 +318,7 @@ export default function TransferPage() {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem>
-                                  <Link href={`transfer/view-transaction/${transaction.id}`} className="w-full">
+                                  <Link href={`transactions/view-transaction/${transaction.id}`} className="w-full">
                                     View
                                   </Link>
                                 </DropdownMenuItem>

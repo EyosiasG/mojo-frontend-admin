@@ -1,6 +1,6 @@
 "use client"
 
-import { Banknote, Send } from "lucide-react";
+import { Banknote, Send, Loader2 } from "lucide-react";
 import { CircleCheck, CircleX, Clock2 } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
@@ -39,7 +39,7 @@ async function fetchTotalTransactions() {
 }
 
 export default function DashboardPage() {
-
+  const [isLoading, setIsLoading] = useState(true);
 
   const [totalTransactions, setTotalTransactions] = useState(0);
   const [totalTransactionsByStatus, setTotalTransactionsByStatus] = useState({});
@@ -48,10 +48,15 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const getTotal = async () => {
-      const { totalTransactions, transactionsByStatus } = await fetchTotalTransactions();
-      setTotalTransactions(totalTransactions);
-      setTotalTransactionsByStatus(transactionsByStatus);
-      setMonthlyData(monthlyData);
+      try {
+        const { totalTransactions, transactionsByStatus } = await fetchTotalTransactions();
+        setTotalTransactions(totalTransactions);
+        setTotalTransactionsByStatus(transactionsByStatus);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
     getTotal();
   }, []);
@@ -69,6 +74,14 @@ export default function DashboardPage() {
     failed: <CircleX color="#ff0000" />,
     pending: <Clock2 color="#ff932e" />,
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <>

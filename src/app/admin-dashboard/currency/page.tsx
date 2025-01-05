@@ -248,16 +248,16 @@ const CurrencyManagementPage = () => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
-                        <Link href={`currency/view-currency/${currency.id}`}>
+                      <Link href={`/admin-dashboard/currency/view-currency/${currency.id}`}>
+                        <DropdownMenuItem>
                           View
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem>
-                        <Link href={`currency/edit-currency/${currency.id}`}>
+                        </DropdownMenuItem>
+                      </Link>
+                      <Link href={`/admin-dashboard/currency/edit-currency/${currency.id}`}>
+                        <DropdownMenuItem>
                           Edit
-                        </Link>
-                      </DropdownMenuItem>
+                        </DropdownMenuItem>
+                      </Link>
                       <DropdownMenuItem
                         className="text-destructive"
                         onClick={() => handleDelete(currency.id)}

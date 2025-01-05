@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import BackLink from "@/components/BackLink";
 import { useEffect, useState, use } from "react";
@@ -69,7 +69,12 @@ export default function RoleView({ params }: { params: { roleId: string } }) {
   }, [unwrappedParams.roleId]);
 
   if (loading) {
-    return <div className="min-h-screen bg-background flex items-center justify-center">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-2">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">Loading role details...</p>
+      </div>
+    );
   }
   if (error) return <div>Error: {error}</div>;
   if (!roleData) return <div>Role not found</div>;

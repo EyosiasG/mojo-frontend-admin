@@ -1,120 +1,126 @@
-// "use client";
+"use client";
 
-// import { useEffect, useState } from "react";
-// import { ArrowLeft } from "lucide-react";
-// import BackLink from "@/components/BackLink";
-// import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
-// import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import BackLink from "@/components/BackLink";
+import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
+import { useParams } from "next/navigation";
+import NotificationProfile from "@/components/NotificationProfile";
+import { Card, CardContent } from "@/components/ui/card";
 
-// export default function ViewCurrency() {
-//   const { currencyId } = useParams();
+export default function ViewCurrency() {
+  const { currencyId } = useParams();
 
-//   const [currencyData, setCurrencyData] = useState({
-//     name: "",
-//     status: "",
-//     sign: "",
-//   });
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState<string | null>(null);
+  const [currencyData, setCurrencyData] = useState({
+    name: "",
+    status: "",
+    sign: "",
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-//   useEffect(() => {
-//     const fetchCurrency = async () => {
-//       try {
-//         const response = await fetchWithAuth(
-//           `https://mojoapi.crosslinkglobaltravel.com/api/currencies/${currencyId}`,
-//           { method: "GET" }
-//         );
+  useEffect(() => {
+    const fetchCurrency = async () => {
+      try {
+        const response = await fetchWithAuth(
+          `https://mojoapi.crosslinkglobaltravel.com/api/currencies/${currencyId}`,
+          { method: "GET" }
+        );
   
-//         const data = await response.json();
+        const data = await response.json();
   
-//         if (data.status === "success") {
-//           setCurrencyData({
-//             name: data.data.name,
-//             status: data.data.status,
-//             sign: data.data.sign,
-//           });
-//         } else {
-//           setError(data.message || "Currency not found");
-//         }
-//       } catch (err) {
-//         console.error("Error fetching currency:", err);
-//         setError("Failed to fetch currency details.");
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
+        if (data.status === "success") {
+          setCurrencyData({
+            name: data.data.name,
+            status: data.data.status,
+            sign: data.data.sign,
+          });
+        } else {
+          setError(data.message || "Currency not found");
+        }
+      } catch (err) {
+        console.error("Error fetching currency:", err);
+        setError("Failed to fetch currency details.");
+      } finally {
+        setLoading(false);
+      }
+    };
   
-//     fetchCurrency();
-//   }, [currencyId]);
+    fetchCurrency();
+  }, [currencyId]);
 
-//   if (error) {
-//     return (
-//       <div className="flex items-center justify-center h-screen">
-//         <p className="text-red-500 font-medium bg-red-50 px-6 py-4 rounded-lg shadow-sm">
-//           {error}
-//         </p>
-//       </div>
-//     );
-//   }
+  if (error) {
+    return <p className="text-red-500 text-center">{error}</p>;
+  }
 
-//   return (
-//     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8">
-//       <div className="max-w-6xl mx-auto">
-//         <header className="backdrop-blur-lg bg-white/70 rounded-2xl shadow-lg p-6 mb-8">
-//           <div className="flex items-center gap-4">
-//             <BackLink href="/admin-dashboard/currency" className="group flex items-center gap-3 hover:opacity-75 transition-all">
-//               <div className="bg-gray-100 p-2 rounded-lg group-hover:bg-gray-200 transition-colors">
-//                 <ArrowLeft className="h-5 w-5" />
-//               </div>
-//               <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-//                 View Currency
-//               </h1>
-//             </BackLink>
-//           </div>
-//         </header>
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="ml-2 text-gray-500">Loading currency data...</p>
+      </div>
+    );
+  }
 
-//         <div className="backdrop-blur-lg bg-white/70 rounded-2xl shadow-lg p-8">
-//           <section>
-//             <h2 className="text-xl font-bold mb-8 pb-4 border-b border-gray-200 bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-//               Currency Information
-//             </h2>
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="flex items-center justify-between p-4 bg-white border-b">
+        <h1 className="text-xl font-semibold text-primary">Currency Management</h1>
+        <div className="flex items-center gap-4">
+          <NotificationProfile
+            profileLink="/admin-dashboard/settings"
+            notificationLink="/admin-dashboard/notifications"
+          />
+        </div>
+      </header>
 
-//             <div className="grid gap-8 md:grid-cols-2">
-//               <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-//                 <h3 className="text-sm font-semibold text-gray-500 mb-3">
-//                   Currency Name
-//                 </h3>
-//                 <p className="text-2xl font-bold text-gray-900">{currencyData.name || "—"}</p>
-//               </div>
+      {/* Main Content */}
+      <main className="p-4 max-w-4xl mx-auto">
+        <div className="mb-6">
+          <BackLink href="/admin-dashboard/currency">
+            <ArrowLeft className="h-4 w-4" />
+            Currency Details - {currencyData.name}
+          </BackLink>
+        </div>
 
-//               <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-//                 <h3 className="text-sm font-semibold text-gray-500 mb-3">
-//                   Sign
-//                 </h3>
-//                 <p className="text-2xl font-bold text-gray-900">{currencyData.sign || "—"}</p>
-//               </div>
+        <Card>
+          <CardContent className="p-6">
+            <h2 className="text-lg font-semibold mb-10 text-center">View Information</h2>
+            
+            <div className="grid grid-cols-2 gap-x-8 gap-y-6 max-w-2xl mx-auto px-4 sm:px-8">
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Currency ID</p>
+                <p className="font-medium">{currencyId}</p>
+              </div>
 
-//               <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
-//                 <h3 className="text-sm font-semibold text-gray-500 mb-3">
-//                   Status
-//                 </h3>
-//                 <div className="flex items-center gap-3">
-//                   <div
-//                     className={`w-4 h-4 rounded-full ${
-//                       currencyData.status === "Active"
-//                         ? "bg-gradient-to-r from-green-400 to-green-500 shadow-lg shadow-green-200"
-//                         : "bg-gradient-to-r from-red-400 to-red-500 shadow-lg shadow-red-200"
-//                     }`}
-//                   ></div>
-//                   <span className="text-2xl font-bold text-gray-900">
-//                     {currencyData.status || "—"}
-//                   </span>
-//                 </div>
-//               </div>
-//             </div>
-//           </section>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Currency Name</p>
+                <p className="font-medium">{currencyData.name}</p>
+              </div>
+
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Sign</p>
+                <p className="font-medium">{currencyData.sign}</p>
+              </div>
+
+              <div>
+                <p className="text-sm text-muted-foreground mb-1">Status</p>
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      currencyData.status === "Active"
+                        ? "bg-green-500"
+                        : "bg-red-500"
+                    }`}
+                  />
+                  <p className="font-medium">{currencyData.status}</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </main>
+    </div>
+  );
+}

@@ -249,7 +249,7 @@ export default function SettingsPage() {
         timer: 2000,
         showConfirmButton: false
       }).then(() => {
-        router.push("/admin-dashboard");
+        router.push("/agent-dashboard");
       });
       setPasswordData({
         currentPassword: "",
@@ -381,53 +381,6 @@ export default function SettingsPage() {
             </p>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                {isDataLoading ? (
-                  <div className="w-[100px] h-[100px] rounded-lg flex items-center justify-center bg-gray-100">
-                    <Loader2 className="h-8 w-8 animate-spin" />
-                  </div>
-                ) : (
-                  <>
-                    {formData.idImageUrl ? (
-                      <Image
-                        src={formData.idImageUrl}
-                        alt="Profile picture"
-                        width={100}
-                        height={100}
-                        className="rounded-lg object-cover"
-                      />
-                    ) : (
-                      <div className="w-[100px] h-[100px] rounded-lg flex items-center justify-center bg-gray-100">
-                        <Camera className="h-8 w-8 text-gray-400" />
-                      </div>
-                    )}
-                  </>
-                )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                  id="imageUpload"
-                />
-                
-              </div>
-              <Button
-                    variant="outline"
-                    className="relative flex items-center gap-2"
-                  >
-                    <Upload className="h-4 w-4" />
-                    Change Image
-                    <input
-                      type="file"
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      onChange={handleImageChange}
-                      accept="image/*"
-                    />
-                  </Button>
-                  {/*/check*/}
-            </div>
             <form onSubmit={handleProfileSubmit}>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">

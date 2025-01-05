@@ -5,7 +5,7 @@ import BackLink from "@/components/BackLink";
 import NotificationProfile from "@/components/NotificationProfile";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Eye, Download, FileText, Maximize2, X } from "lucide-react";
+import { ArrowLeft, Eye, Download, FileText, Maximize2, X, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { PDFDocument, rgb } from 'pdf-lib';
@@ -51,7 +51,7 @@ export default function Page() {
       height: 60,
       color: rgb(0.2, 0.4, 0.6),
     });
-    page.drawText('User Details', {
+    page.drawText('Agent Details', {
       x: 50,
       y: 520,
       size: 30,
@@ -204,7 +204,12 @@ export default function Page() {
   }
 
   if (!userData) {
-    return <p className="text-center text-gray-500">Loading...</p>;
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="ml-2 text-gray-500">Loading user data...</p>
+      </div>
+    );
   }
 
   return (
@@ -235,7 +240,7 @@ export default function Page() {
             
             <div className="grid grid-cols-2 gap-x-8 gap-y-6 max-w-2xl mx-auto px-4 sm:px-8">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">User ID</p>
+                <p className="text-sm text-muted-foreground mb-1">Agent ID</p>
                 <p className="font-medium">{userData?.id}</p>
               </div>
 

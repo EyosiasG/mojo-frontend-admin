@@ -10,6 +10,8 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
 import { PDFDocument, rgb } from 'pdf-lib'; // Import PDF generation library
+import { usersApi } from "@/api/users";
+import { generateUserPDF } from '@/utils/pdfGenerator';
 
 
 export default function Page() {
@@ -18,20 +20,17 @@ export default function Page() {
   const [error, setError] = useState(null);
   const [userImage, setUserImage] = useState<string | null>(null);
   const [isImageMaximized, setIsImageMaximized] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   // Fetch user data
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetchWithAuth(
-          `https://mojoapi.crosslinkglobaltravel.com/api/users/${userId}`
-        );
-        if (!response.ok) throw new Error(`Error: ${response.statusText}`);
-        const data = await response.json();
-        setUserData(data.user); // Accessing the `user` object inside the response
+        const data = await usersApi.getUserData(userId as string);
+        setUserData(data);
       } catch (err) {
         console.error("Failed to fetch user data:", err);
-        setError("Failed to load user data.");
+        setError("Failed to load user data." || err);
       }
     };
 
@@ -64,288 +63,46 @@ export default function Page() {
 
 
   const handleView = async () => {
-    const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([400, 600]);
-    let embeddedImage = null;
-
     try {
-      // Find the image element that's already loaded in the page
+      setIsGeneratingPDF(true);
       const imgElement = document.querySelector('img[alt="ID Document"]') as HTMLImageElement;
+      const pdfData = await generateUserPDF(userData, imgElement);
       
-      if (!imgElement) {
-        throw new Error('Image element not found');
-      }
-
-      // Create a canvas and draw the loaded image
-      const canvas = document.createElement('canvas');
-      canvas.width = imgElement.naturalWidth;
-      canvas.height = imgElement.naturalHeight;
-      
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        throw new Error('Could not get canvas context');
-      }
-
-      // Wait for image to be fully loaded
-      await new Promise((resolve) => {
-        if (imgElement.complete) {
-          resolve(true);
-        } else {
-          imgElement.onload = () => resolve(true);
-        }
-      });
-
-      // Draw image to canvas
-      ctx.drawImage(imgElement, 0, 0);
-      
-      // Convert to PNG data
-      const pngData = canvas.toDataURL('image/png').split(',')[1];
-      const imageBytes = Uint8Array.from(atob(pngData), c => c.charCodeAt(0));
-      
-      // Embed in PDF
-      embeddedImage = await pdfDoc.embedPng(imageBytes);
-      console.log('Image embedded successfully');
-
+      // Open PDF in new tab
+      const pdfUrl = URL.createObjectURL(new Blob([pdfData], { type: 'application/pdf' }));
+      window.open(pdfUrl, '_blank');
+      URL.revokeObjectURL(pdfUrl);
     } catch (err) {
-      console.error('Image processing error:', err);
-      console.log('Detailed error:', {
-        message: err.message,
-        stack: err.stack
-      });
-      // Continue without the image
+      console.error('Failed to generate PDF:', err);
+      // Add error notification here
+    } finally {
+      setIsGeneratingPDF(false);
     }
-
-    // Draw the image only if successfully embedded
-    if (embeddedImage) {
-      const imageWidth = 100;
-      const imageHeight = 100;
-      page.drawImage(embeddedImage, {
-        x: (page.getWidth() - imageWidth) / 2,
-        y: 400,
-        width: imageWidth,
-        height: imageHeight,
-      });
-    }
-
-    // Header Section
-    page.drawRectangle({
-      x: 0,
-      y: 500,
-      width: 600,
-      height: 60,
-      color: rgb(0.2, 0.4, 0.6),
-    });
-    page.drawText('User Details', {
-      x: 50,
-      y: 520,
-      size: 30,
-      color: rgb(1, 1, 1),
-    });
-
-    // Add a line for separation
-    page.drawLine({ start: { x: 50, y: 390 }, end: { x: 350, y: 390 }, color: rgb(0.7, 0.7, 0.7), thickness: 1 });
-
-    // User details section
-    let yPosition = 370; // Start below the image
-    const details = [
-      { label: 'User ID', value: userData?.id || 'N/A' },
-      { label: 'First Name', value: userData?.first_name || 'N/A' },
-      { label: 'Last Name', value: userData?.last_name || 'N/A' },
-      { label: 'Email', value: userData?.email || 'N/A' },
-      { label: 'Phone', value: userData?.phone || 'N/A' },
-      { label: 'Status', value: userData?.status || 'Active' },
-      {
-        label: 'Registration Date',
-        value: userData?.created_at
-          ? new Date(userData.created_at).toLocaleDateString('en-US', {
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric',
-          })
-          : 'N/A'
-      },
-    ];
-
-    details.forEach((detail) => {
-      page.drawText(`${detail.label}:`, { x: 50, y: yPosition, size: 10, color: rgb(0, 0, 0) });
-      page.drawText(String(detail.value), { x: 150, y: yPosition, size: 10, color: rgb(0, 0, 0) });
-      yPosition -= 20;
-    });
-
-    // Footer Section
-    page.drawLine({
-      start: { x: 50, y: yPosition - 10 },
-      end: { x: 350, y: yPosition - 10 },
-      color: rgb(0.8, 0.8, 0.8),
-      thickness: 1,
-    });
-    yPosition -= 30;
-
-    page.drawText('Mojo Money Transfer!', {
-      x: 225,
-      y: yPosition,
-      size: 12,
-      color: rgb(0, 0, 0),
-    });
-
-    page.drawText('Contact us: support@mojo.com', {
-      x: 210,
-      y: yPosition - 20,
-      size: 10,
-      color: rgb(0.5, 0.5, 0.5),
-    });
-
-  const pdfData = await pdfDoc.save();
-  const pdfUrl = URL.createObjectURL(new Blob([pdfData], { type: 'application/pdf' }));
-  window.open(pdfUrl, '_blank');
-};
-
-  
+  };
 
   const handleDownload = async () => {
-    const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([400, 600]);
-    let embeddedImage = null;
-
     try {
-      // Find the image element that's already loaded in the page
+      setIsGeneratingPDF(true);
       const imgElement = document.querySelector('img[alt="ID Document"]') as HTMLImageElement;
+      const pdfData = await generateUserPDF(userData, imgElement);
       
-      if (!imgElement) {
-        throw new Error('Image element not found');
-      }
-
-      // Create a canvas and draw the loaded image
-      const canvas = document.createElement('canvas');
-      canvas.width = imgElement.naturalWidth;
-      canvas.height = imgElement.naturalHeight;
-      
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        throw new Error('Could not get canvas context');
-      }
-
-      // Wait for image to be fully loaded
-      await new Promise((resolve) => {
-        if (imgElement.complete) {
-          resolve(true);
-        } else {
-          imgElement.onload = () => resolve(true);
-        }
-      });
-
-      // Draw image to canvas
-      ctx.drawImage(imgElement, 0, 0);
-      
-      // Convert to PNG data
-      const pngData = canvas.toDataURL('image/png').split(',')[1];
-      const imageBytes = Uint8Array.from(atob(pngData), c => c.charCodeAt(0));
-      
-      // Embed in PDF
-      embeddedImage = await pdfDoc.embedPng(imageBytes);
-      console.log('Image embedded successfully');
-
+      // Trigger download
+      const pdfUrl = URL.createObjectURL(new Blob([pdfData], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.setAttribute('download', `${userData?.first_name}_${userData?.last_name}_details.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(pdfUrl);
     } catch (err) {
-      console.error('Image processing error:', err);
-      console.log('Detailed error:', {
-        message: err.message,
-        stack: err.stack
-      });
+      console.error('Failed to download PDF:', err);
+      // Add error notification here
+    } finally {
+      setIsGeneratingPDF(false);
     }
-
-    // Draw the image only if successfully embedded
-    if (embeddedImage) {
-      const imageWidth = 100;
-      const imageHeight = 100;
-      page.drawImage(embeddedImage, {
-        x: (page.getWidth() - imageWidth) / 2,
-        y: 400,
-        width: imageWidth,
-        height: imageHeight,
-      });
-    }
-
-    // Header Section
-    page.drawRectangle({
-      x: 0,
-      y: 500,
-      width: 600,
-      height: 60,
-      color: rgb(0.2, 0.4, 0.6),
-    });
-    page.drawText('User Details', {
-      x: 50,
-      y: 520,
-      size: 30,
-      color: rgb(1, 1, 1),
-    });
-
-    // Add a line for separation
-    page.drawLine({ start: { x: 50, y: 390 }, end: { x: 350, y: 390 }, color: rgb(0.7, 0.7, 0.7), thickness: 1 });
-
-    // User details section
-    let yPosition = 370; // Start below the image
-    const details = [
-      { label: 'User ID', value: userData?.id || 'N/A' },
-      { label: 'First Name', value: userData?.first_name || 'N/A' },
-      { label: 'Last Name', value: userData?.last_name || 'N/A' },
-      { label: 'Email', value: userData?.email || 'N/A' },
-      { label: 'Phone', value: userData?.phone || 'N/A' },
-      { label: 'Status', value: userData?.status || 'Active' },
-      {
-        label: 'Registration Date',
-        value: userData?.created_at
-          ? new Date(userData.created_at).toLocaleDateString('en-US', {
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric',
-          })
-          : 'N/A'
-      },
-    ];
-
-    details.forEach((detail) => {
-      page.drawText(`${detail.label}:`, { x: 50, y: yPosition, size: 10, color: rgb(0, 0, 0) });
-      page.drawText(String(detail.value), { x: 150, y: yPosition, size: 10, color: rgb(0, 0, 0) });
-      yPosition -= 20;
-    });
-
-    // Footer Section
-    page.drawLine({
-      start: { x: 50, y: yPosition - 10 },
-      end: { x: 350, y: yPosition - 10 },
-      color: rgb(0.8, 0.8, 0.8),
-      thickness: 1,
-    });
-    yPosition -= 30;
-
-    page.drawText('Mojo Money Transfer!', {
-      x: 225,
-      y: yPosition,
-      size: 12,
-      color: rgb(0, 0, 0),
-    });
-
-    page.drawText('Contact us: support@mojo.com', {
-      x: 210,
-      y: yPosition - 20,
-      size: 10,
-      color: rgb(0.5, 0.5, 0.5),
-    });
-
-
-
-    const pdfData = await pdfDoc.save();
-    const pdfUrl = URL.createObjectURL(new Blob([pdfData], { type: 'application/pdf' }));
-
-    const link = document.createElement('a');
-    link.href = pdfUrl;
-    link.setAttribute('download', 'user_details.pdf');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(pdfUrl); // Clean up the URL object
   };
+
   if (error) {
     return <p className="text-red-500 text-center">{error}</p>;
   }
@@ -467,11 +224,21 @@ export default function Page() {
 
                   <div className="flex items-center gap-2">
                     <p className="text-sm text-muted-foreground">12/2/2024</p>
-                    <Button variant="ghost" size="icon" onClick={() => handleView()}>
-                      <Eye className="h-4 w-4" />
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => handleView()}
+                      disabled={isGeneratingPDF}
+                    >
+                      {isGeneratingPDF ? <Loader className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDownload()}>
-                      <Download className="h-4 w-4" />
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => handleDownload()}
+                      disabled={isGeneratingPDF}
+                    >
+                      {isGeneratingPDF ? <Loader className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
                     </Button>
                   </div>
                 </div>

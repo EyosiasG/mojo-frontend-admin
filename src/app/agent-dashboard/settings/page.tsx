@@ -13,9 +13,12 @@ import "react-toastify/dist/ReactToastify.css";
 import { useRouter } from "next/navigation";
 import Swal from 'sweetalert2';
 import { Loader2 } from "lucide-react";
+import { usersApi } from "@/api/users"; 
+import { logoutOtherSessions } from '@/api/auth';
 // import jwt_decode from "jwt-decode";
 
 export default function SettingsPage() {
+  // State management for different forms and UI states
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -44,26 +47,14 @@ export default function SettingsPage() {
   });
   const [isDataLoading, setIsDataLoading] = useState(true);
 
+  // Fetch user data on component mount
   useEffect(() => {
-    const getUserData = async () => {
+    const fetchUserData = async () => {
       setIsDataLoading(true);
       try {
-        const response = await fetch(
-          "https://mojoapi.crosslinkglobaltravel.com/api/user",
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch user data");
-        }
-
-        const data = await response.json();
+        const data = await usersApi.getUser();
         setUserData(data);
+        // Populate form with existing user data
         setFormData({
           firstName: data.first_name || "",
           lastName: data.last_name || "",
@@ -72,17 +63,16 @@ export default function SettingsPage() {
           idImage: data.id_image || null,
           idImageUrl: data.profile_photo_url || null,
         });
-        setIsDataLoading(false);
       } catch (err: unknown) {
         setError(err.message);
+      } finally {
         setIsDataLoading(false);
       }
     };
-    getUserData();
+    fetchUserData();
   }, []);
 
-  
-  // Handle form input changes
+  // Handle form input changes for profile information
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value || "" }));
@@ -94,11 +84,11 @@ export default function SettingsPage() {
     setPasswordData((prevData) => ({ ...prevData, [name]: value || "" }));
   };
 
-  // Handle form submission for updating user profile
+  // Handle profile form submission with validation
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate fields
+    // Field validation
     let errorMessages = [];
 
     if (!formData.firstName.trim()) {
@@ -127,55 +117,47 @@ export default function SettingsPage() {
     setIsLoading(true);
     const userId = userData.id;
 
-    // Prepare the data to send, excluding id_image by default
-    const updatedData: any = {
+    // Prepare data for API request with id_image explicitly set to null
+    const updatedData = {
         first_name: formData.firstName,
         last_name: formData.lastName,
         email: formData.email,
-        phone: formData.phone || "", // Ensure phone is included, even if empty
+        phone: formData.phone || "",
+        id_image: null  // Explicitly set to null
     };
 
-    // Only include id_image if it's different from the original data
-    if (formData.idImage !== userData.profile_photo_url) {
-        updatedData.id_image = formData.idImage;
-    }
-
-    console.log("Request body: ", updatedData);
-
     try {
-        const response = await fetch(
-            `https://mojoapi.crosslinkglobaltravel.com/api/users/${userId}`,
-            {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-                },
-                body: JSON.stringify(updatedData),
-            }
-        );
+        // Send update request to API
+        const response = await usersApi.updateUser(userId, updatedData);
+        
+        console.log("API Response: ", response); // Log the response for debugging
 
-        if (!response.ok) {
-            const errorData = await response.json(); // Get error details
-            throw new Error(errorData.message || "Failed to update profile");
+        // Check if the response indicates success
+        if (response && response.message === 'User updated successfully!') {
+            setFormData(response.user); // Update form data with the user object
+            setError(null);
+            Swal.fire({
+                title: 'Success!',
+                text: 'Profile updated successfully!',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            });
+            setTimeout(() => {
+                router.push("/agent-dashboard");
+            }, 2000);
+        } else {
+            throw new Error(response.message || "Failed to update profile");
         }
-
-        const data = await response.json();
-        setFormData(data);
-        setError(null);
-        Swal.fire({
-            title: 'Success!',
-            text: 'Profile updated successfully!',
-            icon: 'success',
-            timer: 2000,
-            showConfirmButton: false
-        }).then(() => {
-            router.push("/admin-dashboard");
-        });
 
     } catch (err: unknown) {
         setError(err.message);
-        toast.error(err.message);
+        Swal.fire({
+            title: 'Error!',
+            text: err.message,
+            icon: 'error',
+            confirmButtonColor: '#3085d6',
+        });
     } finally {
         setIsLoading(false);
     }
@@ -226,30 +208,16 @@ export default function SettingsPage() {
 
     const userId = userData.id;
     try {
-      const response = await fetch(
-        `https://mojoapi.crosslinkglobaltravel.com/api/users/${userId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-          body: JSON.stringify(updatedData),
-        }
-      );
-
+      const response = await usersApi.updateUser(userId, updatedData);
       if (!response.ok) {
         throw new Error("Failed to change password");
       }
-
       Swal.fire({
         title: 'Success!',
         text: 'Password updated successfully!',
         icon: 'success',
         timer: 2000,
         showConfirmButton: false
-      }).then(() => {
-        router.push("/agent-dashboard");
       });
       setPasswordData({
         currentPassword: "",
@@ -259,7 +227,12 @@ export default function SettingsPage() {
       setError(null);
     } catch (err: unknown) {
       setError(err.message);
-      toast.error(err.message);
+      Swal.fire({
+        title: 'Error!',
+        text: err.message,
+        icon: 'error',
+        confirmButtonColor: '#3085d6',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -271,28 +244,27 @@ export default function SettingsPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/user/logout-sessions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-        body: JSON.stringify({ password: logoutPassword }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to log out other sessions");
-      }
-
-      toast.success("Successfully logged out of other sessions");
+      await logoutOtherSessions(logoutPassword);
       setLogoutPassword("");
       setError(null);
+      Swal.fire({
+        title: 'Success!',
+        text: 'Logged out from other sessions successfully!',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      });
       setTimeout(() => {
         router.push("/agent-dashboard");
       }, 2000);
     } catch (err: unknown) {
       setError(err.message);
-      toast.error(err.message);
+      Swal.fire({
+        title: 'Error!',
+        text: err.message,
+        icon: 'error',
+        confirmButtonColor: '#3085d6',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -308,54 +280,33 @@ export default function SettingsPage() {
       setIsLoading(true);
 
       try {
-        const response = await fetch("/api/user/delete-account", {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        });
+       const response = await usersApi.deleteUser(userId);
 
         if (!response.ok) {
           throw new Error("Failed to delete account");
         }
 
-        toast.success("Your account has been deleted");
+        Swal.fire({
+          title: 'Success!',
+          text: 'Your account has been deleted',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false
+        });
       } catch (err: unknown) {
         setError(err.message);
-        toast.error(err.message);
+        Swal.fire({
+          title: 'Error!',
+          text: err.message,
+          icon: 'error',
+          confirmButtonColor: '#3085d6',
+        });
       } finally {
         setIsLoading(false);
       }
     }
   };
-
-  // Handle image change
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        alert("File size exceeds 5MB. Please choose a smaller file.");
-        return;
-      }
-  
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const base64String = event.target?.result as string;
-        const cleanBase64 = base64String.replace('data:image/png;base64,', '');
-        setFormData((prevData) => ({ 
-          ...prevData, 
-          idImage: cleanBase64,  // Clean base64 for API
-          idImageUrl: base64String  // Full data URL for display
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-  
-
-  
-
+ 
   return (
     <>
       <ToastContainer
@@ -370,7 +321,6 @@ export default function SettingsPage() {
         theme="light"
       />
       <div className="container mx-auto py-10 space-y-8 max-w-3xl">
-        {error && <p className="text-red-500">{error}</p>}
 
         {/* Profile Settings */}
         <Card>

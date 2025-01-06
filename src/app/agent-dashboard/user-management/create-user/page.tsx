@@ -11,10 +11,18 @@ import BackLink from "@/components/BackLink";
 import { useRouter } from 'next/navigation';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { usersApi } from "@/api/users";
 
 const AddUserPage = () => {
   const router = useRouter();
-  const [userData, setUserData] = useState({
+  const [userData, setUserData] = useState<{
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    idImage: string | null;
+    role: string;
+  }>({
     firstName: "",
     lastName: "",
     email: "",
@@ -27,22 +35,23 @@ const AddUserPage = () => {
   );
   const [error, setError] = useState(null);
 
-  const handleChange = (key, value) => {
+  const handleChange = (key: string, value: string) => {
     setUserData((prevState) => ({
       ...prevState,
       [key]: value,
     }));
   };
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
-        const base64String = reader.result.split(",")[1]; // Extract base64 data
+        if (!reader.result) return;
+        const base64String = reader.result.toString().split(",")[1];
         setUserData((prevState) => ({
           ...prevState,
-          idImage: base64String, // Store base64 string
+          idImage: base64String,
         }));
       };
       reader.readAsDataURL(file);
@@ -50,44 +59,26 @@ const AddUserPage = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Create a JSON object for the request body using userData
     const requestBody = {
-        first_name: userData.firstName, // Use actual first name
-        last_name: userData.lastName,     // Use actual last name
-        email: userData.email,             // Use actual email
-        phone: userData.phone,             // Use actual phone number
-        password: "12345678",              // Dummy password
-        id_image: userData.idImage,        // Include the base64 image string
+        first_name: userData.firstName,
+        last_name: userData.lastName,
+        email: userData.email,
+        phone: userData.phone,
+        password: "12345678",
+        id_image: userData.idImage,
         role: "Customer",
     };
 
-    console.log("Request Body:", requestBody); // Log the request data
-
     try {
-        const accessToken = localStorage.getItem("access_token");
-        console.log("Access Token:", accessToken); // Log the access token
-        const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/users/store", {
-            method: "POST",
-            body: JSON.stringify(requestBody), // Use JSON.stringify for the request body
-            headers: {
-                "Content-Type": "application/json", // Change content type to application/json
-                "Authorization": `Bearer ${accessToken}`,
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error("Network response was not ok");
-        }
-
-        console.log("User added successfully.");
+        await usersApi.createUser(requestBody);
         toast.success("User added successfully!");
         setTimeout(() => {
             router.push("/agent-dashboard/user-management");
         }, 2000);
-    } catch (err) {
+    } catch (err: any) {
         console.error("Failed to add user:", err.message);
         toast.error("Failed to add user. Please check your input and try again.");
     }

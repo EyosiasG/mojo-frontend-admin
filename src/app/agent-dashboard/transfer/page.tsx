@@ -31,6 +31,8 @@ import Link from "next/link";
 import NotificationProfile from "@/components/NotificationProfile";
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
 import { PDFDocument, rgb } from 'pdf-lib';
+import {transactionsApi} from "@/api/transactions";
+import { currenciesApi } from "@/api/currencies";
 
 export default function TransferPage() {
   const [transactions, setTransactions] = useState([]); // Initialize as an empty array
@@ -43,32 +45,11 @@ export default function TransferPage() {
   const fetchTransactions = async () => {
     setLoading(true);
     try {
-      const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/transfers", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
-        },
-      });
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.error("Error Response:", errorBody);
-        const parsedError = JSON.parse(errorBody);
-        
-        // Enhanced error handling
-        const errorMessage = parsedError.message || "Failed to fetch data";
-        const detailedError = parsedError.error ? JSON.parse(parsedError.error) : null;
-        const detailedMessage = detailedError ? detailedError.message : "";
-
-        setError(`${errorMessage} ${detailedMessage}`.trim() || "Failed to fetch data");
-        return;
-      }
-      const data = await response.json();
-      console.log("Fetched Response:", data);
-
+      const data = await transactionsApi.getAllTransactions();
+      
       // Handle successful response
       if (data.status === "success" && Array.isArray(data.data)) {
-        setTransactions(data.data); // Store the array of transactions
+        setTransactions(data.data);
       } else {
         setError("No transactions found");
       }
@@ -81,33 +62,14 @@ export default function TransferPage() {
 
   const fetchCurrencies = async () => {
     try {
-      const response = await fetchWithAuth(
-        "https://mojoapi.crosslinkglobaltravel.com/api/currencies"
-      ).catch(error => {
-        console.error('Network error:', error);
-        throw new Error('Network connection failed - please check your internet connection');
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Server error: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      if (!data.data) {
-        console.warn('No currencies data in response:', data);
-        throw new Error('Invalid response format from server');
-      }
-      setCurrencies(data.data);
-
+      const data = await currenciesApi.getAllCurrencies();
+      setCurrencies(data);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
-      console.log("Error :", errorMessage);
-
-      console.error('Detailed error information:', {
+      console.error('Error fetching currencies:', {
         error: err,
         timestamp: new Date().toISOString(),
-        endpoint: "https://mojoapi.crosslinkglobaltravel.com/api/currencies"
+        message: errorMessage
       });
     }
   };
@@ -138,49 +100,28 @@ export default function TransferPage() {
     });
   };
 
-  const formatTime = (timeString) => {
-    const date = new Date(timeString);
-    return date.toLocaleTimeString("en-US", {
-      hour: "2-digit", // 2-digit hour
-      minute: "2-digit", // 2-digit minute
-      hour12: true, // 12-hour clock format
-    });
-  };
-
   const handleSearch = async () => {
     if (searchTerm) {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`https://mojoapi.crosslinkglobaltravel.com/api/transactions/search/${searchTerm}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        });
-        if (!response.ok) {
-          throw new Error("Failed to fetch transaction");
-        }
-        const data = await response.json();
+        const data = await transactionsApi.searchTransactions(searchTerm);
         
         // Check if the status is success before setting transactions
         if (data.status === "success" && Array.isArray(data.data)) {
-          setTransactions(data.data); // Set transactions only if status is success
+          setTransactions(data.data);
         } else {
           setTransactions([]);
         }
-        console.log("Transactions: ", data.data);
       } catch (err) {
-        setError(err.message);
+        setError(err instanceof Error ? err.message : 'An error occurred');
         setTransactions([]);
-        console.log("Transactions: ", transactions);
       } finally {
         setLoading(false);
       }
     } else {
       // Refetch all transactions when searchTerm is empty
-      fetchTransactions(); // Call the existing fetch function
+      fetchTransactions();
     }
   };
 

@@ -5,19 +5,14 @@ import { Input } from "@/components/ui/input";
 import { CardContent } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import NotificationProfile from "@/components/NotificationProfile";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import BackLink from "@/components/BackLink";
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
 import { useSearchParams } from "next/navigation";
-import { init } from "next/dist/compiled/webpack/webpack";
 import Swal from 'sweetalert2';
 import { useRouter } from "next/navigation";
+import { banksApi} from "@/api/banks/index";
+import { usersApi } from "@/api/users/index";
+import { transactionsApi } from "@/api/transactions/index";
 
 const Page = () => {
   const searchParams = useSearchParams();
@@ -48,62 +43,38 @@ const Page = () => {
 
 
   useEffect(() => {
-    let isMounted = true; // track whether the component is mounted
+    let isMounted = true;
 
-    const fetchBanks = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/transfers/create");
-        if (!response.ok) {
-          const errorMessage = await response.text(); // Get the error message from the response
-          throw new Error(`Failed to fetch banks: ${response.status} ${errorMessage}`);
-        }
-        const data = await response.json();
+        // Fetch banks using banksApi
+        const banksData = await banksApi.getAllBanks();
         if (isMounted) {
-          if (Array.isArray(data.banks)) {
-            setBanks(data.banks);
-            console.log("Fetched Banks:", data.banks);
-          } else {
-            throw new Error("Invalid response format: 'banks' is not an array");
-          }
+          setBanks(banksData);
+        }
+
+        // Fetch users using usersApi
+        const usersData = await usersApi.getAllUsers();
+        if (isMounted) {
+          const userNames = usersData.map((user: { first_name: string; last_name: string }) =>
+            `${user.first_name} ${user.last_name}`
+          );
+          const userMap = usersData.reduce((map: { [key: string]: string }, user: { id: string; first_name: string; last_name: string }) => {
+            map[`${user.first_name} ${user.last_name}`] = user.id;
+            return map;
+          }, {});
+          setCustomers(userNames);
+          setCustomerMap(userMap);
+          setUsers(userNames);
         }
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Error fetching data:", error);
       }
     };
 
-
-    const fetchUsers = async () => {
-      try {
-        const response = await fetchWithAuth(
-          "https://mojoapi.crosslinkglobaltravel.com/api/users"
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch users");
-        }
-        const data = await response.json();
-        if (!data.users) {
-          throw new Error('Invalid response format from server');
-        }
-        console.log("Fetched Users:", data.users);
-        const userNames = data.users.map((user: { first_name: string; last_name: string }) =>
-          `${user.first_name} ${user.last_name}`
-        );
-        const userMap = data.users.reduce((map: { [key: string]: string }, user: { id: string; first_name: string; last_name: string }) => {
-          map[`${user.first_name} ${user.last_name}`] = user.id;
-          return map;
-        }, {});
-        setCustomers(userNames);
-        setCustomerMap(userMap);
-        console.log("Fetched Users:", userNames);
-        setUsers(userNames);
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    }
-    fetchBanks();
-    fetchUsers();
+    fetchData();
     return () => {
-      isMounted = false; // cleanup function to set isMounted to false
+      isMounted = false;
     };
   }, []);
 
@@ -159,42 +130,15 @@ const Page = () => {
       receiver_id: recieverId
     };
 
-    console.log("Request Data:", requestData);
-
     try {
-      const token = localStorage.getItem("access_token");
-      console.log("Auth Token:", token);
-      if (!token) {
-        alert("No authentication token found.");
-        return;
-      }
-
-      const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/transfers", {
-        method: "POST",
-        body: JSON.stringify(requestData),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        console.error("API Error:", error);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: error.message,
-        });
-        return;
-      }
-
-      const data = await response.json();
-      console.log("Transfer successful", data);
+      await transactionsApi.createTransfer(requestData);
+      
       Swal.fire({
         icon: 'success',
         title: 'Success',
         text: 'Transaction successfully added! Redirecting to transfers page',
       });
+      
       setTimeout(() => {
         router.push("/agent-dashboard/transfer");
       }, 2000);
@@ -204,7 +148,7 @@ const Page = () => {
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: 'An error occurred while making the request.',
+        text: error.message || 'An error occurred while making the request.',
       });
     }
   };
@@ -260,14 +204,6 @@ const Page = () => {
     setRecieverId(customerMap[customer]);
     console.log("RecieverID: ", recieverId);
   };
-
-  const dummyCustomers = [
-    "John Doe",
-    "Jane Smith",
-    "Alice Johnson",
-    "Bob Brown",
-    "Charlie Davis",
-  ];
 
   const closePopup = () => {
     setSuccessMessage(null);

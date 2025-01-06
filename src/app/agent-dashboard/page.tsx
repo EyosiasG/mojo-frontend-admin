@@ -12,31 +12,7 @@ import ProjectedBarGraph from "@/components/charts/ProjectedBarGraph";
 import NotificationProfile from "@/components/NotificationProfile";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
-
-// Function to fetch total transactions
-async function fetchTotalTransactions() {
-  try {
-    const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/agent/dashboard");
-
-    // Check if the response is OK
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    // Extract total transactions and transactions by status
-    const totalTransactions = data.total_transactions;
-    const transactionsByStatus = data.transactionsByStatus;
-
-    // Return the relevant data
-    return { totalTransactions, transactionsByStatus };
-  } catch (error) {
-    console.error("Error fetching transactions:", error);
-    throw error;
-  }
-}
+import { transactionsApi } from '@/api/transactions';
 
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -49,7 +25,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const getTotal = async () => {
       try {
-        const { totalTransactions, transactionsByStatus } = await fetchTotalTransactions();
+        const { totalTransactions, transactionsByStatus } = await transactionsApi.getDashboardStats();
         setTotalTransactions(totalTransactions);
         setTotalTransactionsByStatus(transactionsByStatus);
       } catch (error) {
@@ -61,11 +37,11 @@ export default function DashboardPage() {
     getTotal();
   }, []);
 
-  const today = new Date(); // Replace with the desired date
+  const today = new Date();
   const formattedDate = today.toLocaleDateString('en-US', {
-    weekday: 'long', // Full name of the day
+    weekday: 'long',
     year: 'numeric',
-    month: 'long', // Full name of the month
+    month: 'long',
     day: 'numeric',
   });
 
@@ -86,7 +62,6 @@ export default function DashboardPage() {
   return (
     <>
       <div className="border-b bg-white">
-       
         <div className="flex flex-col sm:flex-row h-auto sm:h-16 items-center justify-between px-4 sm:px-6 py-4 sm:py-0">
           <h1 className="text-xl font-semibold text-[#2B3674] ml-8 mb-4 sm:mb-0">
             Main Dashboard
@@ -107,7 +82,6 @@ export default function DashboardPage() {
       </div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center px-4 sm:px-12 py-4 bg-gradient-to-r from-gray-50 to-white mt-10 gap-4 sm:gap-0">
         <div className="w-full sm:w-auto">
-          {/* Exchange Rate Card */}
           <div className="flex flex-col bg-white rounded-xl px-4 sm:px-6 py-3 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 w-full sm:w-auto">
             <div className="flex flex-col w-full sm:w-auto">
               <span className="text-xs font-medium text-gray-500 mb-1">Exchange Rate</span>
@@ -119,7 +93,6 @@ export default function DashboardPage() {
                 </div>
                 <span className="text-xs text-green-500 bg-green-50 px-2 py-1 rounded-full">+2.3%</span>
               </div>
-              {/* Last Updated - now part of the card */}
               <div className="flex items-center text-xs text-gray-500 mt-1 pt-2 border-t border-gray-100">
                 <Clock2 className="h-3 w-3 mr-1" />
                 <span className="whitespace-nowrap">Last updated: {new Date().toLocaleTimeString()}</span>
@@ -128,7 +101,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Date Display */}
         <div className="text-sm font-medium text-gray-700 w-full sm:w-auto text-left sm:text-right">
           {formattedDate.toString()}
         </div>
@@ -137,12 +109,10 @@ export default function DashboardPage() {
       <div className="py-6">
         <div className="px-6">
           <div className="grid gap-6">
-            {/* Charts Section */}
             <div className="grid grid-cols-1 px-4 md:px-12 lg:px-24">
               <BarGraph />
             </div>
 
-            {/* Calendar and Stats Section */}
             <div className="grid gap-6 md:grid-cols-2">
               <ProjectedBarGraph />
               
@@ -160,13 +130,10 @@ export default function DashboardPage() {
                           key={status}
                           className="flex flex-col items-center space-y-2 p-4"
                         >
-                          {/* Icon at the top */}
                           <div className="text-2xl">
-                            {statusIcons[status] || <span>🔍</span>} {/* Default icon */}
+                            {statusIcons[status] || <span>🔍</span>}
                           </div>
-                          {/* Status name */}
                           <span className="capitalize text-gray-600">{status}</span>
-                          {/* Status count */}
                           <span className="text-lg font-semibold">{count}</span>
                         </div>
                       ))}

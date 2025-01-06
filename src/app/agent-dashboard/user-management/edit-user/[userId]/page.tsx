@@ -13,27 +13,22 @@ import "react-toastify/dist/ReactToastify.css";
 import { useParams, useRouter } from "next/navigation";
 import Swal from 'sweetalert2';
 import { Loader2 } from "lucide-react";
+import { usersApi } from "@/api/users";
 // import jwt_decode from "jwt-decode";
 
 export default function SettingsPage() {
+  // State management for form data and UI controls
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     phone: "",
-    idImage: null,
-    idImageUrl: "",
-  });
-
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
+    idImage: null,      // Stores the base64 image data for API
+    idImageUrl: "",     // Stores the full URL for display
   });
 
   const { userId } = useParams();
   const router = useRouter();
-  const [logoutPassword, setLogoutPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [userData, setUserData] = useState({});
@@ -45,27 +40,14 @@ export default function SettingsPage() {
   });
   const [isDataLoading, setIsDataLoading] = useState(true);
 
+  // Fetch user data when component mounts
   useEffect(() => {
     const getUserData = async () => {
       setIsDataLoading(true);
       try {
-        const response = await fetch(
-          `https://mojoapi.crosslinkglobaltravel.com/api/users/${userId}`,
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch user data");
-        }
-
-        const data = await response.json();
+        const data = await usersApi.getUserData(userId as string);
         setUserData(data.user);
-        console.log("User Data: ", data.user);  
+        // Populate form with existing user data, using empty strings as fallbacks
         setFormData({
           firstName: data.user.first_name || "",
           lastName: data.user.last_name || "",
@@ -74,8 +56,6 @@ export default function SettingsPage() {
           idImage: null,
           idImageUrl: data.user.id_image || "",
         });
-        console.log("Form Data sdaURL: ", data.user.id_image);
-        console.log("Form Data URL: ", data.user.profile_photo_url);
         setIsDataLoading(false);
       } catch (err: unknown) {
         setError(err.message);
@@ -85,24 +65,17 @@ export default function SettingsPage() {
     getUserData();
   }, []);
 
-  
-  // Handle form input changes
+  // Handle input changes for text fields
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value || "" }));
   };
 
-  // Handle password form input changes
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setPasswordData((prevData) => ({ ...prevData, [name]: value || "" }));
-  };
-
-  // Handle form submission for updating user profile
+  // Form submission handler
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate fields
+    // Validate all required fields
     let errorMessages = [];
 
     if (!formData.firstName.trim()) {
@@ -131,42 +104,24 @@ export default function SettingsPage() {
     setIsLoading(true);
     const userId = userData.id;
 
-    // Prepare the data to send, excluding id_image by default
+    // Prepare data for API submission
     const updatedData: any = {
         first_name: formData.firstName,
         last_name: formData.lastName,
         email: formData.email,
-        phone: formData.phone || "", // Ensure phone is included, even if empty
+        phone: formData.phone || "",
     };
 
-    // Only include id_image if a new image was uploaded
+    // Only include image data if a new image was uploaded
     if (formData.idImage) {
         updatedData.id_image = formData.idImage;
     }
 
-    console.log("Request body: ", updatedData);
-
     try {
-        const response = await fetch(
-            `https://mojoapi.crosslinkglobaltravel.com/api/users/${userId}`,
-            {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-                },
-                body: JSON.stringify(updatedData),
-            }
-        );
-
-        if (!response.ok) {
-            const errorData = await response.json(); // Get error details
-            throw new Error(errorData.message || "Failed to update profile");
-        }
-
-        const data = await response.json();
+        const data = await usersApi.updateUser(userId, updatedData);
         setFormData(data);
         setError(null);
+        // Show success message and redirect
         Swal.fire({
             title: 'Success!',
             text: 'Profile updated successfully!',
@@ -185,183 +140,32 @@ export default function SettingsPage() {
     }
   };
 
-  // Handle password change submission
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    let errorMessages = [];
-
-    if (!passwordData.currentPassword.trim()) {
-        errorMessages.push("Current password is required");
-    }
-    if (!passwordData.newPassword.trim()) {
-        errorMessages.push("New password is required");
-    }
-    if (!passwordData.confirmPassword.trim()) {
-        errorMessages.push("Please confirm your new password");
-    }
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-        errorMessages.push("Passwords do not match");
-    }
-
-    if (errorMessages.length > 0) {
-        Swal.fire({
-            title: 'Validation Error',
-            html: errorMessages.join('<br>'),
-            icon: 'error',
-            confirmButtonColor: '#3085d6',
-        });
-        return;
-    }
-
-    setIsLoading(true);
-
-    const updatedData = {
-      first_name: formData.firstName,
-      last_name: formData.lastName,
-      email: formData.email,
-      phone: formData.phone || "", // Ensure phone is included, even if empty
-      id_image: formData.idImage, // Assuming this is a base64 string
-      // Include password if you want to allow password updates
-      password: passwordData.newPassword || "12345678", // Uncomment if needed
-    };
-
-    console.log("Request Body: ", updatedData); 
-
-    const userId = userData.id;
-    try {
-      const response = await fetch(
-        `https://mojoapi.crosslinkglobaltravel.com/api/users/${userId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-          body: JSON.stringify(updatedData),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to change password");
-      }
-
-      Swal.fire({
-        title: 'Success!',
-        text: 'Password updated successfully!',
-        icon: 'success',
-        timer: 2000,
-        showConfirmButton: false
-      }).then(() => {
-        router.push("/agent-dashboard");
-      });
-      setPasswordData({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
-      setError(null);
-    } catch (err: unknown) {
-      setError(err.message);
-      toast.error(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Handle logging out other sessions
-  const handleLogoutSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/user/logout-sessions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-        body: JSON.stringify({ password: logoutPassword }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to log out other sessions");
-      }
-
-      toast.success("Successfully logged out of other sessions");
-      setLogoutPassword("");
-      setError(null);
-      setTimeout(() => {
-        router.push("/agent-dashboard");
-      }, 2000);
-    } catch (err: unknown) {
-      setError(err.message);
-      toast.error(err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Handle account deletion
-  const handleDeleteAccount = async () => {
-    if (
-      confirm(
-        "Are you sure you want to delete your account? This action is irreversible."
-      )
-    ) {
-      setIsLoading(true);
-
-      try {
-        const response = await fetch("/api/user/delete-account", {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to delete account");
-        }
-
-        toast.success("Your account has been deleted");
-      } catch (err: unknown) {
-        setError(err.message);
-        toast.error(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
-
-  // Handle image change
+  // Handle image upload and processing
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      // Check file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
         alert("File size exceeds 5MB. Please choose a smaller file.");
         return;
       }
   
+      // Convert uploaded image to base64
       const reader = new FileReader();
       reader.onload = (event) => {
         const base64String = event.target?.result as string;
+        // Remove data URL prefix for API submission
         const cleanBase64 = base64String.replace('data:image/png;base64,', '');
         setFormData((prevData) => ({ 
           ...prevData, 
-          idImage: cleanBase64,  // Clean base64 for API
-          idImageUrl: base64String  // Full data URL for display
+          idImage: cleanBase64,    // Clean base64 for API
+          idImageUrl: base64String // Full data URL for display
         }));
       };
       reader.readAsDataURL(file);
     }
   };
   
-
-  
-
-  const defaultAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.firstName + ' ' + formData.lastName)}&color=7F9CF5&background=EBF4FF`;
-
   return (
     <>
       <ToastContainer
@@ -376,6 +180,14 @@ export default function SettingsPage() {
         theme="light"
       />
       <div className="container mx-auto py-10 space-y-8 max-w-3xl">
+        <Button
+          variant="outline"
+          onClick={() => router.back()}
+          className="mb-4"
+        >
+          ← Back
+        </Button>
+
         {error && <p className="text-red-500">{error}</p>}
 
         {/* Profile Settings */}

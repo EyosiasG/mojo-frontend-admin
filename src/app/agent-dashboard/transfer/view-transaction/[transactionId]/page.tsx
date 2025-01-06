@@ -9,8 +9,9 @@ import BackLink from "@/components/BackLink";
 import { useParams } from 'next/navigation';
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
 import { useEffect } from "react";
-import { PDFDocument, rgb } from "pdf-lib";
+import { generateTransactionPDF } from '@/utils/pdfGenerator';
 import { Button } from "@/components/ui/button";
+import {transactionsApi} from "@/api/transactions";
 
 const page = () => {
   const { transactionId } = useParams();
@@ -19,11 +20,14 @@ const page = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchTransaction = async () => {
-    const response = await fetchWithAuth(`https://mojoapi.crosslinkglobaltravel.com/api/transactions/${transactionId}`);
-    const data = await response.json();
-
-    //console.log(data.data);
-    return data.data;
+    try {
+      const data = await transactionsApi.getTransactionById(transactionId);
+      return data.data;
+    } catch (error) {
+      console.error('Error fetching transaction:', error);
+      // You might want to handle the error appropriately here
+      throw error;
+    }
   };
 
   const fetchCurrency = async (currencyId) => {
@@ -41,169 +45,18 @@ const page = () => {
   };
 
   const handleView = async () => {
-    const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([600, 400]);
-  
-    // Header Section
-    page.drawRectangle({
-      x: 0,
-      y: 340,
-      width: 600,
-      height: 60,
-      color: rgb(0.2, 0.4, 0.6),
-    });
-    page.drawText('Transaction Details', {
-      x: 200,
-      y: 360,
-      size: 20,
-      color: rgb(1, 1, 1),
-    });
-
-    // Transaction Details Section
-    let yPosition = 300; // Starting position
-    page.drawText('Transaction Details:', {
-      x: 50,
-      y: yPosition,
-      size: 12,
-      color: rgb(0, 0, 0),
-    });
-    yPosition -= 10;
-  
-    page.drawLine({
-      start: { x: 50, y: yPosition },
-      end: { x: 550, y: yPosition },
-      color: rgb(0.8, 0.8, 0.8),
-      thickness: 1,
-    });
-    yPosition -= 20;
-  
-    const details = [
-      { label: 'Transaction ID', value: String(transaction.transaction_id || 'N/A') },
-      { label: 'Sender Name', value: String(transaction.sender_name || 'N/A') },
-      { label: 'Receiver Name', value: String(transaction.reciever_name || 'N/A') },
-      { label: 'Account Number', value: String(transaction.account_number || 'N/A') },
-      { label: 'Amount', value: `$${transaction.amount || 'N/A'}` },
-      { label: 'Amount in ETB', value: `${transaction.etb_amount || 'N/A'} ETB` },
-      { label: 'Status', value: String(transaction.status || 'Active') },
-    ];
-  
-    details.forEach((detail) => {
-      page.drawText(`${detail.label}:`, { x: 50, y: yPosition, size: 10, color: rgb(0, 0, 0) });
-      page.drawText(String(detail.value), { x: 300, y: yPosition, size: 10, color: rgb(0, 0, 0) });
-      yPosition -= 20;
-    });
-  
-    // Footer Section
-    page.drawLine({
-      start: { x: 50, y: yPosition - 10 },
-      end: { x: 550, y: yPosition - 10 },
-      color: rgb(0.8, 0.8, 0.8),
-      thickness: 1,
-    });
-    yPosition -= 30;
-  
-    page.drawText('Mojo Money Transfer!', {
-      x: 225,
-      y: yPosition,
-      size: 12,
-      color: rgb(0, 0, 0),
-    });
-  
-    page.drawText('Contact us: support@mojo.com', {
-      x: 210,
-      y: yPosition - 20,
-      size: 10,
-      color: rgb(0.5, 0.5, 0.5),
-    });
-  
-    const pdfData = await pdfDoc.save();
+    const pdfData = await generateTransactionPDF(transaction);
     const pdfUrl = URL.createObjectURL(new Blob([pdfData], { type: 'application/pdf' }));
     window.open(pdfUrl, '_blank');
   };
   
-  
   const handleDownload = async () => {
-    const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([600, 400]);
-  
-    // Header Section
-    page.drawRectangle({
-      x: 0,
-      y: 340,
-      width: 600,
-      height: 60,
-      color: rgb(0.2, 0.4, 0.6),
-    });
-    page.drawText('Transaction Details', {
-      x: 200,
-      y: 360,
-      size: 20,
-      color: rgb(1, 1, 1),
-    });
-
-    // Transaction Details Section
-    let yPosition = 300; // Starting position
-    page.drawText('Transaction Details:', {
-      x: 50,
-      y: yPosition,
-      size: 12,
-      color: rgb(0, 0, 0),
-    });
-    yPosition -= 10;
-  
-    page.drawLine({
-      start: { x: 50, y: yPosition },
-      end: { x: 550, y: yPosition },
-      color: rgb(0.8, 0.8, 0.8),
-      thickness: 1,
-    });
-    yPosition -= 20;
-  
-    const details = [
-      { label: 'Transaction ID', value: String(transaction.transaction_id || 'N/A') },
-      { label: 'Sender Name', value: String(transaction.sender_name || 'N/A') },
-      { label: 'Receiver Name', value: String(transaction.reciever_name || 'N/A') },
-      { label: 'Account Number', value: String(transaction.account_number || 'N/A') },
-      { label: 'Amount', value: `$${transaction.amount || 'N/A'}` },
-      { label: 'Amount in ETB', value: `${transaction.etb_amount || 'N/A'} ETB` },
-      { label: 'Status', value: String(transaction.status || 'Active') },
-    ];
-  
-    details.forEach((detail) => {
-      page.drawText(`${detail.label}:`, { x: 50, y: yPosition, size: 10, color: rgb(0, 0, 0) });
-      page.drawText(String(detail.value), { x: 300, y: yPosition, size: 10, color: rgb(0, 0, 0) });
-      yPosition -= 20;
-    });
-  
-    // Footer Section
-    page.drawLine({
-      start: { x: 50, y: yPosition - 10 },
-      end: { x: 550, y: yPosition - 10 },
-      color: rgb(0.8, 0.8, 0.8),
-      thickness: 1,
-    });
-    yPosition -= 30;
-  
-    page.drawText('Mojo Money Transfer!', {
-      x: 225,
-      y: yPosition,
-      size: 12,
-      color: rgb(0, 0, 0),
-    });
-  
-    page.drawText('Contact us: support@mojo.com', {
-      x: 210,
-      y: yPosition - 20,
-      size: 10,
-      color: rgb(0.5, 0.5, 0.5),
-    });
-  
-    const pdfData = await pdfDoc.save();
+    const pdfData = await generateTransactionPDF(transaction);
     const pdfUrl = URL.createObjectURL(new Blob([pdfData], { type: 'application/pdf' }));
     
     const link = document.createElement('a');
     link.href = pdfUrl;
-    link.setAttribute('download', 'user_details.pdf'); // Specify the file name
+    link.setAttribute('download', 'transaction_details.pdf');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

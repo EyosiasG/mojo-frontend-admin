@@ -32,56 +32,50 @@ import { Badge } from "@/components/badge";
 import Link from "next/link";
 import NotificationProfile from "@/components/NotificationProfile";
 import { format } from "date-fns";
-import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
+import { usersApi } from '@/api/users';
 import Swal from 'sweetalert2';
 
 export default function UserManagementPage() {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  // Add proper TypeScript interface for User
+  interface User {
+    id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+    created_at: string;
+  }
 
+  // Add proper typing to state variables
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  // Add debouncing for search to improve performance
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      if (searchQuery) {
+        handleSearch();
+      }
+    }, 500);
+
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery]);
 
   // Function to fetch users
   const fetchUsers = async () => {
     try {
       console.log('Attempting to fetch users...');
-      const response = await fetchWithAuth(
-        "https://mojoapi.crosslinkglobaltravel.com/api/users"
-      ).catch(error => {
-        console.error('Network error:', error);
-        throw new Error('Network connection failed - please check your internet connection');
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Server error: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      if (!data.users) {
-        console.warn('No users data in response:', data);
-        throw new Error('Invalid response format from server');
-      }
-
-      // Sort users by registration date (created_at) in descending order (newest first)
-      const sortedUsers = data.users.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      setUsers(sortedUsers); // Set the sorted users
+      const sortedUsers = await usersApi.getAllUsers();
+      setUsers(sortedUsers);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
       setError(errorMessage);
-
-      console.error('Detailed error information:', {
-        error: err,
-        timestamp: new Date().toISOString(),
-        endpoint: "https://mojoapi.crosslinkglobaltravel.com/api/users"
-      });
     } finally {
       setLoading(false);
     }
   };
-
-
 
   useEffect(() => {
     fetchUsers(); // Call the fetchUsers function here
@@ -101,20 +95,8 @@ export default function UserManagementPage() {
 
     if (isConfirmed) {
       try {
-        const response = await fetchWithAuth(
-          `https://mojoapi.crosslinkglobaltravel.com/api/users/${userId}`,
-          {
-            method: "DELETE",
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`Error: ${response.statusText}`);
-        }
-
-        // Remove the deleted user from the list
+        await usersApi.deleteUser(userId);
         setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
-        await fetchUsers(); // Regenerate the user list after deletion
         Swal.fire('Deleted!', 'User has been deleted.', 'success');
       } catch (err) {
         setError(err.message);
@@ -123,27 +105,20 @@ export default function UserManagementPage() {
     }
   };
 
-  // Function to handle search
+  // Modify search handler to remove manual button click
   const handleSearch = async () => {
-    console.log("Search Query: ", searchQuery);
+    setLoading(true);
     try {
-      const response = await fetchWithAuth(
-        `https://mojoapi.crosslinkglobaltravel.com/api/users/search/${searchQuery}`
-      );
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log("Search Users: ", data.data);
-      if (!data.data || data.data.length === 0) {
-        throw new Error('User not found');
-      }
-      setUsers(data.data); // Set users state with the array directly
+      const results = searchQuery.trim() 
+        ? await usersApi.searchUsers(searchQuery)
+        : await usersApi.getAllUsers();
+      setUsers(results);
     } catch (err) {
-      setError(err.message);
-      alert("Failed to find user");
+      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+      setError(errorMessage);
+      Swal.fire('Error', errorMessage, 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -154,6 +129,14 @@ export default function UserManagementPage() {
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-sm text-muted-foreground">Loading users...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-500">Error: {error}</div>
       </div>
     );
   }
@@ -179,20 +162,12 @@ export default function UserManagementPage() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
             <Input
               className="pl-10 w-full"
-              placeholder="Search"
+              placeholder="Search users..."
               value={searchQuery}
-              onChange={(e) => {
-                const value = e.target.value.trim();
-                setSearchQuery(value);
-              }}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <div className="flex flex-col md:flex-row items-center gap-2 w-full md:w-auto">
-            <Button variant="outline" className="gap-2 w-full md:w-auto" onClick={handleSearch}>
-              <Search className="h-4 w-4" />
-              Search
-            </Button>
-
             <Link href="user-management/create-user" className="w-full md:w-auto">
               <Button className="gap-2 bg-primary hover:bg-primary/90 w-full">
                 <PlusCircle className="h-4 w-4" />

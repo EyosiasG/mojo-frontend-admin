@@ -1,6 +1,6 @@
 import { fetchWithAuth } from '@/components/utils/fetchwitAuth';
 
-const BASE_URL = 'https://mojoapi.crosslinkglobaltravel.com/api';
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export const banksApi = {
   // Get all banks

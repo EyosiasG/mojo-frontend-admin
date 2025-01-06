@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import Swal from 'sweetalert2'; // Import SweetAlert
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { loginAgent } from "@/api/auth";
+import { authApi } from "@/api/auth";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -78,9 +78,8 @@ export default function LoginPage() {
     setError(null); // Reset previous errors
 
     try {
-      console.log('Attempting to connect to:', "https://mojoapi.crosslinkglobaltravel.com/api/login");
       
-      const response = await loginAgent(username, password);
+      const response = await authApi.loginAgent(username, password);
       console.log('Response status:', response.status);
       const data = await response.json();
       console.log('Response data:', data);

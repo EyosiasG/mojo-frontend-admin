@@ -1,21 +1,17 @@
 "use client";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Image from "next/image";
-import { Camera } from "lucide-react";
-import { Layout } from "@/components/AgentLayout";
-import { Upload } from "lucide-react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useRouter } from "next/navigation";
 import Swal from 'sweetalert2';
 import { Loader2 } from "lucide-react";
 import { usersApi } from "@/api/users"; 
-import { logoutOtherSessions } from '@/api/auth';
-// import jwt_decode from "jwt-decode";
+import { authApi } from "@/api/auth";
+
 
 export default function SettingsPage() {
   // State management for different forms and UI states
@@ -244,7 +240,26 @@ export default function SettingsPage() {
     setIsLoading(true);
 
     try {
-      await logoutOtherSessions(logoutPassword);
+      const response = await authApi.logoutOtherSessions(logoutPassword);
+      const data = await response.json();
+
+      if (!response.ok) {
+        Swal.fire({
+          title: 'Error!',
+          text: data.message || 'Failed to logout other sessions',
+          icon: 'error',
+          confirmButtonColor: '#3085d6',
+        });
+        throw new Error('Failed to logout other sessions');
+      }
+
+      Swal.fire({
+        title: 'Success!',
+        text: 'Successfully logged out of other sessions',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+      });
       setLogoutPassword("");
       setError(null);
       Swal.fire({

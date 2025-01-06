@@ -27,7 +27,8 @@ export default function Page() {
     const fetchUserData = async () => {
       try {
         const data = await usersApi.getUserData(userId as string);
-        setUserData(data);
+        setUserData(data.user);
+        console.log("User Data:", data);
       } catch (err) {
         console.error("Failed to fetch user data:", err);
         setError("Failed to load user data." || err);

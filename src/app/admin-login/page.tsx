@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ToastContainer } from "react-toastify";
+import Swal from 'sweetalert2';
+import { authApi } from "@/api/auth";
 
 
 export default function LoginPage() {
@@ -18,59 +19,55 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault(); 
     setLoading(true);
-    setError(null); // Reset previous errors
+    setError(null);
 
     try {
-      const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: email, // Assuming you are using email for username
-          password: password,
-        }),
-      });
-
+      const response = await authApi.loginAgent(email, password);
       const data = await response.json();
-
-      if (response.ok) {
-        // Store the token and user data in localStorage
-        localStorage.setItem("access_token", data.access_token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        localStorage.setItem("admin", "pass");
-
-        console.log("Access Token:", localStorage.getItem("access_token"));
-        // Log the token to the console (for debugging)
-        // console.log("Access Token:", data.access_token);
-
-        // Redirect to the agent dashboard
-        router.push("/admin-dashboard");
-      } else {
-        // Handle errors (e.g., invalid credentials or other server errors)
-        if (data.message) {
-          // If the response has a message (like 'Invalid credentials')
-          setError(data.message);
-        } else {
-          // Handle generic errors
-          setError("An error occurred during login. Please try again.");
-        }
+      
+      if (!response.ok) {
+        await Swal.fire({
+          icon: 'error',
+          title: 'Login Failed',
+          text: data.message || 'Admin login failed'
+        });
+        setLoading(false);
+        return;
       }
+
+      const token = data.token || data.access_token || data.accessToken;
+      
+      if (!token) {
+        await Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Invalid server response: No token received'
+        });
+        setLoading(false);
+        return;
+      }
+
+      localStorage.setItem('admin_access_token', token);
+      localStorage.setItem('admin', 'true');
+      await Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: 'Admin login successful'
+      });
+      router.push("/admin-dashboard");
     } catch (error) {
-      // Catch network or other unexpected errors
-      setError("Network error. Please try again later.");
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Login failed. Please try again.'
+      });
     } finally {
       setLoading(false);
-    }
-
-    if (error) {
-      alert(error);
     }
   };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gray-100">
-      <ToastContainer />
       <div className="w-full grid lg:grid-cols-2 min-h-screen p-5 gap-5">
         {/* Left side - Animation Container */}
         <div

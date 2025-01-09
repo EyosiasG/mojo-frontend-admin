@@ -35,7 +35,7 @@ export default function LoginPage() {
         return;
       }
 
-      const token = data.token || data.access_token || data.accessToken;
+      const token = data.token || data.access_token || data.accessToken || data.admin_access_token;
       
       if (!token) {
         await Swal.fire({
@@ -47,7 +47,7 @@ export default function LoginPage() {
         return;
       }
 
-      localStorage.setItem('admin_access_token', token);
+      localStorage.setItem('access_token', token);
       localStorage.setItem('admin', 'true');
       await Swal.fire({
         icon: 'success',

@@ -48,8 +48,8 @@ export const usersApi = {
 
   // Get all users
   getAllUsers: async () => {
-    console.log('Making API request to:', `${BASE_URL}/users`);
-    const response = await fetchWithAuth(`${BASE_URL}/users`);
+    console.log('Making API request to:', `${BASE_URL}/customers`);
+    const response = await fetchWithAuth(`${BASE_URL}/customers`);
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -60,12 +60,12 @@ export const usersApi = {
     const data = await response.json();
     console.log('Raw API response:', data);
     
-    if (!data.users) {
+    if (!data.customers) {
       console.error('Invalid response format:', data);
       throw new Error('Invalid response format from server');
     }
 
-    const sortedUsers = data.users.sort((a: User, b: User) => 
+    const sortedUsers = data.customers.sort((a: User, b: User) => 
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
     

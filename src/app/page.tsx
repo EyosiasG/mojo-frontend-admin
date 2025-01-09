@@ -92,14 +92,13 @@ export default function LoginPage() {
 
         console.log("Access Token:", localStorage.getItem("access_token"));
 
-        // Replace toast with toastify
-        toast.success('Login successful! Redirecting to dashboard...', {
-          position: "top-right",
-          autoClose: 1500,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
+        // Replace toast with Swal
+        Swal.fire({
+          title: 'Success!',
+          text: 'Login successful! Redirecting to dashboard...',
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false,
         });
 
         // Redirect to the agent dashboard
@@ -150,7 +149,6 @@ export default function LoginPage() {
 
   return (
     <>
-      <ToastContainer />
       <div className="min-h-screen w-full flex items-center justify-center bg-gray-100">
         <div className="w-full grid lg:grid-cols-2 min-h-screen p-5 gap-5">
           {/* Left side - Animation Container */}

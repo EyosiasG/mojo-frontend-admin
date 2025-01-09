@@ -45,14 +45,14 @@ export default function UserManagementPage() {
     async function fetchUsers() {
       try {
         const response = await fetchWithAuth(
-          "https://mojoapi.crosslinkglobaltravel.com/api/users"
+          "https://mojoapi.crosslinkglobaltravel.com/api/agents"
         );
         if (!response.ok) {
           throw new Error(`Error: ${response.statusText}`);
         }
         const data = await response.json();
         console.log(data); // Check the structure
-        setUsers(data.users || []); // Adjust this line based on actual API response
+        setUsers(data.agents || []); // Adjust this line based on actual API response
       } catch (err) {
         setError(err.message);
       } finally {

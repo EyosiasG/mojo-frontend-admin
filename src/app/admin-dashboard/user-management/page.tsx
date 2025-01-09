@@ -47,7 +47,7 @@ export default function UserManagementPage() {
     try {
       console.log('Attempting to fetch users...');
       const response = await fetchWithAuth(
-        "https://mojoapi.crosslinkglobaltravel.com/api/users"
+        "https://mojoapi.crosslinkglobaltravel.com/api/customers"
       ).catch(error => {
         console.error('Network error:', error);
         throw new Error('Network connection failed - please check your internet connection');
@@ -59,13 +59,13 @@ export default function UserManagementPage() {
       }
 
       const data = await response.json();
-      if (!data.users) {
+      if (!data.customers) {
         console.warn('No users data in response:', data);
         throw new Error('Invalid response format from server');
       }
 
       // Sort users by registration date (created_at) in descending order (newest first)
-      const sortedUsers = data.users.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      const sortedUsers = data.customers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       setUsers(sortedUsers); // Set the sorted users
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
@@ -74,7 +74,7 @@ export default function UserManagementPage() {
       console.error('Detailed error information:', {
         error: err,
         timestamp: new Date().toISOString(),
-        endpoint: "https://mojoapi.crosslinkglobaltravel.com/api/users"
+        endpoint: "https://mojoapi.crosslinkglobaltravel.com/api/customers"
       });
     } finally {
       setLoading(false);

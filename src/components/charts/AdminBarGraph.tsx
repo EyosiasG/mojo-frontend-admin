@@ -25,7 +25,7 @@ const AdminBarGraph = () => {
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const monthlyTotals = months.map((month, index) => ({
           name: month,
-          value: result.transactions[(index + 1).toString()] || 0
+          value: Math.round((result.transactions[(index + 1).toString()] || 0) * 10) / 10
         }));
 
         setMonthlyData(monthlyTotals);
@@ -53,8 +53,8 @@ const AdminBarGraph = () => {
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
+          <YAxis tickFormatter={(value) => `$${value}`} />
+          <Tooltip formatter={(value) => [`$${value}`, "Amount"]} />
           <Legend />
           <Bar 
             dataKey="value" 

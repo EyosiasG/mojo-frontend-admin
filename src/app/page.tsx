@@ -176,11 +176,6 @@ export default function LoginPage() {
                   Agent Login
                 </h1>
 
-                {/* Display error message */}
-                {/* {error && (
-                  <div className="text-red-500 text-center mb-4">{error}</div>
-                )} */}
-
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
                     <label

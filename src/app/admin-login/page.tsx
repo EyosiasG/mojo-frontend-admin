@@ -6,6 +6,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Swal from 'sweetalert2';
 import { authApi } from "@/api/auth";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 
 export default function LoginPage() {
@@ -26,11 +29,7 @@ export default function LoginPage() {
       const data = await response.json();
       
       if (!response.ok) {
-        await Swal.fire({
-          icon: 'error',
-          title: 'Login Failed',
-          text: data.message || 'Admin login failed'
-        });
+        toast.error(data.message || 'Admin login failed');
         setLoading(false);
         return;
       }
@@ -38,29 +37,19 @@ export default function LoginPage() {
       const token = data.token || data.access_token || data.accessToken || data.admin_access_token;
       
       if (!token) {
-        await Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Invalid server response: No token received'
-        });
+        toast.error('Invalid server response: No token received');
         setLoading(false);
         return;
       }
 
       localStorage.setItem('access_token', token);
       localStorage.setItem('admin', 'true');
-      await Swal.fire({
-        icon: 'success',
-        title: 'Success',
-        text: 'Admin login successful'
-      });
-      router.push("/admin-dashboard");
+      toast.success('Admin login successful');
+      setTimeout(() => {
+        router.push("/admin-dashboard");
+      }, 1500);
     } catch (error) {
-      await Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Login failed. Please try again.'
-      });
+      toast.error('Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -68,6 +57,18 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gray-100">
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <div className="w-full grid lg:grid-cols-2 min-h-screen p-5 gap-5">
         {/* Left side - Animation Container */}
         <div

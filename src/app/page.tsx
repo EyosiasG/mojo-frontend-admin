@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Swal from 'sweetalert2'; // Import SweetAlert
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { authApi } from "@/api/auth";
@@ -25,12 +24,13 @@ export default function LoginPage() {
       localStorage.removeItem("agent");
       router.push("/"); // Redirect to login page
       
-      Swal.fire({
-        title: 'Session Expired',
-        text: 'You have been logged out due to inactivity.',
-        icon: 'warning',
-        timer: 4000,
-        showConfirmButton: false,
+      toast.warning('Session Expired - You have been logged out due to inactivity.', {
+        position: "top-center",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
       });
     };
 
@@ -92,40 +92,44 @@ export default function LoginPage() {
 
         console.log("Access Token:", localStorage.getItem("access_token"));
 
-        // Replace toast with Swal
-        Swal.fire({
-          title: 'Success!',
-          text: 'Login successful! Redirecting to dashboard...',
-          icon: 'success',
-          timer: 1500,
-          showConfirmButton: false,
+        toast.success('Login successful! Redirecting to dashboard...', {
+          position: "top-center",
+          autoClose: 1500,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
         });
 
-        // Redirect to the agent dashboard
-        router.push("/agent-dashboard");
+        // Add delay before navigation
+        setTimeout(() => {
+          router.push("/agent-dashboard");
+        }, 1500); // 1.5 seconds delay to match toast autoClose duration
       } else {
         // Handle errors (e.g., invalid credentials or other server errors)
         if (data.message) {
           // If the response has a message (like 'Invalid credentials')
           setError(data.message);
           // Show error alert
-          Swal.fire({
-            title: 'Error!',
-            text: data.message,
-            icon: 'error',
-            timer: 4000,
-            showConfirmButton: false,
+          toast.error(data.message, {
+            position: "top-center",
+            autoClose: 4000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
           });
         } else {
           // Handle generic errors
           setError("An error occurred during login. Please try again.");
           // Show error alert
-          Swal.fire({
-            title: 'Error!',
-            text: "An error occurred during login. Please try again.",
-            icon: 'error',
-            timer: 4000,
-            showConfirmButton: false,
+          toast.error("An error occurred during login. Please try again.", {
+            position: "top-center",
+            autoClose: 4000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
           });
         }
       }
@@ -135,21 +139,36 @@ export default function LoginPage() {
       const errorMessage = error instanceof Error ? error.message : 'Network error. Please check your internet connection and try again.';
       setError(errorMessage);
       
-      Swal.fire({
-        title: 'Connection Error',
-        text: errorMessage,
-        icon: 'error',
-        timer: 4000,
-        showConfirmButton: false,
+      toast.error(errorMessage, {
+        position: "top-center",
+        autoClose: 4000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
       });
     } finally {
       setLoading(false);
     }
   };
 
+
   return (
     <>
-      <div className="min-h-screen w-full flex items-center justify-center bg-gray-100">
+      <ToastContainer
+        position="top-center"
+        autoClose={4000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        style={{ zIndex: 9999 }}
+      />
+      <div className="min-h-screen w-full flex items-center justify-center bg-gray-100 relative">
         <div className="w-full grid lg:grid-cols-2 min-h-screen p-5 gap-5">
           {/* Left side - Animation Container */}
           <div

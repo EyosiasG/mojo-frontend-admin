@@ -212,11 +212,6 @@ const AddUserPage = () => {
                     onChange={(e) => handleChange("phone", e.target.value)}
                   />
                 </div>
-                <div>
-                  <label htmlFor="role" className="block text-sm font-medium mb-2">
-                    Role
-                  </label>
-                </div>
               </div>
 
               <div>

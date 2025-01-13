@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import NotificationProfile from "@/components/NotificationProfile";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
 
 interface Notification {
   id: number;
@@ -21,7 +22,7 @@ export default function NotificationPage() {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const response = await fetch('/api/notifications'); // Replace with your API endpoint
+        const response = await fetchWithAuth('https://mojoapi.crosslinkglobaltravel.com/api/notifications'); // Replace with your API endpoint
         const data = await response.json();
         setNotifications(data);
       } catch (error) {

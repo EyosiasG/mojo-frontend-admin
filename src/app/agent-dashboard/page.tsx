@@ -13,6 +13,7 @@ import NotificationProfile from "@/components/NotificationProfile";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { transactionsApi } from '@/api/transactions';
+import DailyBarGraph from "@/components/charts/DailyBarGraph";
 
 export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -110,8 +111,9 @@ export default function DashboardPage() {
       <div className="py-6">
         <div className="px-6">
           <div className="grid gap-6">
-            <div className="grid grid-cols-1 px-4 md:px-12 lg:px-24">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 px-4 md:px-12 lg:px-12">
               <BarGraph />
+              <DailyBarGraph />
             </div>
 
             <div className="grid gap-6 md:grid-cols-2">

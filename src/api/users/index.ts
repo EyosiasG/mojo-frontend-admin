@@ -163,4 +163,21 @@ export const usersApi = {
 
     return response.json();
   },
+
+  getTotalCustomers: async () => {
+    const response = await fetchWithAuth(`${BASE_URL}/customers`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const data = await response.json();
+
+    return data.customers?.length || 0;
+  },
+
+  getTotalAgents: async (): Promise<number> => {
+    const response = await fetchWithAuth(`${BASE_URL}/agents`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const data = await response.json();
+
+    return data.agents?.length || 0;
+  },
+
 }; 

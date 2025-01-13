@@ -101,7 +101,7 @@ export function Layout({ children }: LayoutProps) {
               >
                 <Link href="/admin-dashboard/user-management">
                   <User className="h-4 w-4" />
-                  User Management
+                  Customer Management
                 </Link>
               </Button>
               <Button

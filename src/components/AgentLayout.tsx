@@ -110,6 +110,7 @@ export function Layout({ children }: LayoutProps) {
                   className="w-full justify-start gap-3"
                   onClick={() => {
                     localStorage.removeItem("access_token");
+                    localStorage.removeItem("agent");
                     isMobile && setIsOpen(false);
                   }}
                   asChild

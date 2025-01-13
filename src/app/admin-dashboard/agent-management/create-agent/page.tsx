@@ -135,13 +135,13 @@ const AddUserPage = () => {
         <div className="mb-6">
           <BackLink>
             <ArrowLeft className="h-4 w-4" />
-            Add New User
+            Back to Agent Management
           </BackLink>
         </div>
 
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-xl font-semibold mb-6">Add New User</h2>
+            <h2 className="text-xl font-semibold mb-6">Add New Agent</h2>
             <p className="text-sm text-muted-foreground mb-8">
               Fill in the information below
             </p>
@@ -193,11 +193,6 @@ const AddUserPage = () => {
                     value={userData.phone}
                     onChange={(e) => handleChange("phone", e.target.value)}
                   />
-                </div>
-                <div>
-                  <label htmlFor="role" className="block text-sm font-medium mb-2">
-                    Role
-                  </label>
                 </div>
               </div>
 

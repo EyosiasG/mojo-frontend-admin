@@ -15,10 +15,13 @@ import AdminProjectedBarGraph from "@/components/charts/AdminProjectedBarGraph";
 import NotificationProfile from "@/components/NotificationProfile";
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth"; // Custom fetch function for authenticated requests
 import { useRouter } from "next/navigation"; // Import useRouter
-import { getUserData, getTransferData } from "@/components/utils/api";
+import { getUserData, getTransferData,  } from "@/components/utils/api";
 import { Clock2 } from "lucide-react";
 import ProjectedBarGraph from "@/components/charts/ProjectedBarGraph";
 import { CircleCheck, CircleX } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { usersApi } from "@/api/users";
+import DailyBarGraph from "@/components/charts/DailyBarGraph";
 interface Transaction {
   id: number;
   amount: string;
@@ -30,7 +33,8 @@ export default function Page() {
   const router = useRouter(); // Initialize router
   const [dashboardData, setDashboardData] = useState(null);
   const [transactionData, setTransactionData] = useState(null); // Add new state
-  const [userTotals, setUserTotals] = useState(0);
+  const [customerTotals, setCustomerTotals] = useState(0);
+  const [agentTotals, setAgentTotals] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [totalTransactions, setTotalTransactions] = useState(0);
@@ -87,10 +91,6 @@ export default function Page() {
   };
   // Fetch dashboard data
   useEffect(() => {
-    // if (!localStorage.getItem("admin")) { // Corrected to use getItem
-    //   router.push("/admin-login"); // Reroute to login page
-    //   return; // Exit the effect
-    // }
 
     async function fetchTransactions() {
       try {
@@ -110,18 +110,24 @@ export default function Page() {
 
     async function fetchUsers() {
      try{
-      const data = await getUserData();
-      console.log("Total Users: ", data.users.length);
-      const users = data.users;
-      const totals = users.length;
-      setUserTotals(totals);
-    
+      const data = await usersApi.getTotalCustomers();
+      console.log("Total Users: ", data);
+      setCustomerTotals(data);
      } catch (err) {
       console.error("Error fetching users:", err);
       setError("Failed to load users.");
      }
-      
+    }
 
+    async function fetchAgents() {
+      try {
+        const data = await usersApi.getTotalAgents();
+        console.log("Total Agents: ", data);
+        setAgentTotals(data);
+      } catch (err) {
+        console.error("Error fetching agents:", err);
+        setError("Failed to load agents.");
+      }
     }
 
     async function fetchDashboardData() {
@@ -165,12 +171,17 @@ export default function Page() {
       fetchDashboardData(), 
       fetchTransactions(), 
       fetchUsers(), 
-      fetchTotalTransactions()
+      fetchTotalTransactions(),
+      fetchAgents()
     ]).finally(() => setLoading(false));
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   if (error) {
@@ -261,7 +272,7 @@ export default function Page() {
               <div className="flex items-center gap-2">
                 <Users className="w-5 h-5 text-primary" />
                 <p className="text-2xl font-bold">
-                  {userTotals}
+                  {customerTotals}
                 </p>
               </div>
             </div>
@@ -272,7 +283,7 @@ export default function Page() {
               <div className="flex items-center gap-2">
                 <Users className="w-5 h-5 text-primary" />
                 <p className="text-2xl font-bold">
-                  {userTotals}
+                  {agentTotals}
                 </p>
               </div>
             </div>
@@ -286,8 +297,9 @@ export default function Page() {
         <div className="px-6">
           <div className="grid gap-6">
             {/* Charts Section */}
-            <div className="grid grid-cols-1 px-4 md:px-12 lg:px-24">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 px-4 md:px-12 lg:px-12">
               <AdminBarGraph />
+              <DailyBarGraph />
             </div>
 
             {/* Calendar and Stats Section */}

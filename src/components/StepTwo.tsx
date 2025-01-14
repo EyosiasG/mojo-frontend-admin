@@ -51,6 +51,7 @@ const Page = () => {
         const banksData = await banksApi.getAllBanks();
         if (isMounted) {
           setBanks(banksData);
+          console.log("banks: ", banks);
         }
 
         // Fetch users using usersApi
@@ -71,7 +72,6 @@ const Page = () => {
         console.error("Error fetching data:", error);
       }
     };
-
     fetchData();
     return () => {
       isMounted = false;
@@ -186,23 +186,23 @@ const Page = () => {
     const inputValue = e.target.value;
     setRecieverName(inputValue);
 
-    // Filter customers based on input
-    const suggestions = customers.filter(customer =>
-      customer.toLowerCase().includes(inputValue.toLowerCase())
+    // Filter users (not customers) based on input
+    const suggestions = users.filter(user =>
+      user.toLowerCase().includes(inputValue.toLowerCase())
     );
     setFilteredRecievers(suggestions);
 
     // Clear suggestions if input is empty
     if (!inputValue) {
-      setFilteredRecievers([]); // Clear suggestions if input is empty
+      setFilteredRecievers([]);
     }
   };
 
   const handleRecieverSuggestionClick = (customer: string) => {
     setRecieverName(customer);
+    setAccountName(customer);
     setFilteredRecievers([]);
     setRecieverId(customerMap[customer]);
-    console.log("RecieverID: ", recieverId);
   };
 
   const closePopup = () => {
@@ -210,180 +210,200 @@ const Page = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      {successMessage && (
-        <div className="fixed top-0 left-0 right-0 z-50 flex justify-center">
-          <div className="bg-green-500 text-white p-4 rounded shadow-md">
-            {successMessage}
-            <button onClick={closePopup} className="ml-4 text-black">Close</button>
-          </div>
-        </div>
-      )}
-      <div className="max-w-5xl mx-30 p-8">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl ml-8 font-semibold text-primary">
-            Transfer Money
-          </h1>
-          <div className="flex items-center gap-4">
-            <NotificationProfile
-              profileLink="/agent-dashboard/settings"
-              notificationLink="/agent-dashboard/notifications"
-            />
-          </div>
-        </div>
+    <>
+      <style jsx>{`
+        .suggestions-list {
+          border: 1px solid #ddd;
+          border-top: none;
+          background-color: white;
+          position: absolute;
+          width: 100%;
+          z-index: 1000;
+        }
 
-        {/* Main Content */}
-        <main className="p-4 max-w-xl mx-auto">
-          <div className="mb-6">
-            <BackLink>
-              <ArrowLeft className="h-4 w-4" />
-              Send Money
-            </BackLink>
+        .suggestions-list li {
+          padding: 8px 12px;
+          cursor: pointer;
+        }
+
+        .suggestions-list li:hover {
+          background-color: #f0f0f0;
+        }
+      `}</style>
+      <div className="min-h-screen bg-white">
+        {successMessage && (
+          <div className="fixed top-0 left-0 right-0 z-50 flex justify-center">
+            <div className="bg-green-500 text-white p-4 rounded shadow-md">
+              {successMessage}
+              <button onClick={closePopup} className="ml-4 text-black">Close</button>
+            </div>
+          </div>
+        )}
+        <div className="max-w-5xl mx-30 p-8">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl ml-8 font-semibold text-primary">
+              Transfer Money
+            </h1>
+            <div className="flex items-center gap-4">
+              <NotificationProfile
+                profileLink="/agent-dashboard/settings"
+                notificationLink="/agent-dashboard/notifications"
+              />
+            </div>
           </div>
 
-          <CardContent className="p-6">
-            {/* Progress Steps */}
-            <div className="flex gap-2 mb-8">
-              <div className="h-1 w-20 rounded bg-primary" />
-              <div className="h-1 w-20 rounded bg-primary" />
+          {/* Main Content */}
+          <main className="p-4 max-w-xl mx-auto">
+            <div className="mb-6">
+              <BackLink>
+                <ArrowLeft className="h-4 w-4" />
+                Send Money
+              </BackLink>
             </div>
 
-            <div className="space-y-6">
-              <form onSubmit={handleSubmit}>
-                <div>
-                  <h2 className="text-lg font-semibold mb-1">Enter Amount</h2>
-                  <p className="text-sm text-muted-foreground mb-6">
-                    The amount below is based on the current exchange rate of 1
-                    USD to ETB
-                  </p>
+            <CardContent className="p-6">
+              {/* Progress Steps */}
+              <div className="flex gap-2 mb-8">
+                <div className="h-1 w-20 rounded bg-primary" />
+                <div className="h-1 w-20 rounded bg-primary" />
+              </div>
 
-                  <div className="space-y-6">
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm mb-1">Amount</label>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2">
-                            $
-                          </span>
+              <div className="space-y-6">
+                <form onSubmit={handleSubmit}>
+                  <div>
+                    <h2 className="text-lg font-semibold mb-1">Enter Amount</h2>
+                    <p className="text-sm text-muted-foreground mb-6">
+                      The amount below is based on the current exchange rate of 1
+                      USD to ETB
+                    </p>
+
+                    <div className="space-y-6">
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm mb-1">Amount</label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2">
+                              $
+                            </span>
+                            <Input
+                              type="text"
+                              value={amount}
+                              // onChange={(e) => setAmount(e.target.value)}
+                              className="pl-7"
+                              disabled
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm mb-1">
+                            Amount in ETB received
+                          </label>
                           <Input
                             type="text"
-                            value={amount}
-                            // onChange={(e) => setAmount(e.target.value)}
-                            className="pl-7"
+                            value={`${calculateETB(amount)} ETB`}
                             disabled
+                            className="bg-gray-50"
                           />
                         </div>
                       </div>
-
                       <div>
-                        <label className="block text-sm mb-1">
-                          Amount in ETB received
-                        </label>
-                        <Input
-                          type="text"
-                          value={`${calculateETB(amount)} ETB`}
-                          disabled
-                          className="bg-gray-50"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                        <label className="block text-sm text-muted-foreground mb-1">
-                          Customer Name
-                        </label>
-                        <Input
-                          type="text"
-                          value={senderName}
-                          onChange={handleCustomerNameChange}
-                          placeholder="Enter sender name"
-                        />
-                        {filteredCustomers.length > 0 && (
-                          <ul className="suggestions-list" style={{ maxHeight: '150px', overflowY: 'auto' }}>
-                            {filteredCustomers.map((customer, index) => (
-                              <li key={index} onClick={() => handleSuggestionClick(customer)}>
-                                {customer}
-                              </li>
+                          <label className="block text-sm text-muted-foreground mb-1">
+                            Customer Name
+                          </label>
+                          <Input
+                            type="text"
+                            value={senderName}
+                            onChange={handleCustomerNameChange}
+                            placeholder="Enter sender name"
+                          />
+                          {filteredCustomers.length > 0 && (
+                            <ul className="suggestions-list" style={{ maxHeight: '150px', overflowY: 'auto' }}>
+                              {filteredCustomers.map((customer, index) => (
+                                <li key={index} onClick={() => handleSuggestionClick(customer)}>
+                                  {customer}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm text-muted-foreground mb-1">
+                            Bank Name
+                          </label>
+                          <select
+                            value={bank || ""}
+                            onChange={(e) => handleBankChange(e.target.value)}
+                            className="block w-full border rounded p-2"
+                          >
+                            <option value="" disabled>Select a bank</option>
+                            {banks.map((bank) => (
+                              <option key={bank.id} value={bank.id}>
+                                {bank.name}
+                              </option>
                             ))}
-                          </ul>
-                        )}
-                      </div>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm text-muted-foreground mb-1">
+                            Recipient Account Number
+                          </label>
+                          <Input
+                            type="text"
+                            value={accountNumber}
+                            onChange={(e) => setAccountNumber(e.target.value)}
+                            placeholder="Enter account number"
+                          />
+                        </div>
+                       
 
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm text-muted-foreground mb-1">
-                          Bank Name
-                        </label>
-                        <select
-                          value={bank || ""}
-                          onChange={(e) => handleBankChange(e.target.value)}
-                          className="block w-full border rounded p-2"
-                        >
-                          <option value="" disabled>Select a bank</option>
-                          {banks.map((bank) => (
-                            <option key={bank.id} value={bank.id}>
-                              {bank.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm text-muted-foreground mb-1">
-                          Recipient Account Number
-                        </label>
-                        <Input
-                          type="text"
-                          value={accountNumber}
-                          onChange={(e) => setAccountNumber(e.target.value)}
-                          placeholder="Enter account number"
-                        />
-                      </div>
-                     
-
-                      <div>
-                        <label className="block text-sm text-muted-foreground mb-1">
-                          Recipient Name
-                        </label>
-                        <Input
-                          type="text"
-                          value={recieverName}
-                          onChange={handleRecieverNameChange}
-                          placeholder="Enter recipient name"
-                        />
-                        {filteredRecievers.length > 0 && (
-                          <ul className="suggestions-list" style={{ maxHeight: '150px', overflowY: 'auto' }}>
-                            {filteredRecievers.map((customer, index) => (
-                              <li key={index} onClick={() => handleRecieverSuggestionClick(customer)}>
-                                {customer}
-                              </li>
-                            ))}
-                          </ul>
-                        )}
+                        <div>
+                          <label className="block text-sm text-muted-foreground mb-1">
+                            Recipient Name
+                          </label>
+                          <Input
+                            type="text"
+                            value={recieverName}
+                            onChange={handleRecieverNameChange}
+                            placeholder="Enter recipient name"
+                          />
+                          {filteredRecievers.length > 0 && (
+                            <ul className="suggestions-list" style={{ maxHeight: '150px', overflowY: 'auto' }}>
+                              {filteredRecievers.map((customer, index) => (
+                                <li key={index} onClick={() => handleRecieverSuggestionClick(customer)}>
+                                  {customer}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
 
-                <div className="flex justify-between pt-4">
-                  <Button 
-                    variant="ghost" 
-                    onClick={() => router.back()} 
-                    className="flex items-center gap-2"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                    Go Back
-                  </Button>
-                  <Button type="submit">Confirm Payment</Button>
-                </div>
+                  <div className="flex justify-between pt-4">
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => router.back()} 
+                      className="flex items-center gap-2"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                      Go Back
+                    </Button>
+                    <Button type="submit">Confirm Payment</Button>
+                  </div>
 
-              </form>
-            </div>
-          </CardContent>
-        </main>
+                </form>
+              </div>
+            </CardContent>
+          </main>
+        </div>
       </div>
-    </div>
-
+    </>
   );
 };
 

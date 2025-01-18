@@ -81,6 +81,16 @@ const Page = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Add validation checks for amount
+    if (!amount || isNaN(parseFloat(amount))) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Validation Error',
+        text: 'Please enter a valid amount'
+      });
+      return;
+    }
+
     // Validation checks
     if (!bank) {
       Swal.fire({
@@ -118,20 +128,51 @@ const Page = () => {
       return;
     }
 
-    const requestData = {
-      currency_id: 1,
-      amount: amount,
-      bank_name: bank,
-      etb_amount: calculateETB(amount),
-      sender_name: senderName,
-      receiver_name: accountName,
-      account_number: accountNumber,
-      sender_id: senderId,
-      receiver_id: recieverId
-    };
-
     try {
-      await transactionsApi.createTransfer(requestData);
+      const token = localStorage.getItem('access_token');
+      console.log('Token:', token);
+
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+
+      const requestData = {
+        currency_id: 1,
+        amount: parseFloat(amount),
+        bank_name: bank,
+        etb_amount: calculateETB(amount),
+        sender_name: senderName,
+        receiver_name: accountName,
+        account_number: accountNumber,
+        sender_id: senderId,
+        receiver_id: recieverId
+      };
+
+      const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/transfers", {
+        method: "POST",
+        body: JSON.stringify(requestData),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/json"
+        },
+        mode: 'cors'
+      });
+      
+      console.log('Response Status:', response.status);
+      
+      if (response.status === 403) {
+        throw new Error('You do not have permission to perform this action. Please contact your administrator.');
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log('Error Response:', errorData); // Log the error response
+        throw new Error(errorData?.message || `HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Success Response:', data); // Log the success response
       
       Swal.fire({
         icon: 'success',
@@ -144,12 +185,25 @@ const Page = () => {
       }, 2000);
 
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Full Error:", error);
+      
+      // More specific error message for 403
+      const errorMessage = error instanceof Error && error.message.includes('permission') 
+        ? 'You do not have permission to perform this action. Please contact your administrator.'
+        : error instanceof Error 
+          ? error.message 
+          : 'An unexpected error occurred. Please try again.';
+      
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: error.message || 'An error occurred while making the request.',
+        text: errorMessage,
       });
+
+      // If it's a permission error, you might want to redirect to a different page
+      if (error instanceof Error && error.message.includes('permission')) {
+        // router.push('/unauthorized'); // Uncomment if you have an unauthorized page
+      }
     }
   };
 

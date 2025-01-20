@@ -9,7 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { authApi } from "@/api/auth";
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -21,7 +21,7 @@ export default function LoginPage() {
     const handleLogout = () => {
       localStorage.removeItem("access_token");
       localStorage.removeItem("user");
-      localStorage.removeItem("agent");
+      localStorage.removeItem("admin");
       router.push("/"); // Redirect to login page
       
       toast.warning('Session Expired - You have been logged out due to inactivity.', {
@@ -79,7 +79,7 @@ export default function LoginPage() {
 
     try {
       
-      const response = await authApi.loginAgent(username, password);
+      const response = await authApi.loginAdmin(email, password);
       console.log('Response status:', response.status);
       const data = await response.json();
       console.log('Response data:', data);
@@ -88,7 +88,7 @@ export default function LoginPage() {
         // Store the token and user data in localStorage
         localStorage.setItem("access_token", data.access_token);
         localStorage.setItem("user", JSON.stringify(data.user));
-        localStorage.setItem("agent", "pass");
+        localStorage.setItem("admin", "pass");
 
         console.log("Access Token:", localStorage.getItem("access_token"));
 
@@ -103,7 +103,7 @@ export default function LoginPage() {
 
         // Add delay before navigation
         setTimeout(() => {
-          router.push("/agent-dashboard");
+          router.push("/admin-dashboard");
         }, 1500); // 1.5 seconds delay to match toast autoClose duration
       } else {
         // Handle errors (e.g., invalid credentials or other server errors)
@@ -192,24 +192,24 @@ export default function LoginPage() {
 
               <div className="space-y-6 px-4">
                 <h1 className="text-2xl font-semibold text-center">
-                  Agent Login
+                  Admin Login
                 </h1>
 
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
                     <label
-                      htmlFor="username"
+                      htmlFor="email"
                       className="text-sm font-medium text-gray-700"
                     >
-                      Username
+                      Email
                     </label>
                     <Input
-                      id="username"
+                      id="email"
                       type="email"
                       placeholder="Enter your username"
                       className="w-full"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                     />
                   </div>
 

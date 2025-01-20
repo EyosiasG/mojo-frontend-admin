@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { Search, Filter, Download, MoreVertical, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Swal from "sweetalert2";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,7 +62,7 @@ export default function Page() {
       );
       const data = await response.json();
       console.log(data);
-      
+    
       // Check if the response is JSON
       const contentType = response.headers.get("Content-Type");
       if (!contentType || !contentType.includes("application/json")) {
@@ -102,34 +104,44 @@ export default function Page() {
     fetchRates(searchId);
   };
 
-  const handleDelete = async (id: string) => {
-    const isConfirmed = window.confirm(
-      "Are you sure you want to delete this exchange rate?"
-    );
-    if (!isConfirmed) return;
+  
+const handleDelete = async (id: string) => {
+  const result = await Swal.fire({
+    title: "Are you sure?",
+    text: "You won't be able to revert this!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Yes, delete it!",
+    cancelButtonText: "Cancel",
+  });
 
-    try {
-      const response = await fetch(
-        `https://mojoapi.crosslinkglobaltravel.com/api/rates/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
-            "Content-Type": "application/json"
-          }
-        }
-      );
-      if (response.ok) {
-        setRates(rates.filter((rate) => rate.id !== id));
-        toast.success("Exchange rate deleted successfully");
-      } else {
-        toast.error("Failed to delete the exchange rate");
+  if (!result.isConfirmed) return;
+
+  try {
+    const response = await fetch(
+      `https://mojoapi.crosslinkglobaltravel.com/api/rates/${id}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          "Content-Type": "application/json",
+        },
       }
-    } catch (error) {
-      console.error("Failed to delete:", error);
-      toast.error("Failed to delete exchange rate");
+    );
+
+    if (response.ok) {
+      setRates(rates.filter((rate) => rate.id !== id));
+      toast.success("Exchange rate deleted successfully");
+    } else {
+      toast.error("Failed to delete the exchange rate");
     }
-  };
+  } catch (error) {
+    console.error("Failed to delete:", error);
+    toast.error("Failed to delete exchange rate");
+  }
+};
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">

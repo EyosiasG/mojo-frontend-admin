@@ -220,12 +220,6 @@ export default function TransferPage() {
               <Search className="h-4 w-4" />
               Search
             </Button>
-            <Link href="transfer/step-one" className="w-full md:w-auto">
-              <Button className="gap-2 bg-primary hover:bg-primary/90 w-full">
-                <Send className="h-4 w-4" />
-                Send Money
-              </Button>
-            </Link>
           </div>
         </div>
 

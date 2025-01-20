@@ -101,18 +101,28 @@ export function Layout({ children }: LayoutProps) {
               >
                 <Link href="/admin-dashboard/user-management">
                   <User className="h-4 w-4" />
-                  Customer Management
+                  Sender Management
                 </Link>
+              
               </Button>
+
               <Button
                 variant="ghost"
                 className="w-full justify-start gap-3"
                 asChild
               >
-                <Link href="/admin-dashboard/role-management">
-                  <IdCard className="h-4 w-4" />
-                  Role Management
-                </Link>
+                <Link href="/admin-dashboard/user-management">
+                  <User className="h-4 w-4" />
+                  Receiver Management
+                </Link>  
+              </Button>
+              
+
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-3"
+                asChild
+              >
               </Button>
               <Button
                 variant="ghost"

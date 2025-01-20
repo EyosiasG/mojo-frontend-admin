@@ -213,9 +213,9 @@ export default function Page() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-blue-50">
       {/* Header */}
-      <header className="flex items-center justify-between p-4 bg-white border-b">
+      <header className="flex items-center justify-between p-4">
         <h1 className="text-xl font-semibold text-primary">User Management</h1>
         <div className="flex items-center gap-4">
           <NotificationProfile
@@ -235,10 +235,10 @@ export default function Page() {
         </div>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="py-6">
             <h2 className="text-lg font-semibold mb-10 text-center">View Information</h2>
             
-            <div className="grid grid-cols-2 gap-x-8 gap-y-6 max-w-2xl mx-auto px-4 sm:px-8">
+            <div className="grid grid-cols-2 gap-x-8 gap-y-6 max-w-2xl">
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Agent ID</p>
                 <p className="font-medium">{userData?.id}</p>
@@ -283,29 +283,6 @@ export default function Page() {
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Status</p>
                 <p className="font-medium">{userData?.status || "Active"}</p>
-              </div>
-
-              <div className="col-span-2 pt-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white rounded">
-                      <FileText className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium">KYC PDF</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm text-muted-foreground">12/2/2024</p>
-                    <Button variant="ghost" size="icon" onClick={() => handleView()}>
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDownload()}>
-                      <Download className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
               </div>
             </div>
           </CardContent>

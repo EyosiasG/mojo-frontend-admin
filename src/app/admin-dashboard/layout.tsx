@@ -1,28 +1,40 @@
-"use client"
+"use client";
+
 import { Layout } from "@/components/AdminLayout";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { Poppins } from "next/font/google";
+
+// Import the Poppins font
+const poppins = Poppins({
+  subsets: ["latin"], // Specify font subsets
+  weight: ["400", "500", "600", "700"], // Include desired font weights
+  variable: "--font-poppins", // Define a CSS variable for the font
+});
 
 export default function DashboardLayout({
-  children, // will be a page or nested layout
+  children,
 }: {
   children: React.ReactNode;
-})
- 
-{
+}) {
   const router = useRouter();
 
   useEffect(() => {
-    console.log(localStorage.getItem("admin"));
-    if (!localStorage.getItem("admin")) { // Check local storage
-      router.push("/admin-login"); // Reroute to login page
+    const isAdmin = localStorage.getItem("admin");
+
+    if (!isAdmin) {
+      router.push("/admin-login"); // Redirect to admin login if no admin data
     }
-  }, [router]); // Add router as a dependency
+  }, [router]);
 
   return (
-    <Layout>
-      {/* Include shared UI here e.g. a header or sidebar */}
-      {children}
-    </Layout>
+    <html lang="en">
+      <body className={`${poppins.variable} antialiased`}>
+        <Layout>
+          {/* Shared UI components like header, sidebar, etc. */}
+          {children}
+        </Layout>
+      </body>
+    </html>
   );
 }

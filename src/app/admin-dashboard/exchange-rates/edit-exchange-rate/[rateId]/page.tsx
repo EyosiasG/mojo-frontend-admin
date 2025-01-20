@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Swal from 'sweetalert2';
 import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
 
 export default function EditExchangeRate() {
   const { rateId } = useParams();
@@ -91,14 +92,24 @@ export default function EditExchangeRate() {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+   // Handle loading and error states
+   if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+  if (error) {
+    toast.error(`Error: ${error}`);
+    return null; // Prevent further rendering
+  }
 
   return (
     <div className="container mx-auto py-10 space-y-8 max-w-3xl">
       <ToastContainer />
-      <BackLink href="/admin-dashboard/exchange-rates">
-        <ArrowLeft /> Back to Exchange Rates
+      <BackLink href="/admin-dashboard/exchange-rates" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+        <ArrowLeft className="w-4 h-4" /> Back to Exchange Rates
       </BackLink>
       
       <Card>

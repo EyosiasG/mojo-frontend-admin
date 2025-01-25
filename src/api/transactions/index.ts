@@ -5,7 +5,7 @@ const BASE_URL = 'https://mojoapi.crosslinkglobaltravel.com/api';
 export const transactionsApi = {
   // Get dashboard statistics
   getDashboardStats: async () => {
-    const response = await fetchWithAuth(`${BASE_URL}/agent/dashboard`);
+    const response = await fetchWithAuth(`${BASE_URL}/admin/dashboard`);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -20,14 +20,14 @@ export const transactionsApi = {
 
   // Get all transactions
   getAllTransactions: async () => {
-    const response = await fetchWithAuth(`${BASE_URL}/transactions`);
+    const response = await fetchWithAuth(`${BASE_URL}/transfers`);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     return response.json();
   },
 
   // Get single transaction
   getTransactionById: async (id: string) => {
-    const response = await fetchWithAuth(`${BASE_URL}/transactions/${id}`);
+    const response = await fetchWithAuth(`${BASE_URL}/admin/transactions/${id}`);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     return response.json();
   },

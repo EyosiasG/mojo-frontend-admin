@@ -171,7 +171,7 @@ export function Layout({ children }: LayoutProps) {
                   Settings
                 </Link>
               </Button>
-              <Link href="/admin-login" onClick={() => {
+              <Link href="/" onClick={() => {
                 localStorage.removeItem('access_token');
                 localStorage.removeItem('admin');
               }}>

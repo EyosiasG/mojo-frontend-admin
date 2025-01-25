@@ -7,6 +7,7 @@ import BackLink from "@/components/BackLink";
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import NotificationProfile from "@/components/NotificationProfile";
 
 // Interface for Rate Data
 interface Rate {
@@ -65,8 +66,19 @@ export default function ViewRate() {
   if (error) return <div>Error: {error}</div>;
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="px-10 py-6 bg-blue-50 min-h-screen">
       <ToastContainer />
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-semibold text-primary">
+         Exchange Rates
+        </h1>
+        <div className="flex items-center gap-2">
+          <NotificationProfile
+            profileLink="/admin-dashboard/settings"
+            notificationLink="/admin-dashboard/notifications"
+          />
+        </div>
+      </div>
       <div className="mb-8">
         <BackLink href="/exchange-rates" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="w-4 h-4" />

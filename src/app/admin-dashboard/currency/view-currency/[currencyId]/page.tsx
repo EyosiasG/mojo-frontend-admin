@@ -63,9 +63,9 @@ export default function ViewCurrency() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-blue-50">
       {/* Header */}
-      <header className="flex items-center justify-between p-4 bg-white border-b">
+      <header className="flex items-center justify-between p-4">
         <h1 className="text-xl font-semibold text-primary">Currency Management</h1>
         <div className="flex items-center gap-4">
           <NotificationProfile

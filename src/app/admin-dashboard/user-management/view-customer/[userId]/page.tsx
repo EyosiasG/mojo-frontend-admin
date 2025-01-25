@@ -23,7 +23,7 @@ export default function Page() {
       try {
         console.log("Fetching user data for ID:", userId);
         const response = await fetchWithAuth(
-          `https://mojoapi.crosslinkglobaltravel.com/api/users/${userId}`
+          `https://mojoapi.crosslinkglobaltravel.com/api/admin/senders/${userId}`
         );
         console.log("API Response:", response);
         
@@ -319,24 +319,15 @@ export default function Page() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-blue-50">
       {/* Header */}
-      <header className="flex items-center justify-between p-4 bg-white border-b">
+      <header className="flex items-center justify-between p-4">
         <h1 className="text-xl font-semibold text-primary">User Management</h1>
         <div className="flex items-center gap-4">
           <NotificationProfile
             profileLink="/agent-dashboard/settings"
             notificationLink="/agent-dashboard/notifications"
           />
-          <div className="h-8 w-8 rounded-full bg-gray-200 overflow-hidden">
-            <Image
-              src="/placeholder.svg?height=32&width=32"
-              alt="Profile"
-              width={32}
-              height={32}
-              className="object-cover"
-            />
-          </div>
         </div>
       </header>
 

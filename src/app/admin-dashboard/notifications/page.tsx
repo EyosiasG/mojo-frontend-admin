@@ -35,9 +35,9 @@ export default function NotificationPage() {
   }, []);
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 bg-blue-50 min-h-screen px-4">
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Notification</h1>
+        <h1 className="text-2xl text-primary font-bold">Notification</h1>
         <div className="flex items-center gap-4">
 
           <NotificationProfile

@@ -16,6 +16,8 @@ import { useParams, useRouter } from "next/navigation";
 import { fetchWithAuth } from '@/components/utils/fetchwitAuth';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import NotificationProfile from "@/components/NotificationProfile";
+import { Loader2 } from "lucide-react";
 
 export default function EditCurrencyForm() {
   const router = useRouter();
@@ -27,6 +29,7 @@ export default function EditCurrencyForm() {
   });
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchCurrency = async () => {
@@ -100,38 +103,42 @@ export default function EditCurrencyForm() {
     }));
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <ToastContainer position="top-right" />
-      <div className="flex items-center justify-between p-6 border-b bg-white/80 backdrop-blur-lg shadow-sm">
-        <div className="flex items-center gap-4">
-          <BackLink href="/admin-dashboard/currency" className="group flex items-center gap-3 hover:opacity-75 transition-all">
-            <div className="bg-gray-100 p-2 rounded-lg group-hover:bg-gray-200 transition-colors">
-              <ArrowLeft className="w-4 h-4" />
-            </div>
-            <span className="font-semibold">Edit Currency</span>
-          </BackLink>
-        </div>
-        <div className="flex items-center gap-3">
-          <Button 
-            variant="outline"
-            onClick={() => router.push("/admin-dashboard/currency")}
-            className="hover:bg-gray-100"
-          >
-            Cancel
-          </Button>
-          <Button 
-            type="submit" 
-            form="currency-form" 
-            disabled={isPending}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg shadow-blue-200"
-          >
-            {isPending ? "Submitting..." : "Submit"}
-          </Button>
+  if (isPending) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Loading agents...</p>
         </div>
       </div>
+    );
+  }
 
-      <div className="max-w-2xl mx-auto p-8">
+  return (
+    <div className="min-h-screen bg-blue-50">
+      <ToastContainer position="top-right" />
+      <header className="flex items-center justify-between p-4">
+        <h1 className="text-xl font-semibold text-primary">Currency Management</h1>
+        <div className="flex items-center gap-4">
+          <NotificationProfile
+            profileLink="/agent-dashboard/settings"
+            notificationLink="/agent-dashboard/notifications"
+          />
+        </div>
+      </header>
+      <div className="flex items-center justify-between px-6">
+        <div className="flex items-center gap-4">
+          <BackLink href="/admin-dashboard/currency" className="group flex items-center gap-3 hover:opacity-75 transition-all">
+            <div>
+              <ArrowLeft className="w-4 h-4" />
+            </div>
+            <span>Back to Currencies</span>
+          </BackLink>
+        </div>
+
+      </div>
+
+      <div className="w-full mx-auto p-8">
         <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-8">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent mb-2">
             Edit Currency
@@ -147,7 +154,7 @@ export default function EditCurrencyForm() {
           <form
             id="currency-form"
             onSubmit={handleSubmit}
-            className="space-y-8"
+            className="space-y-8 "
           >
             <div className="space-y-3">
               <label htmlFor="currency-name" className="text-sm font-semibold text-gray-700">
@@ -196,6 +203,24 @@ export default function EditCurrencyForm() {
                 className="max-w-md border-gray-200 focus:border-blue-500 focus:ring-blue-500"
                 placeholder="Enter currency sign"
               />
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                onClick={() => router.push("/admin-dashboard/currency")}
+                className="hover:bg-gray-100"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                form="currency-form"
+                disabled={isPending}
+                className="bg-primary text-white shadow-lg shadow-blue-200"
+              >
+                {isPending ? "Editing..." : "Edit"}
+              </Button>
             </div>
           </form>
         </div>

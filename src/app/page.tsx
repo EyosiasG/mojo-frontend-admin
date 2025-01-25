@@ -100,11 +100,7 @@ export default function LoginPage() {
           pauseOnHover: true,
           draggable: true,
         });
-
-        // Add delay before navigation
-        setTimeout(() => {
-          router.push("/admin-dashboard");
-        }, 1500); // 1.5 seconds delay to match toast autoClose duration
+        router.push("/admin-dashboard");
       } else {
         // Handle errors (e.g., invalid credentials or other server errors)
         if (data.message) {

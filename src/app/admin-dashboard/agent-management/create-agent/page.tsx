@@ -11,6 +11,7 @@ import BackLink from "@/components/BackLink";
 import { useRouter } from 'next/navigation';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { usersApi } from "@/api/users";
 
 const AddUserPage = () => {
   const router = useRouter();
@@ -23,7 +24,7 @@ const AddUserPage = () => {
     email: "",
     phone: "",
     idImage: null,
-    role: "Agent",
+    role: "8",
   });
   const [imagePreview, setImagePreview] = useState(
     "/placeholder.svg?height=100&width=100"
@@ -64,27 +65,13 @@ const AddUserPage = () => {
         phone: userData.phone,             // Use actual phone number
         password: "12345678",              // Dummy password
         id_image: null,        // Include the base64 image string
-        role: "Agent",                // Add this line
+        role: "8",                // Add this line
     };
 
     console.log("Request Body:", requestBody); // Log the request data
 
     try {
-        const accessToken = localStorage.getItem("access_token");
-        console.log("Access Token:", accessToken); // Log the access token
-        const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/users/store", {
-            method: "POST",
-            body: JSON.stringify(requestBody), // Use JSON.stringify for the request body
-            headers: {
-                "Content-Type": "application/json", // Change content type to application/json
-                "Authorization": `Bearer ${accessToken}`,
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error("Network response was not ok");
-        }
-
+        await usersApi.createUser(requestBody);
         console.log("Agent added successfully.");
         toast.success("Agent added successfully!");
         setTimeout(() => {
@@ -97,7 +84,7 @@ const AddUserPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-blue-50">
      <ToastContainer
         position="top-right"
         autoClose={4000}
@@ -111,8 +98,8 @@ const AddUserPage = () => {
         theme="light"
       />
       {/* Header */}
-      <header className="flex items-center justify-between p-4 bg-white border-b">
-        <h1 className="text-xl font-semibold">User Management</h1>
+      <header className="flex items-center justify-between p-4">
+        <h1 className="text-2xl text-primary font-semibold">Agent Management</h1>
         <div className="flex items-center gap-4">
           <NotificationProfile
             profileLink="/agent-dashboard/settings"
@@ -145,7 +132,6 @@ const AddUserPage = () => {
             <p className="text-sm text-muted-foreground mb-8">
               Fill in the information below
             </p>
-
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>

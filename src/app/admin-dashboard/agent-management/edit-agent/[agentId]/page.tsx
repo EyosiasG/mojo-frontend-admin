@@ -5,15 +5,19 @@ import BackLink from "@/components/BackLink";
 import NotificationProfile from "@/components/NotificationProfile";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Eye, Download, FileText, Upload, Camera } from "lucide-react";
+import { ArrowLeft, Eye, Download, FileText, Upload, Camera, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
 import Swal from 'sweetalert2';
+import { usersApi } from "@/api/users";
+import Router from "next/navigation";
+import { useRouter } from "next/navigation";
 
 const token = localStorage.getItem('access_token');
 
 export default function Page() {
+  const router = useRouter();
   const { agentId } = useParams();
   const [userData, setUserData] = useState(null);
   const [error, setError] = useState(null);
@@ -31,17 +35,7 @@ export default function Page() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetchWithAuth(
-          `https://mojoapi.crosslinkglobaltravel.com/api/users/${agentId}`,
-          {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (!response.ok) throw new Error(`Error: ${response.statusText}`);
-        const data = await response.json();
+        const data = await usersApi.getUserData(agentId as string);
         console.log('Fetched user data:', data); // Debug log
         
         // Check if data.user exists, if not, try data directly
@@ -105,21 +99,7 @@ export default function Page() {
 
     if (result.isConfirmed) {
       try {
-        const response = await fetchWithAuth(
-          `https://mojoapi.crosslinkglobaltravel.com/api/users/${agentId}`,
-          {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(formData),
-          }
-        );
-        
-        if (!response.ok) throw new Error(`Error: ${response.statusText}`);
-        
-        const data = await response.json();
+        const data = await usersApi.updateUser(agentId as string, formData);
         setUserData(data.user);
         
         // Success message
@@ -139,6 +119,9 @@ export default function Page() {
         });
       } finally {
         setIsSubmitting(false);
+        setTimeout(() => {
+          router.push("/admin-dashboard/agent-management");
+      }, 1500);
       }
     } else {
       setIsSubmitting(false);
@@ -150,29 +133,23 @@ export default function Page() {
     return <p className="text-red-500 text-center">{error}</p>;
   }
 
-  // if (!userData) {
-  //   return <p className="text-center text-gray-500">Loading...</p>;
-  // }
-
+   if (!userData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+   }
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-blue-50">
       {/* Header */}
-      <header className="flex items-center justify-between p-4 bg-white border-b">
+      <header className="flex items-center justify-between p-4">
         <h1 className="text-xl font-semibold text-primary">Agent Management</h1>
         <div className="flex items-center gap-4">
           <NotificationProfile
             profileLink="/agent-dashboard/settings"
             notificationLink="/agent-dashboard/notifications"
           />
-          <div className="h-8 w-8 rounded-full bg-gray-200 overflow-hidden">
-            <Image
-              src="/placeholder.svg?height=32&width=32"
-              alt="Profile"
-              width={32}
-              height={32}
-              className="object-cover"
-            />
-          </div>
         </div>
       </header>
 
@@ -181,7 +158,7 @@ export default function Page() {
         <div className="mb-6">
           <BackLink>
             <ArrowLeft className="h-4 w-4" />
-            {/* View User - {userData.first_name} {userData.last_name} */}
+            {userData ? `View User - ${userData.first_name} ${userData.last_name}` : 'Loading...'}
           </BackLink>
         </div>
 

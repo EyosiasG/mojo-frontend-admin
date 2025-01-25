@@ -34,6 +34,7 @@ import NotificationProfile from "@/components/NotificationProfile";
 import { fetchWithAuth } from "./../../../components/utils/fetchwitAuth";
 import { format } from "date-fns";
 import Swal from 'sweetalert2';
+import { usersApi } from "@/api/users";
 
 export default function UserManagementPage() {
   const [users, setUsers] = useState([]);
@@ -44,15 +45,9 @@ export default function UserManagementPage() {
   useEffect(() => {
     async function fetchUsers() {
       try {
-        const response = await fetchWithAuth(
-          "https://mojoapi.crosslinkglobaltravel.com/api/agents"
-        );
-        if (!response.ok) {
-          throw new Error(`Error: ${response.statusText}`);
-        }
-        const data = await response.json();
-        console.log(data); // Check the structure
-        setUsers(data.agents || []); // Adjust this line based on actual API response
+        const data = await usersApi.getAllAgents();
+        console.log("Agents Retrieved: ", data); // Check the structure
+        setUsers(data || []); // Adjust this line based on actual API response
       } catch (err) {
         setError(err.message);
       } finally {
@@ -65,19 +60,11 @@ export default function UserManagementPage() {
   const handleSearch = async () => {
     console.log("Search Query: ", searchQuery);
     try {
-      const response = await fetchWithAuth(
-        `https://mojoapi.crosslinkglobaltravel.com/api/users/search/${searchQuery}`
-      );
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      if (!data.data || data.data.length === 0) {
+      const data = await usersApi.searchUsers(searchQuery as string);
+      if (!data || data.length === 0) {
         throw new Error('Agent not found');
       }
-      setUsers(data.data);
+      setUsers(data);
     } catch (err) {
       setError(err.message);
       alert("Failed to find agent");
@@ -95,14 +82,9 @@ export default function UserManagementPage() {
 
     if (result.isConfirmed) {
       try {
-        const response = await fetchWithAuth(
-          `https://mojoapi.crosslinkglobaltravel.com/api/users/${userId}`,
-          { method: 'DELETE' }
-        );
-        if (response.ok) {
-          setUsers(users.filter(user => user.id !== userId));
-          Swal.fire('Deleted!', 'Agent has been deleted.', 'success');
-        }
+        await usersApi.deleteUser(userId);
+        setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+        Swal.fire('Deleted!', 'User has been deleted.', 'success');
       } catch (error) {
         Swal.fire('Error!', 'Failed to delete agent.', 'error');
       }
@@ -120,15 +102,11 @@ export default function UserManagementPage() {
     );
   }
 
-  if (error) {
-    return <div>{error}</div>;
-  }
-
   return (
-    <>
-      <div className="border-b bg-white">
+    <div className="bg-blue-50 h-full">
+      <div className="bg-blue-50">
         <div className="flex h-16 items-center justify-between px-6">
-          <h1 className="text-xl font-semibold">Agent Management</h1>
+          <h1 className="text-2xl text-primary font-semibold">Agent Management</h1>
           <div className="flex items-center gap-4">
             <NotificationProfile
               profileLink="/admin-dashboard/settings"
@@ -138,9 +116,9 @@ export default function UserManagementPage() {
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="p-6 bg-blue-50 rounded-lg m-4">
         <div className="mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="relative flex-1 w-full md:w-auto">
+          <div className="relative flex-1 w-full md:w-auto bg-white">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
             <Input
               className="pl-10 w-full"
@@ -265,6 +243,6 @@ export default function UserManagementPage() {
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 }

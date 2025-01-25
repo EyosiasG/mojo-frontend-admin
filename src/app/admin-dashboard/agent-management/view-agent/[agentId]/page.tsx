@@ -10,6 +10,7 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import { PDFDocument, rgb } from 'pdf-lib';
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
+import { usersApi } from "@/api/users";
 
 export default function Page() {
   const { agentId } = useParams();
@@ -21,11 +22,7 @@ export default function Page() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetchWithAuth(
-          `https://mojoapi.crosslinkglobaltravel.com/api/users/${agentId}`
-        );
-        if (!response.ok) throw new Error(`Error: ${response.statusText}`);
-        const data = await response.json();
+        const data = await usersApi.getUserData(agentId as string);
         setUserData(data.user);
       } catch (err) {
         console.error("Failed to fetch user data:", err);
@@ -38,176 +35,10 @@ export default function Page() {
     }
   }, [agentId]);
 
-  const handleView = async () => {
-    const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([400, 600]);
-    let embeddedImage = null;
-
-    try {
-    page.drawRectangle({
-      x: 0,
-      y: 500,
-      width: 600,
-      height: 60,
-      color: rgb(0.2, 0.4, 0.6),
-    });
-    page.drawText('Agent Details', {
-      x: 50,
-      y: 520,
-      size: 30,
-      color: rgb(1, 1, 1),
-    });
-
-    // Add a line for separation
-    page.drawLine({ start: { x: 50, y: 390 }, end: { x: 350, y: 390 }, color: rgb(0.7, 0.7, 0.7), thickness: 1 });
-
-    // User details section
-    let yPosition = 370;
-    const details = [
-      { label: 'First Name', value: userData?.first_name || 'N/A' },
-      { label: 'Last Name', value: userData?.last_name || 'N/A' },
-      { label: 'Email', value: userData?.email || 'N/A' },
-      { label: 'Phone', value: userData?.phone || 'N/A' },
-      { label: 'Status', value: userData?.status || 'Active' },
-      {
-        label: 'Registration Date',
-        value: userData?.created_at
-          ? new Date(userData.created_at).toLocaleDateString('en-US', {
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric',
-          })
-          : 'N/A'
-      },
-    ];
-
-    details.forEach((detail) => {
-      page.drawText(`${detail.label}:`, { x: 50, y: yPosition, size: 10, color: rgb(0, 0, 0) });
-      page.drawText(String(detail.value), { x: 150, y: yPosition, size: 10, color: rgb(0, 0, 0) });
-      yPosition -= 20;
-    });
-
-    // Footer Section
-    page.drawLine({
-      start: { x: 50, y: yPosition - 10 },
-      end: { x: 350, y: yPosition - 10 },
-      color: rgb(0.8, 0.8, 0.8),
-      thickness: 1,
-    });
-    yPosition -= 30;
-
-    page.drawText('Mojo Money Transfer!', {
-      x: 225,
-      y: yPosition,
-      size: 12,
-      color: rgb(0, 0, 0),
-    });
-
-    page.drawText('Contact us: support@mojo.com', {
-      x: 210,
-      y: yPosition - 20,
-      size: 10,
-      color: rgb(0.5, 0.5, 0.5),
-    });
-
-    const pdfData = await pdfDoc.save();
-    const pdfUrl = URL.createObjectURL(new Blob([pdfData], { type: 'application/pdf' }));
-    window.open(pdfUrl, '_blank');
-  } catch (err) {
-    console.error('Error generating PDF:', err);
-  }
-};
-
-  const handleDownload = async () => {
-    // Create PDF document
-    const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([400, 600]);
-  
-    // Header
-    page.drawRectangle({
-      x: 0,
-      y: 500,
-      width: 600,
-      height: 60,
-      color: rgb(0.2, 0.4, 0.6),
-    });
-    page.drawText('User Details', {
-      x: 50,
-      y: 520,
-      size: 30,
-      color: rgb(1, 1, 1),
-    });
-
-    // User details
-    let yPosition = 370;
-    const details = [
-      { label: 'First Name', value: userData?.first_name || 'N/A' },
-      { label: 'Last Name', value: userData?.last_name || 'N/A' },
-      { label: 'Email', value: userData?.email || 'N/A' },
-      { label: 'Phone', value: userData?.phone || 'N/A' },
-      { label: 'Status', value: userData?.status || 'Active' },
-      {
-        label: 'Registration Date',
-        value: userData?.created_at
-          ? new Date(userData.created_at).toLocaleDateString('en-US', {
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric',
-          })
-          : 'N/A'
-      },
-    ];
-
-    details.forEach((detail) => {
-      page.drawText(`${detail.label}:`, { x: 50, y: yPosition, size: 10, color: rgb(0, 0, 0) });
-      page.drawText(String(detail.value), { x: 150, y: yPosition, size: 10, color: rgb(0, 0, 0) });
-      yPosition -= 20;
-    });
-
-    // Footer
-    page.drawLine({
-      start: { x: 50, y: yPosition - 10 },
-      end: { x: 350, y: yPosition - 10 },
-      color: rgb(0.8, 0.8, 0.8),
-      thickness: 1,
-    });
-    yPosition -= 30;
-
-    page.drawText('Mojo Money Transfer!', {
-      x: 225,
-      y: yPosition,
-      size: 12,
-      color: rgb(0, 0, 0),
-    });
-
-    page.drawText('Contact us: support@mojo.com', {
-      x: 210,
-      y: yPosition - 20,
-      size: 10,
-      color: rgb(0.5, 0.5, 0.5),
-    });
-
-    const pdfData = await pdfDoc.save();
-    const pdfUrl = URL.createObjectURL(new Blob([pdfData], { type: 'application/pdf' }));
-
-    const link = document.createElement('a');
-    link.href = pdfUrl;
-    link.setAttribute('download', 'agent_details.pdf');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(pdfUrl);
-  };
-
-  if (error) {
-    return <p className="text-red-500 text-center">{error}</p>;
-  }
-
-  if (!userData) {
+  if(!userData){
     return (
-      <div className="h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-2 text-gray-500">Loading user data...</p>
       </div>
     );
   }

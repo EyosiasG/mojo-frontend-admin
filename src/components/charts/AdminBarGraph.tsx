@@ -10,7 +10,7 @@ const AdminBarGraph = () => {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/dashboard");
+        const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/admin/dashboard");
         
         if (!response.ok) {
           throw new Error(`Failed to fetch data: ${response.statusText}`);

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import {
   Download,
   Filter,
+  Loader2,
   MoreHorizontal,
   PlusCircle,
   Search,
@@ -136,7 +137,7 @@ const CurrencyManagementPage = () => {
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <p className="text-lg font-medium text-gray-600">Loading currencies...</p>
       </div>
     </div>
@@ -161,7 +162,7 @@ const CurrencyManagementPage = () => {
     <div className="p-2 md:p-6 space-y-4 md:space-y-6">
       <ToastContainer position="top-right" />
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <h1 className="text-xl md:text-2xl font-semibold">Currency Management</h1>
+        <h1 className="text-xl md:text-2xl text-primary font-semibold">Currency Management</h1>
         <NotificationProfile
           profileLink="/admin-dashboard/settings"
           notificationLink="/admin-dashboard/notifications"
@@ -174,13 +175,13 @@ const CurrencyManagementPage = () => {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
               <Input 
-                className="pl-10 w-full" 
+                className="pl-10 w-full bg-white" 
                 placeholder="Search by currency ID" 
                 value={searchQuery}
                 onChange={handleSearch}
               />
             </div>
-            <Button onClick={handleSearchClick} className="w-full md:w-auto">
+            <Button onClick={handleSearchClick} className="w-full md:w-auto bg-white text-black">
               Search
             </Button>
           </div>
@@ -195,7 +196,7 @@ const CurrencyManagementPage = () => {
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="rounded-lg border bg-white overflow-x-auto">
         <Table className="role-table min-w-full">
           <TableHeader>
             <TableRow>

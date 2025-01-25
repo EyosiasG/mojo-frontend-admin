@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import Swal from 'sweetalert2';
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import NotificationProfile from "@/components/NotificationProfile";
 
 export default function EditExchangeRate() {
   const { rateId } = useParams();
@@ -106,8 +107,20 @@ export default function EditExchangeRate() {
   }
 
   return (
-    <div className="container mx-auto py-10 space-y-8 max-w-3xl">
+    <div className="container mx-auto py-6 px-10 space-y-8 min-h-screen bg-blue-50">
       <ToastContainer />
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-semibold text-primary">
+         Exchange Rates
+        </h1>
+        <div className="flex items-center gap-2">
+          <NotificationProfile
+            profileLink="/admin-dashboard/settings"
+            notificationLink="/admin-dashboard/notifications"
+          />
+        </div>
+      </div>
+
       <BackLink href="/admin-dashboard/exchange-rates" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back to Exchange Rates
       </BackLink>

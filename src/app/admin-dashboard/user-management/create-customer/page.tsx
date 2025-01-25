@@ -20,7 +20,7 @@ const AddUserPage = () => {
     const fetchRoles = async () => {
       try {
         const accessToken = localStorage.getItem("access_token");
-        const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/roles", {
+        const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/admin/roles", {
           headers: {
             "Authorization": `Bearer ${accessToken}`,
           },
@@ -41,7 +41,7 @@ const AddUserPage = () => {
     email: "",
     phone: "",
     idImage: null,
-    role: "Customer",
+    role: 10,
   });
   const [imagePreview, setImagePreview] = useState(
     "/placeholder.svg?height=100&width=100"
@@ -115,7 +115,7 @@ const AddUserPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-blue-50">
      <ToastContainer
         position="top-right"
         autoClose={4000}
@@ -129,22 +129,13 @@ const AddUserPage = () => {
         theme="light"
       />
       {/* Header */}
-      <header className="flex items-center justify-between p-4 bg-white border-b">
+      <header className="flex items-center justify-between p-4">
         <h1 className="text-xl font-semibold">User Management</h1>
         <div className="flex items-center gap-4">
           <NotificationProfile
             profileLink="/agent-dashboard/settings"
             notificationLink="/agent-dashboard/notifications"
           />
-          <div className="h-8 w-8 rounded-full bg-gray-200 overflow-hidden">
-            <Image
-              src="/placeholder.svg?height=32&width=32"
-              alt="Profile"
-              width={32}
-              height={32}
-              className="object-cover"
-            />
-          </div>
         </div>
       </header>
 

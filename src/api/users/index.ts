@@ -30,7 +30,7 @@ export const usersApi = {
     createUser: async (userData: UserData): Promise<any> => {
         const accessToken = localStorage.getItem("access_token");
         
-        const response = await fetch(`${BASE_URL}/users/store`, {
+        const response = await fetch(`${BASE_URL}/admin/users/store`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -72,6 +72,34 @@ export const usersApi = {
     console.log('Sorted users:', sortedUsers);
     return sortedUsers;
   },
+
+  getAllAgents: async () => {
+    console.log('Making API request to:', `${BASE_URL}/admin/agents`);
+    const response = await fetchWithAuth(`${BASE_URL}/admin/agents`);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('API Error:', errorData);
+      throw new Error(errorData.message || `Server error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('Raw API response:', data);
+    
+    if (!data.agents) {
+      console.error('Invalid response format:', data);
+      throw new Error('Invalid response format from server');
+    }
+
+    const sortedAgents = data.agents.sort((a: User, b: User) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+    
+    console.log('Sorted users:', sortedAgents);
+    return sortedAgents;
+  },
+
+
 
   getUserData: async (userId: string) => {
     const response = await fetch(`${BASE_URL}/users/${userId}`, {

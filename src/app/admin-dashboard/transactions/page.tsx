@@ -186,9 +186,9 @@ export default function TransferPage() {
 
   return (
     <>
-      <div className="border-b bg-white">
+      <div className="bg-blue-50">
         <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 md:px-14 md:py-4">
-          <h1 className="text-lg font-semibold md:text-xl mb-3 sm:mb-0">Transfer Money</h1>
+          <h1 className="text-4xl font-semibold md:text-xl mb-3 sm:mb-0 text-primary">Transfer Money</h1>
           <div className="flex w-full sm:w-auto justify-center sm:justify-end gap-4">
             <NotificationProfile
               profileLink="/agent-dashboard/settings"
@@ -198,10 +198,10 @@ export default function TransferPage() {
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="p-6 bg-blue-50">
         <div className="mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="relative flex-1 w-full md:w-auto">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+          <div className="relative flex-1 w-full md:w-auto bg-white">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 " />
             <Input 
               className="pl-10 w-full"
               placeholder="Search" 

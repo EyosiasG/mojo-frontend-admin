@@ -5,6 +5,7 @@ import { Search, Filter, Download, MoreVertical, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Swal from "sweetalert2";
+import { Loader2 } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -146,7 +147,7 @@ const handleDelete = async (id: string) => {
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
-        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <p className="text-lg font-medium text-gray-600">Loading exchange rates...</p>
       </div>
     </div>
@@ -168,18 +169,17 @@ const handleDelete = async (id: string) => {
   );
 
   return (
-    <div className="p-6 mx-auto">
+    <div className="p-6 mx-auto bg-blue-50 min-h-screen">
       <ToastContainer position="top-right" autoClose={3000} />
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold text-primary">
-          Currency Exchange Rates
+         Exchange Rates
         </h1>
         <div className="flex items-center gap-2">
           <NotificationProfile
             profileLink="/admin-dashboard/settings"
             notificationLink="/admin-dashboard/notifications"
           />
-          <div className="w-8 h-8 rounded-full bg-gray-200" />
         </div>
       </div>
 
@@ -188,7 +188,7 @@ const handleDelete = async (id: string) => {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
             placeholder="Search by Rate ID" 
-            className="pl-9 " 
+            className="pl-9 bg-white" 
             value={searchId}
             onChange={(e) => {
               setSearchId(e.target.value);
@@ -209,7 +209,7 @@ const handleDelete = async (id: string) => {
         </div>
       </div>
 
-      <div className="border rounded-lg">
+      <div className="border rounded-lg bg-white">
         <Table>
           <TableHeader>
             <TableRow>

@@ -178,7 +178,7 @@ export default function Page() {
     async function fetchDashboardData() {
       try {
         const response = await fetchWithAuth(
-          "https://mojoapi.crosslinkglobaltravel.com/api/dashboard"
+          "https://mojoapi.crosslinkglobaltravel.com/api/admin/dashboard"
         ); // Adjust the URL for your backend API
         if (!response.ok) {
           throw new Error(`Error: ${response.statusText}`);
@@ -248,7 +248,7 @@ export default function Page() {
         </div>
       </header>
 
-      <div className="lg:px-8 sm:px-8 py-4 mt-10 gap-4 sm:gap-0">
+      <div className="lg:px-8 sm:px-8 py-4 gap-4 sm:gap-0">
         {/* Date Display */}
         <div className="p-4 text-sm font-medium text-gray-700 w-full sm:w-auto text-left sm:text-right">
           {formattedDate.toString()}
@@ -352,7 +352,7 @@ export default function Page() {
           <div className="">
             <div className="grid gap-6">
               {/* Charts Section */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 px-4 md:px-8 lg:px-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 px-6">
                 <AdminBarGraph />
                 <DailyBarGraph />
               </div>

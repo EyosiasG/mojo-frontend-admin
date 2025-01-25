@@ -13,6 +13,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useRouter } from "next/navigation";
 import Swal from 'sweetalert2';
 import { Loader2 } from "lucide-react";
+import NotificationProfile from "@/components/NotificationProfile";
 // import jwt_decode from "jwt-decode";
 
 export default function SettingsPage() {
@@ -369,8 +370,16 @@ export default function SettingsPage() {
         pauseOnHover
         theme="light"
       />
-      <div className="container mx-auto py-10 space-y-8 max-w-3xl">
+      <div className="flex items-center justify-between px-10 mt-5">
+        <h1 className="text-2xl text-primary font-semibold">Settings</h1>
+        <NotificationProfile
+          profileLink="/admin-dashboard/settings"
+          notificationLink="/admin-dashboard/notifications"
+        />
+      </div>
+      <div className="container mx-auto py-10 space-y-8 max-w-4xl">
         {error && <p className="text-red-500">{error}</p>}
+        
 
         {/* Profile Settings */}
         <Card>

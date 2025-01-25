@@ -47,7 +47,7 @@ export default function UserManagementPage() {
     try {
       console.log('Attempting to fetch users...');
       const response = await fetchWithAuth(
-        "https://mojoapi.crosslinkglobaltravel.com/api/customers"
+        "https://mojoapi.crosslinkglobaltravel.com/api/admin/senders"
       ).catch(error => {
         console.error('Network error:', error);
         throw new Error('Network connection failed - please check your internet connection');
@@ -59,13 +59,13 @@ export default function UserManagementPage() {
       }
 
       const data = await response.json();
-      if (!data.customers) {
+      if (!data.users) {
         console.warn('No users data in response:', data);
         throw new Error('Invalid response format from server');
       }
 
       // Sort users by registration date (created_at) in descending order (newest first)
-      const sortedUsers = data.customers.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      const sortedUsers = data.users.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       setUsers(sortedUsers); // Set the sorted users
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
@@ -74,7 +74,7 @@ export default function UserManagementPage() {
       console.error('Detailed error information:', {
         error: err,
         timestamp: new Date().toISOString(),
-        endpoint: "https://mojoapi.crosslinkglobaltravel.com/api/customers"
+        endpoint: "https://mojoapi.crosslinkglobaltravel.com/api/admin/senders"
       });
     } finally {
       setLoading(false);
@@ -160,9 +160,9 @@ export default function UserManagementPage() {
 
   return (
     <>
-      <div className="border-b bg-white">
+      <div className="bg-blue-50">
         <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 md:px-6 md:py-4">
-          <h1 className="text-lg font-semibold md:text-xl ml-8 mb-3 sm:mb-0">User Management</h1>
+          <h1 className="text-xl text-primary font-semibold md:text-xl ml-8 mb-3 sm:mb-0">User Management</h1>
           <div className="flex w-full sm:w-auto justify-center sm:justify-end gap-4">
             <NotificationProfile
               profileLink="/agent-dashboard/settings"
@@ -173,12 +173,12 @@ export default function UserManagementPage() {
       </div>
 
 
-      <div className="p-6">
+      <div className="p-6 m-4">
         <div className="mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="relative flex-1 w-full md:w-auto">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
             <Input
-              className="pl-10 w-full"
+              className="pl-10 w-full bg-white"
               placeholder="Search"
               value={searchQuery}
               onChange={(e) => {

@@ -13,6 +13,9 @@ import "react-toastify/dist/ReactToastify.css";
 import { useParams, useRouter } from "next/navigation";
 import Swal from 'sweetalert2';
 import { Loader2 } from "lucide-react";
+import NotificationProfile from "@/components/NotificationProfile";
+import { ArrowLeft } from "lucide-react";
+import BackLink from "@/components/BackLink";
 // import jwt_decode from "jwt-decode";
 
 export default function SettingsPage() {
@@ -50,7 +53,7 @@ export default function SettingsPage() {
       setIsDataLoading(true);
       try {
         const response = await fetch(
-          `https://mojoapi.crosslinkglobaltravel.com/api/users/${userId}`,
+          `https://mojoapi.crosslinkglobaltravel.com/api/admin/senders/${userId}`,
           {
             method: "GET",
             headers: {
@@ -148,7 +151,7 @@ export default function SettingsPage() {
 
     try {
         const response = await fetch(
-            `https://mojoapi.crosslinkglobaltravel.com/api/users/${userId}`,
+            `https://mojoapi.crosslinkglobaltravel.com/api/admin/senders/${userId}`,
             {
                 method: "PUT",
                 headers: {
@@ -364,6 +367,15 @@ export default function SettingsPage() {
 
   return (
     <>
+      <header className="flex items-center justify-between p-4">
+        <h1 className="text-xl font-semibold text-primary">User Management</h1>
+        <div className="flex items-center gap-4">
+          <NotificationProfile
+            profileLink="/agent-dashboard/settings"
+            notificationLink="/agent-dashboard/notifications"
+          />
+        </div>
+      </header>
       <ToastContainer
         position="top-center"
         autoClose={2500}
@@ -377,6 +389,12 @@ export default function SettingsPage() {
       />
       <div className="container mx-auto py-10 space-y-8 max-w-3xl">
         {error && <p className="text-red-500">{error}</p>}
+        <div className="mb-6">
+          <BackLink>
+            <ArrowLeft className="h-4 w-4" />
+            View User - {userData.first_name} {userData.last_name}
+          </BackLink>
+        </div>
 
         {/* Profile Settings */}
         <Card>

@@ -19,7 +19,7 @@ const page = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchTransaction = async () => {
-    const response = await fetchWithAuth(`https://mojoapi.crosslinkglobaltravel.com/api/transactions/${transactionId}`);
+    const response = await fetchWithAuth(`https://mojoapi.crosslinkglobaltravel.com/api/admin/transactions/${transactionId}`);
     const data = await response.json();
 
     //console.log(data.data);

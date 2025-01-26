@@ -224,5 +224,14 @@ export const adminApi = {
     }));
 
     return monthlyTotals;
+  },
+
+  getTotalTransactions: async () => {
+    const response = await fetchWithAuth(`${BASE_URL}/admin/dashboard`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
   }
 }; 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Card } from "../ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { fetchWithAuth } from "../utils/fetchwitAuth";
+import { adminApi } from "@/api/admin";
 
 const ProjectedBarGraph = () => {
   const [monthlyData, setMonthlyData] = useState<{ name: string; actual: number }[]>([]);
@@ -9,15 +10,7 @@ const ProjectedBarGraph = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/admin/dashboard");
-        const result = await response.json();
-        
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const monthlyTotals = months.map((month, index) => ({
-          name: month,
-          actual: result.users?.[index + 1] || 0 // Changed from transactions to users
-        }));
-
+        const monthlyTotals = await adminApi.getMonthlyUsers();
         setMonthlyData(monthlyTotals);
       } catch (error) {
         console.error('Error fetching user data:', error); // Updated error message

@@ -15,6 +15,7 @@ import { Loader2 } from "lucide-react";
 import { usersApi } from "@/api/users";
 import DailyBarGraph from "@/components/charts/DailyBarGraph";
 import { ArrowLeftRight, Activity } from "lucide-react";
+import { adminApi } from "@/api/admin";
 interface Transaction {
   id: number;
   amount: string;
@@ -194,18 +195,11 @@ export default function Page() {
 
     async function fetchTotalTransactions() {
       try {
-        const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/admin/dashboard");
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
+        const data = await adminApi.getTotalTransactions();
 
         setTotalTransactions(data.total_transactions || 0);
         setTotalTransactionsByStatus(data.transactionsByStatus || {});
 
-        return data;
       } catch (error) {
         console.error("Error fetching transactions:", error);
         throw error;

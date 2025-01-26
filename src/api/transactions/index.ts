@@ -20,7 +20,7 @@ export const transactionsApi = {
 
   // Get all transactions
   getAllTransactions: async () => {
-    const response = await fetchWithAuth(`${BASE_URL}/transfers`);
+    const response = await fetchWithAuth(`${BASE_URL}/admin/transfers`);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     return response.json();
   },
@@ -34,14 +34,14 @@ export const transactionsApi = {
   
   // Add new search method
   searchTransactions: async (searchTerm: string) => {
-    const response = await fetchWithAuth(`${BASE_URL}/transactions/search/${searchTerm}`);
+    const response = await fetchWithAuth(`${BASE_URL}/admin/transactions/search/${searchTerm}`);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     return response.json();
   },
 
   // Create new transfer
   createTransfer: async (requestData: any) => {
-    const response = await fetchWithAuth(`${BASE_URL}/transfers`, {
+    const response = await fetchWithAuth(`${BASE_URL}/admin/transfers`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

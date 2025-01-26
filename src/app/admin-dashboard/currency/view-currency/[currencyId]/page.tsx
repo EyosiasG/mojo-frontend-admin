@@ -23,7 +23,7 @@ export default function ViewCurrency() {
     const fetchCurrency = async () => {
       try {
         const response = await fetchWithAuth(
-          `https://mojoapi.crosslinkglobaltravel.com/api/currencies/${currencyId}`,
+          `https://mojoapi.crosslinkglobaltravel.com/api/admin/currencies/${currencyId}`,
           { method: "GET" }
         );
   

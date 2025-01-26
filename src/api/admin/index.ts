@@ -26,7 +26,7 @@ interface UpdateUserData {
   password?: string;
 }
 
-export const usersApi = {
+export const adminApi = {
     createUser: async (userData: UserData): Promise<any> => {
         const accessToken = localStorage.getItem("access_token");
         
@@ -102,7 +102,7 @@ export const usersApi = {
 
 
   getUserData: async (userId: string) => {
-    const response = await fetch(`${BASE_URL}/admin/users/${userId}`, {
+    const response = await fetch(`${BASE_URL}/users/${userId}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
       },
@@ -115,7 +115,7 @@ export const usersApi = {
   },
 
   updateUser: async (userId: string, userData: UpdateUserData) => {
-    const response = await fetch(`${BASE_URL}/admin/users/${userId}`, {
+    const response = await fetch(`${BASE_URL}/users/${userId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -133,7 +133,7 @@ export const usersApi = {
 
   // Search users
   searchUsers: async (query: string) => {
-    const response = await fetchWithAuth(`${BASE_URL}/admin/users/search/${query}`);
+    const response = await fetchWithAuth(`${BASE_URL}/users/search/${query}`);
     
     if (!response.ok) {
       throw new Error(`Error: ${response.statusText}`);
@@ -149,7 +149,7 @@ export const usersApi = {
 
   // Delete user
   deleteUser: async (userId: string | number) => {
-    const response = await fetchWithAuth(`${BASE_URL}/admin/users/${userId}`, {
+    const response = await fetchWithAuth(`${BASE_URL}/users/${userId}`, {
       method: 'DELETE',
     });
 
@@ -165,7 +165,7 @@ export const usersApi = {
     currentPassword: string;
     newPassword: string;
   }): Promise<any> => {
-    const response = await fetchWithAuth(`${BASE_URL}/admin/users/${userId}/password`, {
+    const response = await fetchWithAuth(`${BASE_URL}/users/${userId}/password`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -182,7 +182,7 @@ export const usersApi = {
   },
 
   getUser: async () => {
-    const response = await fetchWithAuth(`${BASE_URL}/admin/user`);
+    const response = await fetchWithAuth(`${BASE_URL}/user`);
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -192,20 +192,37 @@ export const usersApi = {
     return response.json();
   },
 
-  getTotalCustomers: async () => {
-    const response = await fetchWithAuth(`${BASE_URL}/admin/senders`);
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    const data = await response.json();
+  getMonthlyTransactions: async () =>{
+    const response = await fetchWithAuth(`${BASE_URL}/admin/dashboard`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch data: ${response.statusText}`);
+    }
 
-    return data.customers?.length || 0;
+    const result = await response.json();
+    
+    if (result.status !== "success" || !result.transactions) {
+      throw new Error('Invalid data format received from server');
+    }
+
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthlyTotals = months.map((month, index) => ({
+      name: month,
+      value: Math.round((result.transactions[(index + 1).toString()] || 0) * 10) / 10
+    }));
+
+    return monthlyTotals;
   },
 
-  getTotalAgents: async (): Promise<number> => {
-    const response = await fetchWithAuth(`${BASE_URL}/admin/agents`);
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-    const data = await response.json();
+  getMonthlyUsers: async () => {
+    const response = await fetchWithAuth(`${BASE_URL}/admin/dashboard`);
+    const result = await response.json();
+        
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthlyTotals = months.map((month, index) => ({
+      name: month,
+      actual: result.users?.[index + 1] || 0 // Changed from transactions to users
+    }));
 
-    return data.agents?.length || 0;
-  },
-
+    return monthlyTotals;
+  }
 }; 

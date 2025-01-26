@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Swal from 'sweetalert2';
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import NotificationProfile from "@/components/NotificationProfile";
@@ -31,7 +30,7 @@ export default function EditExchangeRate() {
   useEffect(() => {
     const fetchRate = async () => {
       try {
-        const response = await fetchWithAuth(`https://mojoapi.crosslinkglobaltravel.com/api/rates/${rateId}`);
+        const response = await fetchWithAuth(`https://mojoapi.crosslinkglobaltravel.com/api/admin/rates/${rateId}`);
         if (!response.ok) throw new Error("Failed to fetch rate");
         const data = await response.json();
         setRate(data.data);
@@ -64,9 +63,9 @@ export default function EditExchangeRate() {
 
     try {
       const response = await fetchWithAuth(
-        `https://mojoapi.crosslinkglobaltravel.com/api/rates/${rateId}`,
+        `https://mojoapi.crosslinkglobaltravel.com/api/admin/rates/${rateId}`,
         {
-          method: 'POST',
+          method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData),
         }
@@ -77,14 +76,11 @@ export default function EditExchangeRate() {
         throw new Error(errorData.message || "Failed to update exchange rate");
       }
 
-      Swal.fire({
-        title: 'Success!',
-        text: 'Exchange rate updated successfully!',
-        icon: 'success',
-        timer: 2000,
-        showConfirmButton: false
-      }).then(() => {
-        router.push("/admin-dashboard/exchange-rates");
+      toast.success('Exchange rate updated successfully!', {
+        autoClose: 2000,
+        onClose: () => {
+          router.push("/admin-dashboard/exchange-rates");
+        }
       });
     } catch (err) {
       toast.error(err.message);

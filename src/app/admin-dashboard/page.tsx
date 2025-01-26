@@ -119,7 +119,7 @@ export default function Page() {
   useEffect(() => {
     async function fetchExchangeRate() {
       try {
-        const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/rates/10");
+        const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/admin/rates/10");
         console.log("Response: ", response);
 
         if (!response.ok) {
@@ -194,7 +194,7 @@ export default function Page() {
 
     async function fetchTotalTransactions() {
       try {
-        const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/agent/dashboard");
+        const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/admin/dashboard");
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

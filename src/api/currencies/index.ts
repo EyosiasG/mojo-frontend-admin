@@ -7,7 +7,7 @@ export const currenciesApi = {
   // Get all currencies
   getAllCurrencies: async () => {
     try {
-      const response = await fetchWithAuth(`${BASE_URL}/currencies`);
+      const response = await fetchWithAuth(`${BASE_URL}/admin/currencies`);
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));

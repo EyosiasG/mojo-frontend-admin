@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Card } from "../ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { fetchWithAuth } from "../utils/fetchwitAuth";
+import { adminApi } from "@/api/admin";
 
 const AdminBarGraph = () => {
   const [monthlyData, setMonthlyData] = useState<{ name: string; value: number }[]>([]);
@@ -10,31 +11,13 @@ const AdminBarGraph = () => {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const response = await fetchWithAuth("https://mojoapi.crosslinkglobaltravel.com/api/admin/dashboard");
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch data: ${response.statusText}`);
-        }
-
-        const result = await response.json();
-        
-        if (result.status !== "success" || !result.transactions) {
-          throw new Error('Invalid data format received from server');
-        }
-
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const monthlyTotals = months.map((month, index) => ({
-          name: month,
-          value: Math.round((result.transactions[(index + 1).toString()] || 0) * 10) / 10
-        }));
-
-        setMonthlyData(monthlyTotals);
+        const data = await adminApi.getMonthlyTransactions();
+        setMonthlyData(data);
       } catch (err) {
         console.error('Error fetching transaction data:', err);
         setError(err instanceof Error ? err.message : 'Failed to load chart data');
       }
     };
-
     fetchTransactions();
   }, []);
 

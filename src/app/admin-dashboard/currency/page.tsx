@@ -50,9 +50,9 @@ const CurrencyManagementPage = () => {
   const fetchCurrencies = async () => {
     setLoading(true);
     try {
-      let url = "https://mojoapi.crosslinkglobaltravel.com/api/currencies";
+      let url = "https://mojoapi.crosslinkglobaltravel.com/api/admin/currencies";
       if (searchQuery) {
-        url = `https://mojoapi.crosslinkglobaltravel.com/api/currencies/${searchQuery}`;
+        url = `https://mojoapi.crosslinkglobaltravel.com/api/admin/currencies/${searchQuery}`;
       }
 
       const response = await fetchWithAuth(url, {
@@ -110,7 +110,7 @@ const CurrencyManagementPage = () => {
 
     try {
       const response = await fetch(
-        `https://mojoapi.crosslinkglobaltravel.com/api/currencies/${currencyId}`,
+        `https://mojoapi.crosslinkglobaltravel.com/api/admin/currencies/${currencyId}`,
         {
           method: "DELETE",
           headers: {

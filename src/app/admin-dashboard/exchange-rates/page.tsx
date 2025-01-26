@@ -21,7 +21,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 import NotificationProfile from "@/components/NotificationProfile";
 import { fetchWithAuth } from "../../../components/utils/fetchwitAuth";
@@ -45,11 +44,11 @@ export default function Page() {
 
   const fetchRates = async (searchTerm = "") => {
     try {
-      let url = "https://mojoapi.crosslinkglobaltravel.com/api/rates";
+      let url = "https://mojoapi.crosslinkglobaltravel.com/api/admin/rates";
       
       // If searchTerm is provided, fetch specific rate
       if (searchTerm.trim()) {
-        url = `https://mojoapi.crosslinkglobaltravel.com/api/rates/${searchTerm}`;
+        url = `https://mojoapi.crosslinkglobaltravel.com/api/admin/rates/${searchTerm}`;
       }
 
       const response = await fetchWithAuth(
@@ -122,7 +121,7 @@ const handleDelete = async (id: string) => {
 
   try {
     const response = await fetch(
-      `https://mojoapi.crosslinkglobaltravel.com/api/rates/${id}`,
+      `https://mojoapi.crosslinkglobaltravel.com/api/admin/rates/${id}`,
       {
         method: "DELETE",
         headers: {

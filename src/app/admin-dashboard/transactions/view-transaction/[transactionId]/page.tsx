@@ -29,7 +29,7 @@ const page = () => {
   const fetchCurrency = async (currencyId) => {
     try {
       console.log("Currency ID: ", currencyId);
-      const response = await fetchWithAuth(`https://mojoapi.crosslinkglobaltravel.com/api/currencies/${currencyId}`);
+      const response = await fetchWithAuth(`https://mojoapi.crosslinkglobaltravel.com/api/admin/currencies/${currencyId}`);
       const data = await response.json();
 
       // Check if data and data.data exist before accessing sign

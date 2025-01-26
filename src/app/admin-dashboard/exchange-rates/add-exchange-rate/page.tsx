@@ -21,8 +21,9 @@ import { useState, useEffect } from "react";
 import BackLink from "@/components/BackLink";
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
 import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import NotificationProfile from "@/components/NotificationProfile";
 
 interface Currency {
   id: string;
@@ -43,7 +44,7 @@ export default function AddExchangeRate() {
     const fetchCurrencies = async () => {
       try {
         const response = await fetchWithAuth(
-          "https://mojoapi.crosslinkglobaltravel.com/api/currencies"
+          "https://mojoapi.crosslinkglobaltravel.com/api/admin/currencies"
         );
         if (!response.ok) {
           throw new Error("Failed to fetch currencies");
@@ -83,7 +84,7 @@ export default function AddExchangeRate() {
       setIsPending(true);
 
       const response = await fetchWithAuth(
-        "https://mojoapi.crosslinkglobaltravel.com/api/rates",
+        "https://mojoapi.crosslinkglobaltravel.com/api/admin/rates",
         {
           method: "POST",
           headers: {
@@ -95,8 +96,12 @@ export default function AddExchangeRate() {
       );
 
       if (response.ok) {
-        toast.success("Exchange rate added successfully");
-        router.push("/admin-dashboard/exchange-rates");
+        toast.success('Exchange rate added successfully!', {
+          autoClose: 2000,
+          onClose: () => {
+            router.push("/admin-dashboard/exchange-rates");
+          }
+        });
       } else {
         if (response.status === 403) {
           toast.error("You do not have permission to perform this action");
@@ -114,41 +119,25 @@ export default function AddExchangeRate() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="sticky top-0 z-10 flex items-center justify-between p-4 border-b bg-white/80 backdrop-blur-sm">
-        <div className="flex items-center gap-4">
+    <div className="min-h-screen bg-blue-50">
+      <ToastContainer position="top-right" autoClose={3000} />
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-semibold text-primary">
+         Exchange Rates
+        </h1>
+        <div className="flex items-center gap-2">
+          <NotificationProfile
+            profileLink="/admin-dashboard/settings"
+            notificationLink="/admin-dashboard/notifications"
+          />
+        </div>
+      </div>
+      <div className="max-w-2xl mx-auto mb-6">
           <BackLink href="/admin-dashboard/exchange-rates" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="w-4 h-4" />
             <span className="font-medium">Back to Exchange Rates</span>
           </BackLink>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="outline"
-            onClick={() => router.push("/admin-dashboard/exchange-rates")}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="submit"
-            form="exchange-rate-form"
-            className="bg-primary hover:bg-primary/90"
-            disabled={isPending}
-          >
-            {isPending ? (
-              <>
-                <span className="animate-spin mr-2">⌛</span>
-                Submitting...
-              </>
-            ) : (
-              "Add Exchange Rate"
-            )}
-          </Button>
-        </div>
-      </div>
-
-      <div className="max-w-2xl mx-auto p-6">
-        <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="bg-white rounded-lg shadow-sm border p-6 mt-5">
           <h1 className="text-2xl font-semibold mb-2">Add New Exchange Rate</h1>
           <p className="text-sm text-muted-foreground mb-8">
             Set up a new exchange rate for a currency
@@ -239,8 +228,32 @@ export default function AddExchangeRate() {
                 </PopoverContent>
               </Popover>
             </div>
+            <div className="flex items-center gap-2">
+          <Button 
+            variant="outline"
+            onClick={() => router.push("/admin-dashboard/exchange-rates")}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            form="exchange-rate-form"
+            className="bg-primary hover:bg-primary/90"
+            disabled={isPending}
+          >
+            {isPending ? (
+              <>
+                <span className="animate-spin mr-2">⌛</span>
+                Submitting...
+              </>
+            ) : (
+              "Add Exchange Rate"
+            )}
+          </Button>
+        </div>
           </form>
         </div>
+        
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ const API_BASE_URL = "https://mojoapi.crosslinkglobaltravel.com/api"; // Replace
 // Function to get the transfer creation page data (e.g., available banks, exchange rate, etc.)
 export const getTransferData = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/transfers`, {
+    const response = await fetch(`${API_BASE_URL}/admin/transfers`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

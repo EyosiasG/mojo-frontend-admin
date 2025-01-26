@@ -148,7 +148,7 @@ const Page = () => {
         receiver_id: recieverId
       };
 
-      const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/transfers", {
+      const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/admin/transfers", {
         method: "POST",
         body: JSON.stringify(requestData),
         headers: {

@@ -177,7 +177,7 @@ export default function SettingsPage() {
             timer: 2000,
             showConfirmButton: false
         }).then(() => {
-            router.push("/admin-dashboard");
+            router.push("/admin-dashboard/user-management");
         });
 
     } catch (err: unknown) {

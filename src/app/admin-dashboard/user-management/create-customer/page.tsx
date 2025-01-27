@@ -90,7 +90,7 @@ const AddUserPage = () => {
     try {
         const accessToken = localStorage.getItem("access_token");
         console.log("Access Token:", accessToken); // Log the access token
-        const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/users/store", {
+        const response = await fetch("https://mojoapi.crosslinkglobaltravel.com/api/admin/senders", {
             method: "POST",
             body: JSON.stringify(requestBody), // Use JSON.stringify for the request body
             headers: {
@@ -103,8 +103,8 @@ const AddUserPage = () => {
             throw new Error("Network response was not ok");
         }
 
-        console.log("Customer added successfully.");
-        toast.success("Customer added successfully!");
+        console.log("Sender added successfully.");
+        toast.success("Sender added successfully!");
         setTimeout(() => {
             router.push("/admin-dashboard/user-management");
         }, 2000);
@@ -130,7 +130,7 @@ const AddUserPage = () => {
       />
       {/* Header */}
       <header className="flex items-center justify-between p-4">
-        <h1 className="text-xl font-semibold">User Management</h1>
+        <h1 className="text-xl font-semibold">Sender Management</h1>
         <div className="flex items-center gap-4">
           <NotificationProfile
             profileLink="/agent-dashboard/settings"
@@ -144,13 +144,13 @@ const AddUserPage = () => {
         <div className="mb-6">
           <BackLink>
             <ArrowLeft className="h-4 w-4" />
-            Add New User
+            Add New Sender
           </BackLink>
         </div>
 
         <Card>
           <CardContent className="p-6">
-            <h2 className="text-xl font-semibold mb-6">Add New User</h2>
+            <h2 className="text-xl font-semibold mb-6">Add New Sender</h2>
             <p className="text-sm text-muted-foreground mb-8">
               Fill in the information below
             </p>

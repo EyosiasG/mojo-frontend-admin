@@ -111,7 +111,7 @@ export function Layout({ children }: LayoutProps) {
                 className="w-full justify-start gap-3"
                 asChild
               >
-                <Link href="/admin-dashboard/user-management">
+                <Link href="/admin-dashboard/receiver-management">
                   <User className="h-4 w-4" />
                   Receiver Management
                 </Link>  

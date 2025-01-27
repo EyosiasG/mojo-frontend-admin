@@ -35,7 +35,7 @@ import { format } from "date-fns";
 import { fetchWithAuth } from "@/components/utils/fetchwitAuth";
 import Swal from 'sweetalert2';
 
-export default function UserManagementPage() {
+export default function ReceiverManagementPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -47,7 +47,7 @@ export default function UserManagementPage() {
     try {
       console.log('Attempting to fetch users...');
       const response = await fetchWithAuth(
-        "https://mojoapi.crosslinkglobaltravel.com/api/admin/senders"
+        "https://mojoapi.crosslinkglobaltravel.com/api/admin/receivers"
       ).catch(error => {
         console.error('Network error:', error);
         throw new Error('Network connection failed - please check your internet connection');
@@ -74,7 +74,7 @@ export default function UserManagementPage() {
       console.error('Detailed error information:', {
         error: err,
         timestamp: new Date().toISOString(),
-        endpoint: "https://mojoapi.crosslinkglobaltravel.com/api/admin/senders"
+        endpoint: "https://mojoapi.crosslinkglobaltravel.com/api/admin/receivers"
       });
     } finally {
       setLoading(false);
@@ -102,7 +102,7 @@ export default function UserManagementPage() {
     if (isConfirmed) {
       try {
         const response = await fetchWithAuth(
-          `https://mojoapi.crosslinkglobaltravel.com/api/admin/senders/${userId}`,
+          `https://mojoapi.crosslinkglobaltravel.com/api/users/${userId}`,
           {
             method: "DELETE",
           }
@@ -128,7 +128,7 @@ export default function UserManagementPage() {
     console.log("Search Query: ", searchQuery);
     try {
       const response = await fetchWithAuth(
-        `https://mojoapi.crosslinkglobaltravel.com/api/admin/users/search/${searchQuery}`
+        `https://mojoapi.crosslinkglobaltravel.com/api/users/search/${searchQuery}`
       );
 
       if (!response.ok) {
@@ -162,7 +162,7 @@ export default function UserManagementPage() {
     <>
       <div className="bg-blue-50">
         <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 md:px-6 md:py-4">
-          <h1 className="text-xl text-primary font-semibold md:text-xl ml-8 mb-3 sm:mb-0">Sender Management</h1>
+          <h1 className="text-xl text-primary font-semibold md:text-xl ml-8 mb-3 sm:mb-0">Receiver Management</h1>
           <div className="flex w-full sm:w-auto justify-center sm:justify-end gap-4">
             <NotificationProfile
               profileLink="/agent-dashboard/settings"
@@ -192,13 +192,6 @@ export default function UserManagementPage() {
               <Search className="h-4 w-4" />
               Search
             </Button>
-
-            <Link href="user-management/create-customer" className="w-full md:w-auto">
-              <Button className="gap-2 bg-primary hover:bg-primary/90 w-full">
-                <PlusCircle className="h-4 w-4" />
-                Create Sender
-              </Button>
-            </Link>
           </div>
         </div>
 
@@ -214,16 +207,15 @@ export default function UserManagementPage() {
                       </TableHead>
                       <TableHead className="hidden md:table-cell">
                         <div className="flex items-center gap-2">
-                          Sender ID
+                          Receiver ID
                           <ChevronDown className="h-4 w-4" />
                         </div>
                       </TableHead>
-                      <TableHead>First Name</TableHead>
-                      <TableHead>Last Name</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Account Number</TableHead>
+                      <TableHead className="hidden md:table-cell">Bank</TableHead>
                       <TableHead className="hidden md:table-cell">Email</TableHead>
-                      <TableHead className="hidden md:table-cell">Phone</TableHead>
-                      <TableHead className="hidden md:table-cell">Created At</TableHead>
-                      <TableHead className="w-12"></TableHead>
+                      <TableHead className="hidden md:table-cell">Phone Number</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -239,52 +231,17 @@ export default function UserManagementPage() {
                           {user.id}
                         </TableCell>
                         <TableCell>
-                          {user.first_name}
+                          {user.name}
                         </TableCell>
                         <TableCell>
-                          {user.last_name}
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          {user.email}
+                          {user.account_number}
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           {user.phone}
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
-                          {user.created_at
-                            ? format(new Date(user.created_at), "MMMM d, yyyy")
-                            : "N/A"}
-                        </TableCell>
-                     
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreVertical className="h-4 w-4" />
-                                <span className="sr-only">Open menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem asChild>
-                                <Link
-                                  href={`user-management/view-customer/${user.id}`}
-                                  className="w-full"
-                                >
-                                  View
-                                </Link>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <Link href={`user-management/edit-customer/${user.id}`}>
-                                  Edit
-                                </Link>
-                              </DropdownMenuItem>
-
-                              <DropdownMenuItem onClick={() => handleDelete(user.id)}>
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
+                          {user.phone_number}
+                        </TableCell> 
                       </TableRow>
                     ))}
                   </TableBody>
@@ -300,7 +257,7 @@ export default function UserManagementPage() {
               </div>
             </div>
           ) : (
-            <div className="text-red-500 text-center py-4">No Users found!</div>
+            <div className="text-red-500 text-center py-4">No Receivers found!</div>
           )}
         </div>
       </div>

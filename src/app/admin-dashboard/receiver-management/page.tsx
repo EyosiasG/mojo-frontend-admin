@@ -159,7 +159,7 @@ export default function ReceiverManagementPage() {
   }
 
   return (
-    <>
+    <div className="bg-blue-50 min-h-screen">
       <div className="bg-blue-50">
         <div className="flex flex-col sm:flex-row items-center justify-between px-4 py-3 md:px-6 md:py-4">
           <h1 className="text-xl text-primary font-semibold md:text-xl ml-8 mb-3 sm:mb-0">Receiver Management</h1>
@@ -261,6 +261,6 @@ export default function ReceiverManagementPage() {
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 }

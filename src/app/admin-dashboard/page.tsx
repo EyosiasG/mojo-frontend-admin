@@ -231,7 +231,7 @@ export default function Page() {
 
 
   return (
-    <div className="min-h-screen bg-slate-200">
+    <div className="min-h-screen bg-blue-50">
       <header className="flex items-center justify-between p-4">
         <h1 className="text-2xl font-bold text-primary">Main Dashboard</h1>
         <div className="flex items-center gap-4">
